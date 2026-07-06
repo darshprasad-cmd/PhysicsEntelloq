@@ -1000,28 +1000,41 @@ input[type=range].sl{width:130px}
 .th-slider{padding:14px 16px}
 .sl-wrap{gap:10px}
 
-/* — sandbox opens up: bigger type, roomier panels, nothing clipped — */
-.sbx{gap:12px;padding:12px;grid-template-columns:56px 1fr}
-.sbx-tools{gap:8px;padding:8px 6px}
-.sbx-tool{width:44px;height:44px;font-size:18px;border-radius:11px}
-.sbx-side{max-height:256px;gap:12px}
-.sbx-side .sbx-card{min-width:215px}
-.sbx-card{padding:14px 16px;border-radius:14px}
-.sbx-h{font-size:10.5px;letter-spacing:.1em;margin-bottom:10px}
-.sbx-ck{font-size:13.5px;padding:4px 0;gap:9px}
-.sbx-st{padding:8px 11px;border-radius:10px}
+/* — sandbox: spacious inspector COLUMN beside the stage (was a cramped horizontal strip) — */
+.sbx{gap:16px;padding:16px;grid-template-columns:58px minmax(0,1fr) 348px;grid-template-rows:minmax(0,1fr) auto}
+.sbx-tools{grid-row:1;grid-column:1;gap:9px;padding:9px 7px}
+.sbx-tool{width:44px;height:44px;font-size:18px;border-radius:12px}
+.sbx-stage{grid-row:1;grid-column:2}
+/* controls now stack vertically in a real side column — full width, room to breathe */
+.sbx-side{grid-row:1;grid-column:3;flex-direction:column;flex-wrap:nowrap;gap:15px;min-height:0;max-height:none;overflow-y:auto;overflow-x:hidden;padding-right:3px}
+.sbx-side .sbx-card{flex:0 0 auto;min-width:0;width:100%;overflow:visible}
+.sbx-side .sbx-card:nth-child(2),.sbx-side .sbx-card:nth-child(3){flex:0 0 auto}
+.sbx-side .sbx-stats{grid-template-columns:repeat(3,1fr)}
+.sbx-side .sbx-spark{height:46px}
+.sbx-foot{grid-row:2;grid-column:1/4;padding:2px 16px}
+.sbx-card{padding:16px 18px;border-radius:15px}
+.sbx-h{font-size:10.5px;letter-spacing:.13em;margin-bottom:13px}
+.sbx-ck{font-size:13.5px;padding:6px 0;gap:11px}
+.sbx-stats{gap:9px}
+.sbx-st{padding:10px 12px;border-radius:11px}
 .sbx-st .l{font-size:9.5px}
-.sbx-st .v{font-size:16px;margin-top:3px}
-.sbx-irow{font-size:13px;gap:10px;margin:9px 0}
-.sbx-irow span{width:74px;white-space:normal;line-height:1.3}
+.sbx-st .v{font-size:17px;margin-top:4px}
+.sbx-irow{font-size:13px;gap:12px;margin:12px 0}
+.sbx-irow span{width:82px;white-space:normal;line-height:1.3}
 .sbx-irow b{min-width:48px;font-size:12px}
-.sbx-muted{font-size:13px;line-height:1.6}
-.sbx-tip{font-size:11.5px;padding:7px 11px}
+.sbx-muted{font-size:13px;line-height:1.65}
+.sbx-tip{font-size:11.5px;padding:7px 12px}
 .sbx-pchip{font-size:13px;padding:8px 16px}
-.sbx-foot{padding:0 14px}
-.sbx-presets{gap:8px;padding:10px 0}
-.sbx-spark{height:48px}
-.sbx-side .sbx-spark{height:36px}
+.sbx-presets{gap:9px;padding:10px 0}
+.sbx-spark{height:52px}
+.sbx-advt{margin:2px 0 10px}
+@media(max-width:1000px){
+  .sbx{grid-template-columns:1fr;grid-template-rows:50px minmax(300px,52vh) auto auto;height:auto;gap:13px;padding:13px}
+  .sbx-tools{grid-row:1;grid-column:1;flex-direction:row;overflow-x:auto;overflow-y:hidden;padding:6px 9px}
+  .sbx-stage{grid-row:2;grid-column:1}
+  .sbx-side{grid-row:3;grid-column:1;max-height:none}
+  .sbx-foot{grid-row:4;grid-column:1;flex-wrap:wrap;padding:10px 14px}
+}
 
 /* — structured-experiment catalog + discover — */
 .xp-dom{display:flex;align-items:center;gap:12px;margin:36px 0 14px;font-family:var(--display);font-weight:600;font-size:17.5px}

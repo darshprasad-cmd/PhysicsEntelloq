@@ -1159,9 +1159,11 @@ input[type=range].sl{width:130px}
 <script>
 (function(){
 "use strict";
-var AI_PROXY="https://physics-ai.physicsedge.workers.dev";/* Cloudflare Worker holding the shared Groq key -> keyless AI for every visitor. Activates once the worker named exactly "physics-ai" is deployed. */
+var AI_PROXY="https://groq-proxy.physicsedge.workers.dev";/* Cloudflare Worker holding the shared Groq key -> keyless AI for every visitor (same proxy quant.entelloq.com uses). */
 var GROQ_KEY="", GROQ_URL="https://api.groq.com/openai/v1/chat/completions", GROQ_MODEL="llama-3.3-70b-versatile";
 function aiURL(){ var k=''; try{k=(localStorage.getItem('peq_groq_key')||'').trim();}catch(e){} return (!k&&AI_PROXY)?(AI_PROXY.replace(/\/+$/,'')+'/v1/chat/completions'):GROQ_URL; }
+function aiText(j){ return (j&&j.choices&&j.choices[0]&&j.choices[0].message&&j.choices[0].message.content) || (j&&(j.content||j.text)) || ''; }
+function aiHeaders(){ var k=''; try{k=(localStorage.getItem('peq_groq_key')||'').trim();}catch(e){} var h={'Content-Type':'application/json'}; if(!(!k&&AI_PROXY)) h['Authorization']='Bearer '+(k||GROQ_KEY); return h; }/* proxy holds the key + its CORS forbids the Authorization header, so omit it there; send it only on the direct-to-Groq personal-key path */
 window.PEQ_setAIKey=function(){ var cur=""; try{cur=localStorage.getItem("peq_groq_key")||"";}catch(e){}
   var k=prompt("Optional \u2014 the AI already works with no key. Paste your OWN free Groq key (console.groq.com) only if you'd rather use your own quota. Stored ONLY in this browser; leave blank to clear.", cur);
   if(k===null) return; k=k.trim();
@@ -2286,7 +2288,7 @@ var Tutor=(function(){
     if(best&&bs>0) return "I can't reach the live AI right now, but the closest concept is:\n\n"+best.name+" — "+best.summary+"\n\nOpen it from Learn for the full lesson."; return "I can't reach the live AI right now (add a Groq key in the tutor, or check your connection). Try the Learn tab in the meantime."; }
   async function ask(q){ if(busy) return; busy=true; var u=addMsg('u'); u.textContent=q; var bd=addMsg('a'); bd.innerHTML='<span class="cur"></span>';
     Voice.setState('thinking'); Me.award(10,'Asked Entelloq'); history.push({role:'user',content:q}); var msgs=[{role:'system',content:sys()}].concat(history.slice(-8)); var acc='';
-    try{ var resp=await fetch(aiURL(),{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key()},body:JSON.stringify({model:GROQ_MODEL,messages:msgs,stream:true,temperature:.6,max_tokens:850})});
+    try{ var resp=await fetch(aiURL(),{method:'POST',headers:aiHeaders(),body:JSON.stringify({model:GROQ_MODEL,messages:msgs,stream:true,temperature:.6,max_tokens:850})});
       if(!resp.ok||!resp.body) throw new Error('http'); var rd=resp.body.getReader(),dec=new TextDecoder(),buf='';
       while(true){ var r=await rd.read(); if(r.done) break; buf+=dec.decode(r.value,{stream:true}); var lines=buf.split('\n'); buf=lines.pop();
         for(var i=0;i<lines.length;i++){ var ln=lines[i].trim(); if(ln.indexOf('data:')!==0) continue; var pl=ln.slice(5).trim(); if(pl==='[DONE]') break;
@@ -2355,8 +2357,8 @@ var Lens=(function(){
     var sysP='You are Entelloq, a brilliant and accurate physics teacher. Answer ONLY with the explanation, no preamble, no restating the question.';
     var usr=lens.p.replace(/%T/g,t.name)+' (Field: '+((typeof DMAP!=='undefined'&&DMAP[t.domain])?DMAP[t.domain].n:t.domain)+'.)';
     try{
-      var resp=await fetch(aiURL(),{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key()},body:JSON.stringify({model:GROQ_MODEL,messages:[{role:'system',content:sysP},{role:'user',content:usr}],temperature:.5,max_tokens:520})});
-      if(!resp.ok) throw 0; var j=await resp.json(); var txt=j&&j.choices&&j.choices[0]&&j.choices[0].message&&j.choices[0].message.content;
+      var resp=await fetch(aiURL(),{method:'POST',headers:aiHeaders(),body:JSON.stringify({model:GROQ_MODEL,messages:[{role:'system',content:sysP},{role:'user',content:usr}],temperature:.5,max_tokens:520})});
+      if(!resp.ok) throw 0; var j=await resp.json(); var txt=aiText(j);
       if(txt){ txt=txt.trim(); try{ localStorage.setItem(ck,txt); }catch(e){} if(alive()) panel.innerHTML=fmt(txt); }
     }catch(e){}
     if(alive()) panel.classList.remove('loading');
@@ -2396,11 +2398,11 @@ var Practice=(function(){
   async function generate(domKey,diff){
     diff=diff||2; var dom=DMAP[domKey]; var topics=topicsOf(domKey).map(function(t){return t.name;}).slice(0,8).join(', ');
     try{
-      var resp=await fetch(aiURL(),{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+((localStorage.getItem('peq_groq_key')||'').trim()||GROQ_KEY)},
+      var resp=await fetch(aiURL(),{method:'POST',headers:aiHeaders(),
         body:JSON.stringify({model:GROQ_MODEL,temperature:.85,response_format:{type:'json_object'},max_tokens:430,messages:[
           {role:'system',content:'You write one physics multiple-choice question at a specified difficulty. Return ONLY JSON: {"q":"question","o":["A","B","C","D"],"a":<0-3 index of correct>,"e":"one-sentence explanation"}. Exactly 4 options, exactly one correct.'},
           {role:'user',content:'Topic area: '+dom.n+' (covers: '+topics+'). Difficulty — '+DIFF[diff]+' Use plain-text math (e.g. v = sqrt(2gh)).'}]})});
-      if(!resp.ok) throw new Error('http'); var j=await resp.json(); var c=j.choices[0].message.content; var o=JSON.parse(c);
+      if(!resp.ok) throw new Error('http'); var j=await resp.json(); var c=aiText(j); var o=JSON.parse(c);
       if(o&&o.q&&o.o&&o.o.length===4&&typeof o.a==='number'){ o._lvl=diff; return o; }
       throw new Error('shape');
     }catch(e){ var f=FALLBACK[domKey]||FALLBACK.mechanics; f._lvl=diff; return f; }
@@ -2605,9 +2607,9 @@ var Solve=(function(){
     if(busy) return; busy=true;
     host.innerHTML='<div class="sv-load"><div class="sv-orb"></div><div>Entelloq is reasoning through it…</div></div>';
     try{
-      var resp=await fetch(aiURL(),{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key()},
+      var resp=await fetch(aiURL(),{method:'POST',headers:aiHeaders(),
         body:JSON.stringify({model:GROQ_MODEL,temperature:.35,response_format:{type:'json_object'},max_tokens:1500,messages:[{role:'system',content:sysP()},{role:'user',content:q}]})});
-      if(!resp.ok) throw new Error('http'); var j=await resp.json(); var o=JSON.parse(j.choices[0].message.content);
+      if(!resp.ok) throw new Error('http'); var j=await resp.json(); var o=JSON.parse(aiText(j));
       render(o,host,q); Me.award(14,'Solved a problem');
     }catch(e){ host.innerHTML='<div class="sv-err">⚠ Couldn\'t reach the solver. Check your connection (or add a Groq key in the tutor ✦). You can still ask the tutor directly.</div>'; }
     busy=false;

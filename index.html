@@ -1057,6 +1057,25 @@ input[type=range].sl{width:130px}
 .dv-art p{font-size:15.5px;line-height:1.75;color:var(--ink-dim);margin:0 0 16px}
 .dv-links{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
 
+/* — lesson: learning companion + continuous-flow rail — */
+.flow-rail{display:flex;gap:10px;flex-wrap:wrap}
+.l-comp{display:none}
+@media(min-width:1280px){
+  .lesson-wrap{max-width:1190px;display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:42px;align-items:start}
+  .l-comp{display:block}
+}
+.comp-card{position:sticky;top:88px;border:1px solid var(--line-2);border-radius:16px;padding:17px 18px;background:rgba(12,17,32,.55);backdrop-filter:blur(10px)}
+.cc-h{font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;margin-bottom:10px}
+.cc-row{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;color:var(--ink-faint);margin:7px 0}
+.cc-row b{color:var(--ink);font-weight:500;text-align:right;max-width:62%}
+.cc-track{height:6px;border-radius:6px;background:rgba(255,255,255,.06);overflow:hidden;margin:4px 0 10px}
+.cc-track i{display:block;height:100%;border-radius:6px;transition:width .6s var(--ease)}
+.cc-mis{font-size:11.5px;color:#f7ecd0;border:1px solid rgba(251,191,36,.35);background:rgba(251,191,36,.06);border-radius:9px;padding:8px 10px;margin-top:10px;line-height:1.5}
+.cc-flow{display:flex;flex-wrap:wrap;gap:4px;align-items:center}
+.cc-step{font-family:var(--mono);font-size:9.5px;color:var(--ink-faint);border:1px solid var(--line-2);border-radius:6px;padding:2px 6px;transition:.2s}
+.cc-step.on{color:#fff;border-color:var(--blue);background:rgba(125,211,252,.1)}
+.cc-arr{font-size:9px;color:var(--ink-ghost)}
+
 /* — keep phones dense (small screens need density, not air) — */
 @media(max-width:900px){
   :root{--sb:248px}
@@ -2320,19 +2339,200 @@ var Tutor=(function(){
 var Lens=(function(){
   var injected=false;
   var L=[
-    {k:'A',n:'Layman',ic:'•',c:'#34d399',d:'For a curious 12-year-old',
+    {k:'A',n:'Experience',ic:'●',c:'#34d399',d:'Play with it first',
      p:'Explain the physics concept "%T" to a curious 12-year-old in ONE warm paragraph. No jargon, no equations — use a vivid everyday story or metaphor that makes it click.'},
-    {k:'B',n:'Intuition',ic:'Ψ',c:'#7dd3fc',d:'Feel what is happening',
+    {k:'B',n:'Predict',ic:'Ψ',c:'#7dd3fc',d:'Commit, then test yourself',
      p:'Give the core physical intuition for "%T": what is really going on, what to picture, and why it behaves that way. End with one short "what happens if…" question that builds a feel for it. Two short paragraphs, minimal math.'},
-    {k:'C',n:'Visual',ic:'◳',c:'#22d3ee',d:'The geometry & the motion',
+    {k:'C',n:'Visual',ic:'◳',c:'#22d3ee',d:'Watch the physics live',
      p:'Describe "%T" visually — the diagram, the geometry, the motion, the vectors or field lines a student should picture. Be concrete about what moves, what changes, and in which direction. Two short paragraphs.'},
-    {k:'D',n:'Math',ic:'∑',c:'#a78bfa',d:'Build the formalism',
+    {k:'D',n:'Math',ic:'∑',c:'#a78bfa',d:'Build it step by step',
      p:'Build the mathematics of "%T" progressively: state the key equation(s), define every symbol with its units, then give a short clean derivation with NO skipped steps. Use plain-text math like v = sqrt(2GM/r), never LaTeX.'},
-    {k:'E',n:'Advanced',ic:'◆',c:'#f472b6',d:'The research-level view',
-     p:'Give the advanced, university-to-research view of "%T": the deeper framework it belongs to, key generalisations, subtle edge cases, and where the simple picture breaks down. Two rigorous paragraphs.'},
-    {k:'F',n:'Real-World',ic:'⊕',c:'#fbbf24',d:'Where it lives in reality',
+    {k:'E',n:'Frontier',ic:'◆',c:'#f472b6',d:'Experiments & open questions',
+     p:'For "%T": name ONE landmark experiment (who, when, what it proved), ONE area of current research that uses it, and ONE genuinely open question. Three short, specific entries — no fluff.'},
+    {k:'F',n:'Real World',ic:'⊕',c:'#fbbf24',d:'Engineer with it',
      p:'Where does "%T" show up in the real world — technology, space, medicine, computing, nature, everyday life? Give 4 to 5 concrete, surprising, specific examples as a short list.'}
   ];
+  /* ---- per-domain interactive banks: every concept gets play-first learning ---- */
+  var MICRO={
+    mechanics:{hint:'drag the puck and flick it — then just watch',notice:'After you let go, nothing pushes it. What does it do?',
+      init:function(W,H){return {x:W*.3,y:H*.55,vx:0,vy:0,hold:false,tr:[]};},
+      down:function(s,x,y){ s.hold=true; s.x=x; s.y=y; s.vx=s.vy=0; s.tr=[]; },
+      move:function(s,x,y){ if(s.hold){ s.vx=(x-s.x)*8; s.vy=(y-s.y)*8; s.x=x; s.y=y; } },
+      up:function(s){ s.hold=false; },
+      step:function(s,W,H,dt){ if(s.hold) return; s.x+=s.vx*dt; s.y+=s.vy*dt;
+        if(s.x<14||s.x>W-14){ s.vx*=-1; s.x=Math.max(14,Math.min(W-14,s.x)); }
+        if(s.y<14||s.y>H-14){ s.vy*=-1; s.y=Math.max(14,Math.min(H-14,s.y)); }
+        s.tr.push([s.x,s.y]); if(s.tr.length>70)s.tr.shift(); },
+      draw:function(g,s,W,H){ g.strokeStyle='rgba(52,211,153,.3)'; g.lineWidth=2; g.beginPath();
+        s.tr.forEach(function(p,i){ i?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1]); }); g.stroke();
+        var sp=Math.hypot(s.vx,s.vy); g.fillStyle='#34d399'; g.beginPath(); g.arc(s.x,s.y,13,0,7); g.fill();
+        g.fillStyle='rgba(159,177,208,.85)'; g.font='11px JetBrains Mono'; g.fillText('speed: '+sp.toFixed(0)+'  (constant after release — no force, no change)',12,18); }},
+    waves:{hint:'tap the pond — tap twice in different spots',notice:'Where two ripples cross, what happens to the water?',
+      init:function(){return {rip:[]};},
+      down:function(s,x,y){ s.rip.push({x:x,y:y,r:2}); if(s.rip.length>6)s.rip.shift(); },
+      step:function(s,W,H,dt){ s.rip.forEach(function(r){ r.r+=60*dt; }); s.rip=s.rip.filter(function(r){return r.r<Math.max(W,H);}); },
+      draw:function(g,s,W,H){ s.rip.forEach(function(r){ for(var k=0;k<3;k++){ var rr=r.r-k*16; if(rr<2)continue;
+        g.strokeStyle='rgba(34,211,238,'+(Math.max(0,.7-rr/W)*(1-k*.28)).toFixed(2)+')'; g.lineWidth=2.4-k*.7;
+        g.beginPath(); g.arc(r.x,r.y,rr,0,7); g.stroke(); } });
+        if(!s.rip.length){ g.fillStyle='rgba(159,177,208,.6)'; g.font='12px JetBrains Mono'; g.fillText('tap anywhere…',12,18); } }},
+    thermo:{hint:'drag the piston down — squeeze the gas fast',notice:'When you squeeze, watch the speed of the dots. What is temperature, really?',
+      init:function(W,H){ var m=[]; for(var i=0;i<26;i++) m.push({x:20+Math.random()*(W-40),y:H*.35+Math.random()*H*.55,vx:(Math.random()-.5)*70,vy:(Math.random()-.5)*70}); return {p:H*.3,m:m,hold:false}; },
+      down:function(s,x,y){ if(Math.abs(y-s.p)<26) s.hold=true; },
+      move:function(s,x,y,W,H){ if(s.hold){ var old=s.p; s.p=Math.max(H*.14,Math.min(H*.72,y));
+        if(s.p>old){ s.m.forEach(function(a){ a.vx*=1.03; a.vy*=1.03; }); } } },
+      up:function(s){ s.hold=false; },
+      step:function(s,W,H,dt){ s.m.forEach(function(a){ a.x+=a.vx*dt; a.y+=a.vy*dt;
+        if(a.x<12||a.x>W-12){a.vx*=-1;a.x=Math.max(12,Math.min(W-12,a.x));}
+        if(a.y<s.p+8){a.vy=Math.abs(a.vy);a.y=s.p+8;} if(a.y>H-12){a.vy=-Math.abs(a.vy);a.y=H-12;} }); },
+      draw:function(g,s,W,H){ var ke=0; s.m.forEach(function(a){ ke+=a.vx*a.vx+a.vy*a.vy; }); ke/=s.m.length;
+        g.fillStyle='rgba(251,146,60,.15)'; g.fillRect(8,s.p,W-16,H-s.p-8);
+        g.fillStyle='#fb923c'; s.m.forEach(function(a){ g.beginPath(); g.arc(a.x,a.y,3.4,0,7); g.fill(); });
+        g.fillStyle='#e8eefc'; g.fillRect(8,s.p-8,W-16,10);
+        g.fillStyle='rgba(159,177,208,.85)'; g.font='11px JetBrains Mono';
+        g.fillText('“temperature” (avg KE): '+(ke/1000).toFixed(1),12,18); }},
+    optics:{hint:'drag the beam angle — go steeper and steeper',notice:'Past a critical angle the light cannot escape. Where did it go?',
+      init:function(){return {a:35};},
+      down:function(s,x,y,W,H){ this.move(s,x,y,W,H); },
+      move:function(s,x,y,W,H){ s.a=Math.max(5,Math.min(85,90-Math.abs(Math.atan2(H*.5-y,x-W*.5))*180/Math.PI)); },
+      step:function(){},
+      draw:function(g,s,W,H){ var cy=H*.5,n=1.33,ai=s.a*Math.PI/180,crit=Math.asin(1/n)*180/Math.PI;
+        g.fillStyle='rgba(34,211,238,.10)'; g.fillRect(0,cy,W,H-cy);
+        g.strokeStyle='rgba(255,255,255,.25)'; g.beginPath(); g.moveTo(0,cy); g.lineTo(W,cy); g.stroke();
+        var L=Math.min(W,H)*.42,cx=W*.5;
+        g.strokeStyle='#a78bfa'; g.lineWidth=2.5; g.beginPath(); g.moveTo(cx-Math.sin(ai)*L,cy+Math.cos(ai)*L); g.lineTo(cx,cy); g.stroke();
+        if(s.a<crit){ var at=Math.asin(n*Math.sin(ai)); g.strokeStyle='#22d3ee'; g.beginPath(); g.moveTo(cx,cy); g.lineTo(cx+Math.sin(at)*L,cy-Math.cos(at)*L); g.stroke();
+          g.strokeStyle='rgba(167,139,250,.35)'; g.beginPath(); g.moveTo(cx,cy); g.lineTo(cx+Math.sin(ai)*L*.6,cy+Math.cos(ai)*L*.6); g.stroke(); }
+        else { g.strokeStyle='#f87171'; g.lineWidth=3; g.beginPath(); g.moveTo(cx,cy); g.lineTo(cx+Math.sin(ai)*L,cy+Math.cos(ai)*L); g.stroke(); }
+        g.fillStyle='rgba(159,177,208,.85)'; g.font='11px JetBrains Mono';
+        g.fillText('angle: '+s.a.toFixed(0)+'°   critical: '+crit.toFixed(1)+'°'+(s.a>=crit?'  → TOTAL INTERNAL REFLECTION':''),12,18); }},
+    electrostatics:{hint:'drag the + charge around',notice:'The − charge chases it. How does the pull change with distance?',
+      init:function(W,H){return {px:W*.35,py:H*.5,nx:W*.65,ny:H*.5,nvx:0,nvy:0};},
+      down:function(s,x,y){ this.move(s,x,y); },
+      move:function(s,x,y){ s.px=x; s.py=y; },
+      step:function(s,W,H,dt){ var dx=s.px-s.nx,dy=s.py-s.ny,r2=dx*dx+dy*dy+900,r=Math.sqrt(r2),F=340000/r2;
+        s.nvx+=F*dx/r*dt; s.nvy+=F*dy/r*dt; s.nvx*=.985; s.nvy*=.985; s.nx+=s.nvx*dt; s.ny+=s.nvy*dt; },
+      draw:function(g,s,W,H){ var r=Math.hypot(s.px-s.nx,s.py-s.ny);
+        g.strokeStyle='rgba(250,204,21,.22)'; g.lineWidth=1; g.setLineDash([3,5]); g.beginPath(); g.moveTo(s.px,s.py); g.lineTo(s.nx,s.ny); g.stroke(); g.setLineDash([]);
+        g.fillStyle='#f87171'; g.beginPath(); g.arc(s.px,s.py,12,0,7); g.fill();
+        g.fillStyle='#60a5fa'; g.beginPath(); g.arc(s.nx,s.ny,10,0,7); g.fill();
+        g.fillStyle='#04060e'; g.font='bold 13px Inter'; g.textAlign='center'; g.fillText('+',s.px,s.py+4); g.fillText('−',s.nx,s.ny+4); g.textAlign='left';
+        g.fillStyle='rgba(159,177,208,.85)'; g.font='11px JetBrains Mono'; g.fillText('separation: '+r.toFixed(0)+'   pull ∝ 1/r²  (half the distance → 4× the force)',12,18); }},
+    current:{hint:'drag the resistance slider',notice:'Same battery. What happens to the flow when the pipe gets narrower?',
+      init:function(W){return {R:5,q:[0,.14,.28,.42,.56,.7,.84]};},
+      down:function(s,x,y,W){ this.move(s,x,y,W); },
+      move:function(s,x,y,W){ s.R=Math.max(1,Math.min(10,(x-30)/(W-60)*9+1)); },
+      step:function(s,W,H,dt){ var v=.9/s.R; for(var i=0;i<s.q.length;i++){ s.q[i]=(s.q[i]+v*dt)%1; } },
+      draw:function(g,s,W,H){ var cy=H*.42,I=12/s.R;
+        g.strokeStyle='rgba(52,211,153,.5)'; g.lineWidth=10; g.beginPath(); g.moveTo(24,cy); g.lineTo(W-24,cy); g.stroke();
+        g.fillStyle='#a7f3d0'; s.q.forEach(function(t){ g.beginPath(); g.arc(24+(W-48)*t,cy,4,0,7); g.fill(); });
+        var gl=Math.min(1,I/6); g.fillStyle='rgba(251,191,36,'+(0.25+gl*.75)+')'; g.beginPath(); g.arc(W-24,cy,10+gl*8,0,7); g.fill();
+        g.strokeStyle='rgba(255,255,255,.25)'; g.lineWidth=3; g.beginPath(); g.moveTo(30,H*.78); g.lineTo(W-30,H*.78); g.stroke();
+        var kx=30+(W-60)*(s.R-1)/9; g.fillStyle='#34d399'; g.beginPath(); g.arc(kx,H*.78,9,0,7); g.fill();
+        g.fillStyle='rgba(159,177,208,.85)'; g.font='11px JetBrains Mono';
+        g.fillText('V = 12   R = '+s.R.toFixed(1)+'   →   I = V/R = '+I.toFixed(1),12,18); }},
+    magnetism:{hint:'drag up/down to change the magnetic field',notice:'The field never speeds it up — it only turns it. Why a circle?',
+      init:function(W,H){return {B:1.4,x:W*.5,y:H*.55,vx:95,vy:0,tr:[]};},
+      down:function(s,x,y,W,H){ this.move(s,x,y,W,H); },
+      move:function(s,x,y,W,H){ s.B=Math.max(.3,Math.min(3.4,(H*.85-y)/(H*.6)*3.1+.3)); },
+      step:function(s,W,H,dt){ var om=s.B*1.35,c=Math.cos(om*dt),sn=Math.sin(om*dt),vx=s.vx*c-s.vy*sn,vy=s.vx*sn+s.vy*c;
+        s.vx=vx; s.vy=vy; s.x+=s.vx*dt; s.y+=s.vy*dt;
+        if(s.x<10)s.x=W-10; if(s.x>W-10)s.x=10; if(s.y<10)s.y=H-10; if(s.y>H-10)s.y=10;
+        s.tr.push([s.x,s.y]); if(s.tr.length>90)s.tr.shift(); },
+      draw:function(g,s,W,H){ g.fillStyle='rgba(96,165,250,.18)'; g.font='13px JetBrains Mono';
+        for(var gx=30;gx<W;gx+=52)for(var gy=30;gy<H;gy+=44) g.fillText('⊗',gx,gy);
+        g.strokeStyle='rgba(96,165,250,.5)'; g.lineWidth=2; g.beginPath(); s.tr.forEach(function(p,i){ i?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1]); }); g.stroke();
+        g.fillStyle='#e8eefc'; g.beginPath(); g.arc(s.x,s.y,7,0,7); g.fill();
+        var sp=Math.hypot(s.vx,s.vy);
+        g.fillStyle='rgba(159,177,208,.85)'; g.font='11px JetBrains Mono';
+        g.fillText('B = '+s.B.toFixed(1)+' (into screen)   speed: '+sp.toFixed(0)+' — CONSTANT   r = mv/qB',12,18); }},
+    modern:{hint:'click to fire single photons at the double slit',notice:'One photon at a time… yet look at the pattern building.',
+      init:function(W,H){return {hits:[],fly:null};},
+      down:function(s,x,y,W,H){ if(!s.fly) s.fly={t:0}; },
+      step:function(s,W,H,dt){ if(s.fly){ s.fly.t+=dt*2.2; if(s.fly.t>=1){
+        var u=0,tries=0; do{ u=Math.random()*2-1; tries++; }while(Math.random()>Math.pow(Math.cos(u*7.5),2)*Math.pow(Math.cos(u*1.2),2)&&tries<60);
+        s.hits.push(u); if(s.hits.length>400)s.hits.shift(); s.fly=null; } } },
+      draw:function(g,s,W,H){ var sx=W*.28,scx=W*.86;
+        g.fillStyle='rgba(232,237,255,.8)'; g.fillRect(sx-3,0,6,H*.36); g.fillRect(sx-3,H*.44,6,H*.12); g.fillRect(sx-3,H*.64,6,H*.36);
+        g.strokeStyle='rgba(255,255,255,.2)'; g.beginPath(); g.moveTo(scx,10); g.lineTo(scx,H-10); g.stroke();
+        if(s.fly){ var fx=20+(scx-20)*s.fly.t; g.fillStyle='#f472b6'; g.beginPath(); g.arc(fx,H*.5,4,0,7); g.fill(); }
+        g.fillStyle='rgba(244,114,182,.75)'; s.hits.forEach(function(u,i){ g.fillRect(scx-2+((i*7919)%5)-2,H*.5+u*H*.46,3,3); });
+        g.fillStyle='rgba(159,177,208,.85)'; g.font='11px JetBrains Mono';
+        g.fillText('photons fired: '+s.hits.length+(s.hits.length>40?'   → interference fringes, one particle at a time':''),12,18); }},
+    quantum:{hint:'drag to squeeze the particle into a smaller space',notice:'The tighter you pin it, the harder it shakes. That is a law, not noise.',
+      init:function(W,H){return {w:W*.3,ph:0};},
+      down:function(s,x,y,W){ this.move(s,x,y,W); },
+      move:function(s,x,y,W){ s.w=Math.max(W*.06,Math.min(W*.42,Math.abs(x-W*.5)*2)); },
+      step:function(s,W,H,dt){ s.ph+=dt*(9/(s.w/W)); },
+      draw:function(g,s,W,H){ var cx=W*.5,cy=H*.52,jit=(W*.06/s.w)*7;
+        var ox=Math.sin(s.ph*3.1)*jit,oy=Math.cos(s.ph*2.3)*jit;
+        g.strokeStyle='rgba(192,132,252,.5)'; g.lineWidth=2; g.setLineDash([5,5]);
+        g.strokeRect(cx-s.w/2,cy-H*.26,s.w,H*.52); g.setLineDash([]);
+        var gr=g.createRadialGradient(cx+ox,cy+oy,0,cx+ox,cy+oy,26); gr.addColorStop(0,'rgba(192,132,252,.95)'); gr.addColorStop(1,'rgba(192,132,252,0)');
+        g.fillStyle=gr; g.beginPath(); g.arc(cx+ox,cy+oy,26,0,7); g.fill();
+        g.fillStyle='rgba(159,177,208,.85)'; g.font='11px JetBrains Mono';
+        g.fillText('Δx: '+(s.w/W*100).toFixed(0)+'%   →   Δp jitter: '+jit.toFixed(1)+'   (Δx·Δp ≥ ħ/2)',12,18); }},
+    relativity:{hint:'drag the ship’s speed — compare the two clocks',notice:'Same light, same physics. Why does the moving clock tick slower?',
+      init:function(){return {b:.5,t1:0,t2:0,y1:0,d1:1,y2:0,d2:1};},
+      down:function(s,x,y,W){ this.move(s,x,y,W); },
+      move:function(s,x,y,W){ s.b=Math.max(0,Math.min(.95,(x-30)/(W-60))); },
+      step:function(s,W,H,dt){ var gm=1/Math.sqrt(1-s.b*s.b);
+        s.y1+=s.d1*dt*2; if(s.y1>1||s.y1<0){s.d1*=-1;s.y1=Math.max(0,Math.min(1,s.y1)); s.t1+=.5;}
+        s.y2+=s.d2*dt*2/gm; if(s.y2>1||s.y2<0){s.d2*=-1;s.y2=Math.max(0,Math.min(1,s.y2)); s.t2+=.5;} },
+      draw:function(g,s,W,H){ var gm=1/Math.sqrt(1-s.b*s.b),bx=W*.22,mx=W*.68,top=H*.24,bot=H*.78;
+        function clock(x,y,c,lab,t){ g.strokeStyle='rgba(255,255,255,.25)'; g.lineWidth=2; g.beginPath(); g.moveTo(x-16,top); g.lineTo(x+16,top); g.moveTo(x-16,bot); g.lineTo(x+16,bot); g.stroke();
+          g.fillStyle=c; g.beginPath(); g.arc(x,top+(bot-top)*y,6,0,7); g.fill();
+          g.fillStyle='rgba(159,177,208,.9)'; g.font='11px JetBrains Mono'; g.textAlign='center'; g.fillText(lab+'  ticks: '+t.toFixed(1),x,bot+18); g.textAlign='left'; }
+        clock(bx,s.y1,'#7dd3fc','you',s.t1);
+        clock(mx,s.y2,'#f87171','ship @ '+(s.b*100).toFixed(0)+'%c',s.t2);
+        g.fillStyle='rgba(159,177,208,.85)'; g.font='11px JetBrains Mono';
+        g.fillText('γ = '+gm.toFixed(2)+'   moving clock runs '+gm.toFixed(2)+'× slow',12,18); }}
+  };
+  var PREDICT={
+    mechanics:{q:'You flick a puck across frictionless ice and let go. After it leaves your hand it will…',o:['Gradually slow down and stop','Keep moving at constant speed forever','Speed up slightly, then stop'],a:1,why:'Nothing is pushing OR slowing it — and force is only needed to CHANGE motion, never to keep it. That is Newton’s first law, and it took humanity 2000 years to see past the friction.'},
+    waves:{q:'Two ripples cross on a pond. At a point where a crest meets a trough…',o:['They bounce off each other','The water cancels flat for an instant','They merge into one bigger wave'],a:1,why:'Waves pass straight through each other and simply ADD. Crest (+) on trough (−) sums to zero — destructive interference. A moment later, each ripple continues unchanged.'},
+    thermo:{q:'You rapidly squeeze a gas to half its volume. Its temperature…',o:['Stays the same — same molecules','Rises — the gas gets hotter','Falls — squeezing calms it down'],a:1,why:'The moving piston hits molecules like a bat, speeding them up. Temperature IS average molecular kinetic energy — so fast compression heats. (Diesel engines ignite fuel with nothing but this.)'},
+    optics:{q:'Light inside water heads up toward the surface at a steep, glancing angle. It will…',o:['Always escape, just bent','Get trapped — totally reflected back down','Slow down and stop at the surface'],a:1,why:'Beyond the critical angle (~49° for water) Snell’s law has no solution for the exit ray — 100% of the light reflects back in. Optical fibers carry the internet on exactly this trick.'},
+    electrostatics:{q:'You double the distance between two charges. The electric force becomes…',o:['Half as strong','A quarter as strong','The same — charge didn’t change'],a:1,why:'Coulomb’s law is an inverse-SQUARE: F ∝ 1/r². Double r → 2² = 4× weaker. The same geometry (spreading over a sphere) gives gravity the same law.'},
+    current:{q:'Same battery, but you double the resistance. The current…',o:['Halves','Doubles — it pushes harder','Stays the same'],a:0,why:'Ohm’s law: I = V/R. The battery fixes the push V; doubling the “narrowness” R halves the flow. Current is a response, not a property of the battery alone.'},
+    magnetism:{q:'A magnetic field pushes on a moving charge. How much work does it do on the charge?',o:['A lot — it accelerates it','Exactly zero, always','Only at high speeds'],a:1,why:'The magnetic force is always perpendicular to the velocity — it can turn the motion but never speed it up. That is why the particle circles at constant speed.'},
+    modern:{q:'You fire photons at a double slit ONE at a time — never two together. The screen builds up…',o:['Two bands, one per slit','Interference fringes','Uniform random speckle'],a:1,why:'Each single photon interferes with ITSELF — its wavefunction passes through both slits. The fringes emerge dot by dot. This one result carries most of quantum mechanics.'},
+    quantum:{q:'You confine a quantum particle in a smaller and smaller box. Its momentum spread…',o:['Shrinks — it has nowhere to go','Grows — it jitters harder','Is unchanged'],a:1,why:'Heisenberg: Δx·Δp ≥ ħ/2. Squeeze position and momentum uncertainty MUST grow. It’s why atoms don’t collapse — electrons can’t sit still on the nucleus.'},
+    relativity:{q:'A spaceship streaks past you near light-speed. Watching its clock through the window, you see it tick…',o:['Slower than yours','Faster than yours','Exactly in step'],a:0,why:'Light in the moving clock travels a longer diagonal path, yet must move at the same c for everyone. Longer path at the same speed = slower tick. Time itself dilates — GPS corrects for this daily.'}
+  };
+  var FRONTIER={
+    mechanics:{exp:['Cavendish, 1798','Weighed the Earth with a torsion balance in a shed — two lead spheres, a wire, and a candle. First measurement of G.'],res:'Granular physics & soft robotics — how sand, grain silos and robot grippers flow, jam and grip.',open:'Turbulence: the last great unsolved problem of classical mechanics. A million-dollar Millennium Prize waits on the Navier–Stokes equations.'},
+    waves:{exp:['Young, 1801','Split sunlight through two slits and produced fringes — proving light behaves as a wave, against Newton’s authority.'],res:'Acoustic metamaterials — structures that bend sound around objects; and LIGO, measuring spacetime ripples 1/10,000 the width of a proton.',open:'Rogue waves: 30-metre walls of water that appear from calm seas. Their statistics still defy full explanation.'},
+    thermo:{exp:['Joule, 1845','Stirred water with falling weights and measured its warming — proving heat is energy, killing the “caloric fluid”.'],res:'Nanoscale heat engines with single atoms as the working fluid — testing thermodynamics at its quantum limits.',open:'The arrow of time: every microscopic law runs equally well backwards. Why does entropy — and memory — only point one way?'},
+    optics:{exp:['Foucault, 1850','Measured light travelling SLOWER in water than air with a spinning mirror — the result wave theory demanded and particle theory forbade.'],res:'Metasurface flat optics — lenses thinner than a hair, sculpting light with nanostructures; phone cameras are heading there.',open:'Can any lens beat the diffraction limit without near-field tricks? “Perfect lenses” from negative-index materials remain contested at optical frequencies.'},
+    electrostatics:{exp:['Millikan, 1909','Balanced charged oil droplets against gravity and read off the charge of a single electron: 1.6×10⁻¹⁹ C, always in whole steps.'],res:'Triboelectric nanogenerators — harvesting static from footsteps and raindrops to power sensors.',open:'Why is charge quantised at exactly e — and why is the proton’s charge equal and opposite to the electron’s to 21 decimal places?'},
+    current:{exp:['Kamerlingh Onnes, 1911','Cooled mercury to 4.2 K and watched its resistance vanish COMPLETELY — superconductivity, a pure quantum surprise.'],res:'The room-temperature superconductor race — hydrides under megabar pressures have reached −23°C.',open:'High-temperature superconductivity: 40 years after cuprates, no agreed mechanism. Solve it and you may rewire civilisation.'},
+    magnetism:{exp:['Ørsted, 1820','A compass needle twitched beside a current-carrying wire during a lecture — electricity and magnetism were one subject from that moment.'],res:'Spintronics — computing with electron spin instead of charge; MRAM chips already ship.',open:'Magnetic monopoles: every magnet ever cut has two poles. Dirac showed one monopole would explain charge quantisation — none has ever been found.'},
+    modern:{exp:['Einstein, 1905 (after Hertz, 1887)','Explained why light ejects electrons only above a threshold FREQUENCY — light comes in quanta. His actual Nobel prize.'],res:'Attosecond light pulses (Nobel 2023) — filming electrons mid-jump inside atoms.',open:'The measurement problem: what actually happens when a quantum possibility becomes a single fact? A century in, no consensus.'},
+    quantum:{exp:['Aspect, 1982 (Nobel 2022)','Measured entangled photons faster than light could coordinate them — Bell’s inequality violated; local hidden variables are dead.'],res:'Quantum error correction — the make-or-break engineering of useful quantum computers.',open:'Quantum gravity: quantum mechanics and general relativity contradict at black-hole centres and the Big Bang. The biggest open problem in physics.'},
+    relativity:{exp:['Eddington, 1919','Photographed stars beside the eclipsed Sun — their light bent by exactly Einstein’s angle. Newspapers: “Lights all askew in the heavens”.'],res:'Gravitational-wave astronomy + the Event Horizon Telescope — listening to and photographing black holes.',open:'Dark energy: the expansion of the universe is accelerating and nobody knows why. 68% of everything is a placeholder name.'}
+  };
+  var CASE={
+    mechanics:{t:'Braking a car',p:'speed',u:'km/h',min:30,max:150,def:90,st:5,apps:['crash-test design','runway lengths','roller-coaster brakes','asteroid deflection'],
+      f:function(v){ var ms=v/3.6,d=ms*ms/(2*.8*9.81),ke=.5*1400*ms*ms/1000; return [['stopping distance',d.toFixed(0),'m'],['kinetic energy',ke.toFixed(0),'kJ'],['g-force on you','0.8','g']]; }},
+    waves:{t:'Sound on stage',p:'frequency',u:'Hz',min:60,max:2000,def:440,st:20,apps:['noise-cancelling headphones','ultrasound imaging','sonar','concert-hall design'],
+      f:function(v){ return [['wavelength',(343/v).toFixed(2),'m'],['period',(1000/v).toFixed(2),'ms'],['octave vs A440',(Math.log2(v/440)).toFixed(2),'oct']]; }},
+    thermo:{t:'Power-station turbine',p:'steam temperature',u:'K',min:400,max:900,def:800,st:20,apps:['coal & nuclear plants','jet engines','geothermal energy','car engines'],
+      f:function(v){ var eta=1-300/v; return [['Carnot ceiling',(eta*100).toFixed(1),'%'],['waste heat per MWh',((1/eta-1)*1000).toFixed(0),'kWh'],['exhaust temp','300','K']]; }},
+    optics:{t:'Camera lens',p:'focal length',u:'mm',min:18,max:300,def:50,st:2,apps:['phone cameras','telescopes','microscopes','laser eye surgery'],
+      f:function(v){ var u=2000,vi=1/(1/v-1/u),m=vi/u; return [['image distance',vi.toFixed(1),'mm'],['magnification',(m).toFixed(3),'×'],['field of view',(2*Math.atan(18/v)*180/Math.PI).toFixed(0),'°']]; }},
+    electrostatics:{t:'Defibrillator',p:'charging voltage',u:'V',min:500,max:5000,def:2000,st:100,apps:['heart defibrillators','photocopiers','air purifiers','paint spraying'],
+      f:function(v){ var C=100e-6,E=.5*C*v*v,q=C*v; return [['stored energy',E.toFixed(0),'J'],['charge delivered',(q*1000).toFixed(0),'mC'],['peak power @4ms',(E/.004/1000).toFixed(0),'kW']]; }},
+    current:{t:'EV on the highway',p:'motor current',u:'A',min:20,max:300,def:120,st:10,apps:['electric vehicles','grid transmission','phone fast-charging','electric trains'],
+      f:function(v){ var V=400,P=V*v/1000,loss=v*v*.05/1000; return [['power drawn',P.toFixed(1),'kW'],['cable loss (0.05Ω)',loss.toFixed(2),'kW'],['range cost','~'+(P/ .18).toFixed(0),'Wh/km']]; }},
+    magnetism:{t:'MRI scanner',p:'field strength',u:'T',min:.5,max:10.5,def:3,st:.5,apps:['MRI machines','maglev trains','particle accelerators','fusion tokamaks'],
+      f:function(v){ return [['proton resonance',(42.58*v).toFixed(1),'MHz'],['vs Earth’s field',(v/5e-5).toFixed(0),'×'],['stored field energy ∝','B² = '+(v*v).toFixed(1),'']]; }},
+    modern:{t:'Solar panel',p:'photon wavelength',u:'nm',min:300,max:1400,def:600,st:20,apps:['solar farms','photodiodes','night-vision','photosynthesis'],
+      f:function(v){ var E=1240/v; return [['photon energy',E.toFixed(2),'eV'],['vs silicon gap 1.1 eV',E>1.1?'absorbed ✓':'passes through ✗',''],['excess → heat',E>1.1?(E-1.1).toFixed(2):'0','eV']]; }},
+    quantum:{t:'Tunneling microscope',p:'tip–surface gap',u:'nm',min:.2,max:1.6,def:.6,st:.05,apps:['STM microscopes','flash memory','the Sun’s fusion','radioactive decay'],
+      f:function(v){ var I=Math.exp(-2*10.2*(v-.2)); return [['tunnel current',(I*100).toFixed(I>.01?1:3),'% of max'],['sensitivity','10× per ~0.1','nm'],['resolution','single atoms','']]; }},
+    relativity:{t:'GPS satellite',p:'orbit altitude',u:'×1000 km',min:2,max:36,def:20,st:1,apps:['GPS navigation','satellite TV','ISS timekeeping','deep-space probes'],
+      f:function(v){ var r=(6371+v*1000)*1000,vv=Math.sqrt(3.986e14/r),sr=-vv*vv/(2*9e16)*86400*1e6,gr=9.81*6371000/9e16*(1-6371000/r)*86400*1e6; return [['orbital speed',(vv/1000).toFixed(2),'km/s'],['SR: clock slow by',sr.toFixed(1),'µs/day'],['GR: clock fast by',gr.toFixed(1),'µs/day']]; }}
+  };
   function css(){ if(injected) return; injected=true; var s=ce('style'); s.textContent=
     ".lens{margin:22px 0;border:1px solid rgba(255,255,255,.09);border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,.028),rgba(255,255,255,.008));overflow:hidden}"+
     ".lens-h{padding:15px 18px 12px;border-bottom:1px solid rgba(255,255,255,.06)}"+
@@ -2347,48 +2547,209 @@ var Lens=(function(){
     ".lens-tab:hover{border-color:var(--lc);transform:translateY(-2px)}"+
     ".lens-tab.on{border-color:var(--lc);background:color-mix(in srgb,var(--lc) 15%,transparent);box-shadow:inset 0 0 0 1px var(--lc),0 10px 26px -14px var(--lc)}"+
     ".lens-tab.on .ld{color:rgba(232,237,255,.72)}"+
-    ".lens-panel{padding:8px 20px 20px;font-size:14.5px;line-height:1.75;color:rgba(232,237,255,.87);border-top:1px solid rgba(255,255,255,.05);min-height:64px;position:relative}"+
+    ".lens-panel{padding:12px 20px 20px;font-size:14.5px;line-height:1.75;color:rgba(232,237,255,.87);border-top:1px solid rgba(255,255,255,.05);min-height:64px;position:relative}"+
     ".lens-panel p{margin:12px 0}.lens-panel b{color:#fff}"+
-    ".lens-panel.loading::after{content:'✦ deepening this lens…';position:absolute;right:18px;bottom:9px;font-family:var(--mono,monospace);font-size:10px;color:var(--lc,#7dd3fc);opacity:.75;animation:lenspulse 1.3s infinite}"+
-    "@keyframes lenspulse{50%{opacity:.2}}";
+    "@keyframes lxin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}"+
+    ".lx-stage{position:relative;margin:4px 0 12px;border:1px solid rgba(255,255,255,.09);border-radius:14px;background:radial-gradient(120% 130% at 50% 0%,#0a1020,#04060c);overflow:hidden;animation:lxin .35s var(--ease)}"+
+    ".lx-cv{display:block;width:100%;height:230px;touch-action:none;cursor:crosshair}"+
+    ".lx-hint{position:absolute;top:9px;right:11px;font-family:var(--mono,monospace);font-size:10px;color:rgba(232,237,255,.55);background:rgba(4,6,12,.55);border:1px solid rgba(255,255,255,.09);padding:4px 9px;border-radius:7px;pointer-events:none}"+
+    ".lx-q{font-size:14px;color:#dbe7ff;margin:10px 0 8px;font-weight:500}"+
+    ".lx-gate{font-family:var(--mono,monospace);font-size:11px;letter-spacing:.05em;padding:9px 16px;border-radius:10px;border:1px solid var(--lc,#7dd3fc);color:var(--lc,#7dd3fc);background:transparent;cursor:pointer;transition:.18s;opacity:.4;margin-top:8px}"+
+    ".lx-gate.ready{opacity:1;box-shadow:0 0 18px -6px var(--lc,#7dd3fc)}"+
+    ".lx-txt{margin-top:12px;font-size:14.5px;line-height:1.7;color:rgba(232,237,255,.87);animation:lxin .35s var(--ease)}"+
+    ".lx-opt{display:flex;gap:10px;align-items:center;width:100%;text-align:left;padding:11px 13px;border:1px solid rgba(255,255,255,.09);border-radius:11px;background:rgba(255,255,255,.015);color:#dbe7ff;font-size:13.5px;margin:6px 0;cursor:pointer;transition:.15s}"+
+    ".lx-opt:hover{border-color:var(--lc,#7dd3fc)}"+
+    ".lx-opt.pick{border-color:var(--lc,#7dd3fc);background:color-mix(in srgb,var(--lc,#7dd3fc) 10%,transparent)}"+
+    ".lx-opt.good{border-color:rgba(52,211,153,.65);background:rgba(52,211,153,.09)}"+
+    ".lx-opt.bad{border-color:rgba(248,113,113,.55);background:rgba(248,113,113,.07)}"+
+    ".lx-step{border:1px solid rgba(255,255,255,.09);border-radius:12px;padding:13px 15px;margin:9px 0;background:rgba(255,255,255,.015);animation:lxin .35s var(--ease)}"+
+    ".lx-step .f{font-family:var(--mono,monospace);font-size:17px;color:#dfd6ff;display:block;margin:5px 0 6px}"+
+    ".lx-step .d{font-size:13px;color:rgba(232,237,255,.6)}"+
+    ".lx-sym{display:inline-block;font-family:var(--mono,monospace);font-size:11px;color:#c9b8ff;border:1px solid rgba(167,139,250,.35);border-radius:7px;padding:2px 8px;margin:8px 6px 0 0;cursor:pointer;background:none}"+
+    ".lx-sym:hover{background:rgba(167,139,250,.12)}"+
+    ".lx-symd{font-size:12.5px;color:rgba(232,237,255,.68);margin-top:8px;padding:8px 11px;border-left:2px solid rgba(167,139,250,.4);background:rgba(167,139,250,.05);border-radius:0 8px 8px 0}"+
+    ".lx-card{border:1px solid rgba(255,255,255,.09);border-radius:12px;padding:13px 15px;margin:9px 0;background:rgba(255,255,255,.015);animation:lxin .35s var(--ease)}"+
+    ".lx-card .k2{font-family:var(--mono,monospace);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:6px;display:block}"+
+    ".lx-card .b2{font-size:13.5px;line-height:1.6;color:rgba(232,237,255,.8)}"+
+    ".lx-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin:12px 0}"+
+    "@media(max-width:640px){.lx-stats{grid-template-columns:1fr}}"+
+    ".lx-stat{border:1px solid rgba(255,255,255,.09);border-radius:11px;padding:9px 11px;background:rgba(4,6,14,.4)}"+
+    ".lx-stat .l3{font-family:var(--mono,monospace);font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:rgba(232,237,255,.45)}"+
+    ".lx-stat .v3{font-family:var(--display,sans-serif);font-weight:600;font-size:16px;margin-top:3px;color:#fff}"+
+    ".lx-apps{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}"+
+    ".lx-slider{display:flex;align-items:center;gap:11px;margin:10px 0;font-family:var(--mono,monospace);font-size:11.5px;color:rgba(232,237,255,.6)}"+
+    ".lx-slider input{flex:1}"+
+    ".lx-more{font-family:var(--mono,monospace);font-size:10.5px;color:var(--lc,#7dd3fc);background:none;border:1px solid rgba(255,255,255,.14);border-radius:8px;padding:6px 12px;cursor:pointer;margin-top:12px}"+
+    ".lx-more:hover{border-color:var(--lc,#7dd3fc)}"+
+    ".lx-verdict{margin-top:10px;padding:11px 14px;border-radius:11px;font-size:13.5px;line-height:1.6;animation:lxin .35s var(--ease)}"+
+    ".lx-verdict.good{border:1px solid rgba(52,211,153,.4);background:rgba(52,211,153,.07);color:#d7f5e9}"+
+    ".lx-verdict.bad{border:1px solid rgba(251,191,36,.4);background:rgba(251,191,36,.06);color:#f7ecd0}";
     document.head.appendChild(s); }
-  function key(){ try{ return (localStorage.getItem('peq_groq_key')||'').trim()||GROQ_KEY; }catch(e){ return GROQ_KEY; } }
-  function offline(t,k){
-    if(k==='A') return t.summary;
-    if(k==='B') return t.summary+(t.points&&t.points[0]?(' '+t.points[0]):'');
-    if(k==='C') return (t.points&&t.points.length)?t.points.join(' '):t.summary;
-    if(k==='D') return (t.eqs&&t.eqs.length)?t.eqs.map(function(e){return e[0]+'  —  '+e[1];}).join('\n'):t.summary;
-    if(k==='E') return (t.exam&&t.exam.length)?t.exam.join(' '):t.summary;
-    if(k==='F') return (t.exam&&t.exam.length)?t.exam.join(' '):t.summary;
-    return t.summary;
-  }
   function fmt(txt){ var h=esc(String(txt)).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/\n\s*[-•]\s+/g,'<br>• ').replace(/\n{2,}/g,'</p><p>').replace(/\n/g,'<br>'); return '<p>'+h+'</p>'; }
-  async function enrich(t,lens,panel){
-    var ck='peq_lens_'+t.id+'_'+lens.k; function alive(){ return panel.dataset.k===lens.k; }
-    try{ var cached=localStorage.getItem(ck); if(cached){ if(alive()) panel.innerHTML=fmt(cached); panel.classList.remove('loading'); return; } }catch(e){}
-    panel.classList.add('loading');
+  /* ---- micro-sim runtime: one canvas, one rAF, dies with its DOM ---- */
+  var micro={raf:0,cv:null};
+  function stopMicro(){ if(micro.raf) cancelAnimationFrame(micro.raf); micro={raf:0,cv:null}; }
+  function mountMicro(stage,dk,onact){
+    stopMicro(); var M=MICRO[dk]||MICRO.mechanics;
+    stage.innerHTML='<canvas class="lx-cv"></canvas><div class="lx-hint">'+esc(M.hint)+'</div>';
+    var cv=stage.querySelector('canvas'),g=cv.getContext('2d'),pr=Math.min(devicePixelRatio||1,2),acts=0;
+    function fitc(){ var r=cv.getBoundingClientRect(),W=Math.max(60,r.width|0),H=Math.max(60,r.height|0);
+      if(cv.width!==W*pr){ cv.width=W*pr; cv.height=H*pr; g.setTransform(pr,0,0,pr,0,0); } cv._W=W; cv._H=H; }
+    fitc(); var st=M.init(cv._W,cv._H); micro={raf:0,cv:cv};
+    function pos(e){ var r=cv.getBoundingClientRect(); return [e.clientX-r.left,e.clientY-r.top]; }
+    cv.addEventListener('pointerdown',function(e){ e.preventDefault(); try{cv.setPointerCapture(e.pointerId);}catch(x){} var p=pos(e); if(M.down)M.down.call(M,st,p[0],p[1],cv._W,cv._H); acts++; if(onact)onact(acts); if(STILL)frame(true); });
+    cv.addEventListener('pointermove',function(e){ if(e.buttons&&M.move){ var p=pos(e); M.move.call(M,st,p[0],p[1],cv._W,cv._H); if(STILL)frame(true); } });
+    cv.addEventListener('pointerup',function(){ if(M.up)M.up.call(M,st); });
+    var last=performance.now();
+    function frame(once){ if(!document.body.contains(cv)){ stopMicro(); return; }
+      fitc(); var now=performance.now(),dt=Math.min(.05,(now-last)/1000)||.016; last=now;
+      M.step(st,cv._W,cv._H,dt);
+      g.clearRect(0,0,cv._W,cv._H); M.draw(g,st,cv._W,cv._H);
+      if(!once&&!STILL) micro.raf=requestAnimationFrame(function(){ frame(false); });
+    }
+    if(STILL){ frame(true); } else frame(false);
+  }
+  /* ---- gates & AI ---- */
+  function gate(panel,lc,label,minActs,build){
+    var wrap=ce('div'); var btn=ce('button','lx-gate'); btn.style.setProperty('--lc',lc); btn.textContent=label;
+    wrap.appendChild(btn); panel.appendChild(wrap); var done=false;
+    btn.addEventListener('click',function(){ if(done) return;
+      if(!btn.classList.contains('ready')){ var o=btn.textContent; btn.textContent='play with it first ↑'; setTimeout(function(){ if(!done) btn.textContent=o; },1300); return; }
+      done=true; btn.remove(); build(wrap); });
+    return function(n){ if(n>=minActs) btn.classList.add('ready'); };
+  }
+  async function enrich(t,lens,el){
+    var ck='peq_lens_'+t.id+'_'+lens.k;
+    try{ var cached=localStorage.getItem(ck); if(cached){ el.innerHTML=fmt(cached); return; } }catch(e){}
+    el.innerHTML='<span style="font-family:var(--mono,monospace);font-size:11px;color:'+lens.c+'">✦ thinking…</span>';
     var sysP='You are Entelloq, a brilliant and accurate physics teacher. Answer ONLY with the explanation, no preamble, no restating the question.';
     var usr=lens.p.replace(/%T/g,t.name)+' (Field: '+((typeof DMAP!=='undefined'&&DMAP[t.domain])?DMAP[t.domain].n:t.domain)+'.)';
     try{
       var resp=await fetch(aiURL(),{method:'POST',headers:aiHeaders(),body:JSON.stringify({model:GROQ_MODEL,messages:[{role:'system',content:sysP},{role:'user',content:usr}],temperature:.5,max_tokens:520})});
       if(!resp.ok) throw 0; var j=await resp.json(); var txt=aiText(j);
-      if(txt){ txt=txt.trim(); try{ localStorage.setItem(ck,txt); }catch(e){} if(alive()) panel.innerHTML=fmt(txt); }
+      if(txt){ txt=txt.trim(); try{ localStorage.setItem(ck,txt); }catch(e){} if(document.body.contains(el)) el.innerHTML=fmt(txt); return; }
     }catch(e){}
-    if(alive()) panel.classList.remove('loading');
+    if(document.body.contains(el)) el.innerHTML='<span style="font-size:12px;color:rgba(232,237,255,.5)">couldn’t reach the AI — try again in a moment</span>';
+  }
+  function deepenBtn(panel,t,lens,label){ var b=ce('button','lx-more'); b.style.setProperty('--lc',lens.c); b.textContent=label||'✦ Deepen with the AI faculty';
+    panel.appendChild(b); var out=ce('div','lx-txt'); panel.appendChild(out);
+    b.addEventListener('click',function(){ b.disabled=true; b.style.opacity=.5; enrich(t,lens,out); }); }
+  /* ---- symbol glossary for the math builder ---- */
+  var SYM={F:'force — the push or pull (newtons, N)',m:'mass — resistance to acceleration (kg)',a:'acceleration — how fast velocity changes (m/s²)',v:'velocity — speed with direction (m/s)',u:'initial velocity (m/s)',t:'time (s)',g:'gravitational field strength ≈ 9.81 m/s² at Earth’s surface',G:'Newton’s constant 6.674×10⁻¹¹ — sets how strong gravity is',M:'the large mass in the problem (kg)',r:'distance or radius (m)',k:'the system’s constant — spring stiffness (N/m) or Coulomb’s 9×10⁹',q:'electric charge (coulombs, C)',Q:'charge, or heat energy (J)',E:'energy (J) — or electric field (V/m)',B:'magnetic field strength (tesla, T)',I:'current — charge flowing per second (A)',V:'voltage — energy given to each unit of charge (V)',R:'resistance — how hard it is to push current through (Ω)',P:'power — energy per second (W)',T:'period of one cycle (s) — or temperature (K)','λ':'wavelength — the length of one full wave (m)',f:'frequency — cycles per second (Hz)','ω':'angular frequency = 2πf (rad/s)',h:'Planck’s constant 6.63×10⁻³⁴ J·s — the quantum of action',c:'the speed of light, 3×10⁸ m/s — the cosmic speed limit',p:'momentum = mv (kg·m/s)',x:'position or displacement (m)',A:'amplitude — maximum displacement (or area)',W:'work — energy transferred by a force (J)',n:'refractive index — how much a medium slows light','μ':'coefficient of friction (or permeability)','θ':'angle','ε':'permittivity — how a medium responds to electric fields','Φ':'flux — how much field threads through a surface',L:'length (m) — or angular momentum',d:'distance or separation (m)',KE:'kinetic energy = ½mv² — energy of motion',PE:'potential energy — stored energy of position'};
+  function symsOf(fstr){ var out=[],seen={}; (String(fstr).match(/KE|PE|[A-Za-zλωμθεΦ]/g)||[]).forEach(function(sy){ if(SYM[sy]&&!seen[sy]){ seen[sy]=1; out.push(sy); } }); return out.slice(0,7); }
+  /* ---- the six modality builders ---- */
+  var curSim=null;
+  function bA(panel,t,lens){
+    var stage=ce('div','lx-stage'); panel.appendChild(stage);
+    var M=MICRO[t.domain]||MICRO.mechanics;
+    var q=ce('div','lx-q'); q.textContent=M.notice; panel.appendChild(q);
+    var ready=gate(panel,lens.c,'I played — tell me what I saw ▸',2,function(wrap){
+      var tx=ce('div','lx-txt'); tx.innerHTML=fmt(t.summary); wrap.appendChild(tx);
+      deepenBtn(wrap,t,lens,'✦ Now tell it as a story');
+    });
+    mountMicro(stage,t.domain,ready);
+  }
+  function bB(panel,t,lens){
+    var P=PREDICT[t.domain]||PREDICT.mechanics;
+    var q=ce('div','lx-q'); q.textContent='Commit before you touch anything: '+P.q; panel.appendChild(q);
+    var picked=-1,opts=[];
+    P.o.forEach(function(o,i){ var b=ce('button','lx-opt'); b.style.setProperty('--lc',lens.c);
+      b.innerHTML='<span style="font-family:var(--mono,monospace);font-size:11px;opacity:.6">'+String.fromCharCode(65+i)+'</span><span>'+esc(o)+'</span>';
+      panel.appendChild(b); opts.push(b);
+      b.addEventListener('click',function(){ if(picked>=0) return; picked=i; b.classList.add('pick'); stageIn(); }); });
+    var host=ce('div'); panel.appendChild(host);
+    function stageIn(){
+      var lbl=ce('div','lx-q'); lbl.textContent='Locked in. Now test it with your own hands:'; host.appendChild(lbl);
+      var stage=ce('div','lx-stage'); host.appendChild(stage);
+      var ready=gate(host,lens.c,'Reveal the physics ▸',1,function(wrap){
+        opts.forEach(function(b,i){ if(i===P.a) b.classList.add('good'); else if(i===picked) b.classList.add('bad'); });
+        var v=ce('div','lx-verdict '+(picked===P.a?'good':'bad'));
+        v.innerHTML=(picked===P.a?'<b>Your instinct was right.</b> ':'<b>Most people guess that — the universe disagrees.</b> ')+esc(P.why);
+        wrap.appendChild(v);
+        if(picked!==P.a){ try{ localStorage.setItem('peq_miscon_'+t.domain,P.q); }catch(e){} }
+        else { try{ localStorage.removeItem('peq_miscon_'+t.domain); }catch(e){} }
+        deepenBtn(wrap,t,lens,'✦ Build the full intuition');
+      });
+      mountMicro(stage,t.domain,ready);
+    }
+  }
+  function bC(panel,t,lens){
+    var sk=(typeof SIM_FOR!=='undefined')?SIM_FOR[t.id]:null;
+    if(sk&&typeof SIMS!=='undefined'&&SIMS[sk]){
+      var stage=ce('div','lx-stage'); stage.style.height='260px'; panel.appendChild(stage);
+      try{ curSim=SIMS[sk](stage); }catch(e){}
+      var cap=ce('div','lx-q'); cap.textContent='This is '+t.name+' actually running — not a picture of it.'; panel.appendChild(cap);
+    } else {
+      var stage2=ce('div','lx-stage'); panel.appendChild(stage2); mountMicro(stage2,t.domain,function(){});
+    }
+    (t.points||[]).slice(0,3).forEach(function(p){ var c=ce('div','lx-card'); c.innerHTML='<span class="k2" style="color:'+lens.c+'">watch for</span><div class="b2">'+esc(p)+'</div>'; panel.appendChild(c); });
+    deepenBtn(panel,t,lens,'✦ What exactly am I seeing?');
+  }
+  function bD(panel,t,lens){
+    var eqs=(t.eqs&&t.eqs.length)?t.eqs:null;
+    if(!eqs){ var tx=ce('div','lx-txt'); tx.innerHTML=fmt(t.summary); panel.appendChild(tx); deepenBtn(panel,t,lens,'✦ Build the math'); return; }
+    var i=0,host=ce('div'); panel.appendChild(host);
+    var intro=ce('div','lx-q'); intro.textContent='One step at a time — click any symbol to ask what it means.'; host.appendChild(intro);
+    var steps=ce('div'); host.appendChild(steps);
+    var btn=ce('button','lx-more'); btn.style.setProperty('--lc',lens.c); btn.textContent='▸ Next step ('+eqs.length+' total)';
+    function stepIn(){
+      var e=eqs[i],d=ce('div','lx-step');
+      d.innerHTML='<span style="font-family:var(--mono,monospace);font-size:9.5px;color:'+lens.c+';letter-spacing:.12em">STEP '+(i+1)+' OF '+eqs.length+'</span><span class="f">'+esc(e[0])+'</span><span class="d">'+esc(e[1])+'</span>';
+      var symwrap=ce('div');
+      symsOf(e[0]).forEach(function(sy){ var b=ce('button','lx-sym'); b.textContent=sy; symwrap.appendChild(b);
+        b.addEventListener('click',function(){ var old=d.querySelector('.lx-symd');
+          if(old){ var same=old.dataset.s===sy; old.remove(); if(same) return; }
+          var ex=ce('div','lx-symd'); ex.dataset.s=sy; ex.textContent=sy+' — '+SYM[sy]; d.appendChild(ex); }); });
+      d.appendChild(symwrap); steps.appendChild(d); i++;
+      btn.textContent='▸ Next step ('+(eqs.length-i)+' left)';
+      if(i>=eqs.length){ btn.remove(); var fin=ce('div'); host.appendChild(fin);
+        if(typeof IEQ!=='undefined'&&IEQ[t.id]){ var note=ce('div','lx-q'); note.textContent='↓ Further down this page the equation itself is interactive — drag its variables.'; fin.appendChild(note); }
+        deepenBtn(fin,t,lens,'✦ Show the full derivation'); }
+    }
+    btn.addEventListener('click',stepIn);
+    stepIn(); host.appendChild(btn);
+  }
+  function bE(panel,t,lens){
+    var FR=FRONTIER[t.domain]||FRONTIER.mechanics;
+    [['landmark experiment · '+FR.exp[0],FR.exp[1],'#fbbf24'],['research frontier, today',FR.res,'#22d3ee'],['still unsolved',FR.open,'#f87171']].forEach(function(x){
+      var c=ce('div','lx-card'); c.innerHTML='<span class="k2" style="color:'+x[2]+'">'+esc(x[0])+'</span><div class="b2">'+esc(x[1])+'</div>'; panel.appendChild(c); });
+    deepenBtn(panel,t,lens,'✦ Where does '+t.name+' meet the frontier?');
+  }
+  function bF(panel,t,lens){
+    var C=CASE[t.domain]||CASE.mechanics;
+    var head=ce('div','lx-q'); head.textContent='Case study: '+C.t+'. Drag the parameter — every number below is computed live from the real physics.'; panel.appendChild(head);
+    var sl=ce('div','lx-slider'); sl.innerHTML='<span>'+esc(C.p)+'</span><input type="range" class="sl" min="'+C.min+'" max="'+C.max+'" step="'+C.st+'" value="'+C.def+'"><b style="color:'+lens.c+';min-width:78px;text-align:right">'+C.def+' '+esc(C.u)+'</b>';
+    panel.appendChild(sl);
+    var stats=ce('div','lx-stats'); panel.appendChild(stats);
+    function upd(v){ sl.querySelector('b').textContent=v+' '+C.u;
+      stats.innerHTML=C.f(+v).map(function(x){ return '<div class="lx-stat"><div class="l3">'+esc(x[0])+'</div><div class="v3">'+esc(String(x[1]))+' <span style="font-size:10px;color:rgba(232,237,255,.5)">'+esc(x[2])+'</span></div></div>'; }).join(''); }
+    sl.querySelector('input').addEventListener('input',function(){ upd(this.value); });
+    upd(C.def);
+    var apps=ce('div','lx-apps'); apps.innerHTML='<span style="font-family:var(--mono,monospace);font-size:10px;color:rgba(232,237,255,.45);align-self:center">same physics in:</span>'+C.apps.map(function(a){ return '<span class="chip">'+esc(a)+'</span>'; }).join('');
+    panel.appendChild(apps);
+    deepenBtn(panel,t,lens,'✦ More places this lives');
+  }
+  /* ---- shell ---- */
+  function show(host,panel,t,k){
+    if(curSim&&curSim.stop){ try{ curSim.stop(); }catch(e){} } curSim=null;
+    stopMicro();
+    var lens=L.filter(function(x){return x.k===k;})[0]; if(!lens) return;
+    $$('.lens-tab',host).forEach(function(b){ b.classList.toggle('on',b.dataset.k===k); });
+    panel.style.setProperty('--lc',lens.c); panel.dataset.k=k; panel.innerHTML='';
+    try{ ({A:bA,B:bB,C:bC,D:bD,E:bE,F:bF})[k](panel,t,lens); }catch(e){ panel.innerHTML=fmt(t.summary); }
+    try{ window.dispatchEvent(new CustomEvent('lens:mode',{detail:{k:k,n:lens.n}})); }catch(e){}
   }
   function mount(host,t){ if(!host||!t) return; css();
-    host.innerHTML='<div class="lens"><div class="lens-h"><span class="lens-eyebrow">✦ Six lenses</span>'+
-      '<span class="lens-sub">See <b>'+esc(t.name)+'</b> through every level — a child’s story, the intuition, the picture, the maths, the frontier, and where it lives in reality.</span></div>'+
+    if(curSim&&curSim.stop){ try{ curSim.stop(); }catch(e){} } curSim=null; stopMicro();
+    host.innerHTML='<div class="lens"><div class="lens-h"><span class="lens-eyebrow">✦ Six ways in</span>'+
+      '<span class="lens-sub">Don’t read about <b>'+esc(t.name)+'</b> — meet it. Play first, predict and test, watch it run live, build the math one step at a time, visit the frontier, then engineer with it.</span></div>'+
       '<div class="lens-tabs">'+L.map(function(x){ return '<button class="lens-tab" data-k="'+x.k+'" style="--lc:'+x.c+'"><b>'+x.ic+'</b><span class="lk">'+x.k+' · '+x.n+'</span><span class="ld">'+x.d+'</span></button>'; }).join('')+'</div>'+
       '<div class="lens-panel" id="lens-panel"></div></div>';
     var panel=host.querySelector('#lens-panel');
-    function show(k){ var lens=L.filter(function(x){return x.k===k;})[0]; if(!lens) return;
-      $$('.lens-tab',host).forEach(function(b){ b.classList.toggle('on',b.dataset.k===k); });
-      panel.style.setProperty('--lc',lens.c); panel.dataset.k=k; panel.innerHTML=fmt(offline(t,k)); enrich(t,lens,panel); }
-    $$('.lens-tab',host).forEach(function(b){ b.addEventListener('click',function(){ show(b.dataset.k); }); });
-    show((typeof window!=='undefined'&&window.__lensDefault)||'B');
+    $$('.lens-tab',host).forEach(function(b){ b.addEventListener('click',function(){ show(host,panel,t,b.dataset.k); }); });
+    show(host,panel,t,(typeof window!=='undefined'&&window.__lensDefault)||'A');
   }
-  return { mount:mount };
+  return { mount:mount, stop:function(){ stopMicro(); if(curSim&&curSim.stop){ try{ curSim.stop(); }catch(e){} } curSim=null; } };
 })();
 
 /* ===== AI PRACTICE ===== */
@@ -4837,6 +5198,7 @@ function stopThumbs(){ labThumbs.forEach(function(h){ if(h){ if(h._ft) clearTime
 function go(v,id){ stopSim();
   if(homeSim&&homeSim.stop){ homeSim.stop(); homeSim=null; }
   if(curView==='lab'&&v!=='lab'){ stopThumbs(); Research.stop(); Theory.stop(); Investigate.stop(); DesignLab.stop(); CompareDeck.stop(); }
+  if(curView==='lesson'&&v!=='lesson'){ try{ Lens.stop(); }catch(e){} }
   if(curView==='universe'&&v!=='universe') Uni.stop();
   if(curView==='sandbox'&&v!=='sandbox') Sandbox.stop();
   if(curView==='deep'&&v!=='deep') Deep.stop();
@@ -5091,7 +5453,23 @@ function viewLesson(id){
   var prev=idx>0?ts[idx-1]:null, next=idx<ts.length-1?ts[idx+1]:null;
   setCrumb([{t:'Learn',go:'learn'},{t:dm.n,go:'domain',id:t.domain},{t:t.name}]);
   var simType=SIM_FOR[id];
-  var html='<div class="wrap lesson-wrap lesson enter">'+
+  /* learning companion — a live co-pilot for this concept */
+  var _done=Me.domDone(t.domain),_tot=topicsOf(t.domain).length,_pc=Math.round(_done/_tot*100);
+  var _est=3+((t.eqs||[]).length)+Math.ceil((t.points||[]).length/2);
+  var _mis=null; try{ _mis=localStorage.getItem('peq_miscon_'+t.domain); }catch(e){}
+  var comp='<aside class="l-comp"><div class="comp-card">'+
+    '<div class="cc-h" style="color:'+dm.c+'">Learning companion</div>'+
+    '<div class="cc-row"><span>Now exploring</span><b>'+esc(t.name)+'</b></div>'+
+    '<div class="cc-row"><span>Mode</span><b id="comp-mode">A · Experience</b></div>'+
+    '<div class="cc-row"><span>Est. time</span><b>'+_est+' min</b></div>'+
+    '<div class="cc-row" style="margin-top:12px"><span>'+esc(dm.n)+' mastery</span><b>'+_done+' / '+_tot+'</b></div>'+
+    '<div class="cc-track"><i style="width:'+_pc+'%;background:'+dm.c+'"></i></div>'+
+    (next?'<div class="cc-row"><span>Up next</span><b>'+esc(next.name)+'</b></div>':'<div class="cc-row"><span>Up next</span><b>field complete</b></div>')+
+    (_mis?'<div class="cc-mis">△ Watch this one — your last prediction here missed: “'+esc(_mis.slice(0,90))+(_mis.length>90?'…':'')+'”</div>':'')+
+    '<div class="cc-h" style="margin-top:15px;color:var(--ink-faint)">The flow</div>'+
+    '<div class="cc-flow">'+['Experience','Predict','Watch','Math','Frontier','Apply'].map(function(s,i){ return '<span class="cc-step" data-ccs="'+'ABCDEF'[i]+'">'+s+'</span>'; }).join('<span class="cc-arr">→</span>')+'</div>'+
+  '</div></aside>';
+  var html='<div class="wrap lesson-wrap lesson enter"><div class="l-main">'+
     '<div class="l-tag" style="color:'+dm.c+'"><span style="width:9px;height:9px;border-radius:50%;background:'+dm.c+';display:inline-block"></span> '+esc(dm.n)+'</div>'+
     '<div class="l-diff" style="color:'+LVL[t.lvl].c+';border-color:'+LVL[t.lvl].c+'55"><span style="width:7px;height:7px;border-radius:50%;background:'+LVL[t.lvl].c+';display:inline-block"></span> '+LVL[t.lvl].n+'</div>'+
     '<h1>'+esc(t.name)+'</h1>'+
@@ -5103,16 +5481,33 @@ function viewLesson(id){
     ((t.eqs&&t.eqs.length)?('<div class="l-sec"><h3>Key equations</h3>'+t.eqs.map(function(e){ return '<div class="eq"><span class="f">'+esc(e[0])+'</span><span class="d">'+esc(e[1])+'</span></div>'; }).join('')+'</div>'):'')+
     ((t.points&&t.points.length)?('<div class="l-sec"><h3>Core concepts</h3>'+t.points.map(function(p){ return '<div class="pt"><span class="b">●</span><span>'+esc(p)+'</span></div>'; }).join('')+'</div>'):'')+
     ((t.exam&&t.exam.length)?('<div class="callout"><div class="h">★ Exam focus</div>'+t.exam.map(function(p){ return '<div class="pt"><span class="b">●</span><span>'+esc(p)+'</span></div>'; }).join('')+'</div>'):'')+
+    '<div class="l-sec"><h3>Keep the flow — never a dead end</h3><div class="flow-rail">'+
+      '<button class="btn btn-ghost btn-sm" data-flowx="sandbox">⊙ Build it in the Sandbox</button>'+
+      (simType?'<button class="btn btn-ghost btn-sm" data-flowx="lab">▸ Run the '+esc(SIM_META[simType].n)+' investigation</button>':'')+
+      '<button class="btn btn-ghost btn-sm" data-flowx="inv">∫ Investigate a question</button>'+
+      '<button class="btn btn-ghost btn-sm" data-flowx="pr">Ψ Practice this field</button>'+
+      (next?'<button class="btn btn-pri btn-sm" data-flowx="next">Next: '+esc(next.name)+' →</button>':'')+
+    '</div></div>'+
     '<div class="l-foot"><button class="btn btn-ghost btn-sm" id="ask-this">✦ Ask the tutor</button>'+(Deep.get(t.id)?'<button class="btn btn-ghost btn-sm" data-link="deep:'+t.id+'" style="border-color:'+(DMAP[t.domain]||{c:'#7dd3fc'}).c+'55">§ Full course · 12 sections</button>':'')+'<div class="sp"></div><div class="l-nav">'+
       (prev?'<button class="btn btn-ghost btn-sm" data-link="lesson:'+prev.id+'">← Prev</button>':'')+
       '<button class="btn btn-pri btn-sm" id="complete-btn">'+(Me.isDone(id)?(next?'Next lesson →':'Done ✓'):'Mark complete →')+'</button>'+
-    '</div></div></div>';
+    '</div></div></div>'+comp+'</div>';
   main.innerHTML=html;
   try{ Lens.mount($('#lens-host'),t); }catch(e){}
   if(simType){ var inst=SIMS[simType]($('#lesson-sim')); activeSim=inst; if(inst.controls) inst.controls($('#lesson-ctl')); }
   if(IEQ[t.id]){ mountEqViz($('#eqviz-host'), IEQ[t.id]); }
   $('#ask-this').addEventListener('click',function(){ Tutor.open(t.name); Tutor.ask('Explain '+t.name+' simply, with the key intuition.', t.name); });
   $('#complete-btn').addEventListener('click',function(){ var wasNew=Me.complete(id); if(wasNew) toast(t.name+' complete!','+15 XP'); if(next) go('lesson',next.id); else go('domain',t.domain); });
+  $$('[data-flowx]').forEach(function(b){ b.addEventListener('click',function(){ var f=b.dataset.flowx;
+    if(f==='sandbox') go('sandbox');
+    else if(f==='lab'&&simType) openLabFull(simType);
+    else if(f==='inv'){ labMode='investigate'; go('lab'); }
+    else if(f==='pr'){ prMode='practice'; go('practice'); }
+    else if(f==='next'&&next) go('lesson',next.id);
+  }); });
+  if(!window.__lensModeHook){ window.__lensModeHook=true;
+    window.addEventListener('lens:mode',function(ev){ var cm=$('#comp-mode'); if(cm) cm.textContent=ev.detail.k+' · '+ev.detail.n;
+      $$('.cc-step').forEach(function(s){ s.classList.toggle('on',s.dataset.ccs===ev.detail.k); }); }); }
   var d2={'black-holes':.99,'general-relativity':.95,'gravitational-waves':.9,'special-relativity':.86,'twin-paradox':.86,cosmology:.82,'mass-energy':.8,entanglement:.76,tunneling:.72,wavefunction:.72,'particle-physics':.78}[t.id];
   if(d2!=null) applyTheme(t.domain,false,d2);
 }

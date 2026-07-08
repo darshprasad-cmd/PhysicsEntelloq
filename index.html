@@ -2730,14 +2730,20 @@ var Lens=(function(){
     deepenBtn(panel,t,lens,'✦ More places this lives');
   }
   /* ---- shell ---- */
-  function show(host,panel,t,k){
+  function show(host,panel,t,k,init){
     if(curSim&&curSim.stop){ try{ curSim.stop(); }catch(e){} } curSim=null;
     stopMicro();
     var lens=L.filter(function(x){return x.k===k;})[0]; if(!lens) return;
     $$('.lens-tab',host).forEach(function(b){ b.classList.toggle('on',b.dataset.k===k); });
     panel.style.setProperty('--lc',lens.c); panel.dataset.k=k; panel.innerHTML='';
     try{ ({A:bA,B:bB,C:bC,D:bD,E:bE,F:bF})[k](panel,t,lens); }catch(e){ panel.innerHTML=fmt(t.summary); }
-    try{ window.dispatchEvent(new CustomEvent('lens:mode',{detail:{k:k,n:lens.n}})); }catch(e){}
+    /* subtle Deep-Dive invitation — an optional discovery, never an interruption */
+    try{ if(typeof Deep!=='undefined'&&Deep.get&&Deep.get(t.id)){
+      var dd=ce('button','lx-more'); dd.style.setProperty('--lc','#fbbf24'); dd.style.display='block';
+      dd.textContent='§ Deep Dive — the full 12-section course on '+t.name;
+      dd.addEventListener('click',function(){ go('deep',t.id); });
+      panel.appendChild(dd); } }catch(e){}
+    try{ window.dispatchEvent(new CustomEvent('lens:mode',{detail:{k:k,n:lens.n,init:!!init}})); }catch(e){}
   }
   function mount(host,t){ if(!host||!t) return; css();
     if(curSim&&curSim.stop){ try{ curSim.stop(); }catch(e){} } curSim=null; stopMicro();
@@ -2746,8 +2752,8 @@ var Lens=(function(){
       '<div class="lens-tabs">'+L.map(function(x){ return '<button class="lens-tab" data-k="'+x.k+'" style="--lc:'+x.c+'"><b>'+x.ic+'</b><span class="lk">'+x.k+' · '+x.n+'</span><span class="ld">'+x.d+'</span></button>'; }).join('')+'</div>'+
       '<div class="lens-panel" id="lens-panel"></div></div>';
     var panel=host.querySelector('#lens-panel');
-    $$('.lens-tab',host).forEach(function(b){ b.addEventListener('click',function(){ show(host,panel,t,b.dataset.k); }); });
-    show(host,panel,t,(typeof window!=='undefined'&&window.__lensDefault)||'A');
+    $$('.lens-tab',host).forEach(function(b){ b.addEventListener('click',function(){ show(host,panel,t,b.dataset.k,false); }); });
+    show(host,panel,t,(typeof window!=='undefined'&&window.__lensDefault)||'A',true);
   }
   return { mount:mount, stop:function(){ stopMicro(); if(curSim&&curSim.stop){ try{ curSim.stop(); }catch(e){} } curSim=null; } };
 })();
@@ -5543,6 +5549,9 @@ function viewDomain(k){
   main.innerHTML=html;
   $$('.lvl-chip').forEach(function(c){ c.addEventListener('click',function(){ domFilter=c.dataset.f; $$('.lvl-chip').forEach(function(x){ x.classList.toggle('on',x.dataset.f===domFilter); }); $('#tlist').innerHTML=topicRowsHtml(k,nextId); }); });
 }
+/* context-aware sandbox: lesson → the RIGHT preset, never a blank canvas */
+var SBX_TOPIC={gravitation:'solar','circular-motion':'solar','black-holes':'binary','general-relativity':'binary'};
+var SBX_DOM={mechanics:'atwood',waves:'wavestring',thermo:'gas',electrostatics:'dipole',current:'dipole',magnetism:'cyclotron',relativity:'binary',optics:null,modern:null,quantum:null};
 function viewLesson(id){
   var t=topicById(id); if(!t){ go('learn'); return; } Me.d.lastTopic=id; Me.save(); renderSide();
   var dm=DMAP[t.domain]; var ts=topicsOf(t.domain); var idx=ts.indexOf(t);
@@ -5553,6 +5562,14 @@ function viewLesson(id){
   var _done=Me.domDone(t.domain),_tot=topicsOf(t.domain).length,_pc=Math.round(_done/_tot*100);
   var _est=3+((t.eqs||[]).length)+Math.ceil((t.points||[]).length/2);
   var _mis=null; try{ _mis=localStorage.getItem('peq_miscon_'+t.domain); }catch(e){}
+  /* personalization: count visits; learn the user's favourite modality and make it the default */
+  var _vs={}; try{ _vs=JSON.parse(localStorage.getItem('peq_visits')||'{}'); }catch(e){}
+  _vs[id]=(_vs[id]||0)+1; try{ localStorage.setItem('peq_visits',JSON.stringify(_vs)); }catch(e){}
+  var _style=null;
+  try{ var _lu=JSON.parse(localStorage.getItem('peq_lensuse')||'{}'),_tt=0,_bk=null,_bv=0;
+    for(var _k in _lu){ _tt+=_lu[_k]; if(_lu[_k]>_bv){ _bv=_lu[_k]; _bk=_k; } }
+    if(_tt>=6&&_bk){ window.__lensDefault=_bk; _style=_bk; } }catch(e){}
+  var _LNAME={A:'Experience',B:'Predict',C:'Visual',D:'Math',E:'Frontier',F:'Real World'};
   var comp='<aside class="l-comp"><div class="comp-card">'+
     '<div class="cc-h" style="color:'+dm.c+'">Learning companion</div>'+
     '<div class="cc-row"><span>Now exploring</span><b>'+esc(t.name)+'</b></div>'+
@@ -5561,7 +5578,9 @@ function viewLesson(id){
     '<div class="cc-row" style="margin-top:12px"><span>'+esc(dm.n)+' mastery</span><b>'+_done+' / '+_tot+'</b></div>'+
     '<div class="cc-track"><i style="width:'+_pc+'%;background:'+dm.c+'"></i></div>'+
     (next?'<div class="cc-row"><span>Up next</span><b>'+esc(next.name)+'</b></div>':'<div class="cc-row"><span>Up next</span><b>field complete</b></div>')+
+    (_style?'<div class="cc-row"><span>Your style</span><b>'+_style+' · '+_LNAME[_style]+'</b></div>':'')+
     (_mis?'<div class="cc-mis">△ Watch this one — your last prediction here missed: “'+esc(_mis.slice(0,90))+(_mis.length>90?'…':'')+'”</div>':'')+
+    (_vs[id]>=3&&!Me.isDone(id)?'<div class="cc-mis">↻ Visit #'+_vs[id]+' — this one is resisting. Try a different way in: the Predict lens, or ✦ ask the tutor.</div>':'')+
     '<div class="cc-h" style="margin-top:15px;color:var(--ink-faint)">The flow</div>'+
     '<div class="cc-flow">'+['Experience','Predict','Watch','Math','Frontier','Apply'].map(function(s,i){ return '<span class="cc-step" data-ccs="'+'ABCDEF'[i]+'">'+s+'</span>'; }).join('<span class="cc-arr">→</span>')+'</div>'+
   '</div></aside>';
@@ -5595,7 +5614,8 @@ function viewLesson(id){
   $('#ask-this').addEventListener('click',function(){ Tutor.open(t.name); Tutor.ask('Explain '+t.name+' simply, with the key intuition.', t.name); });
   $('#complete-btn').addEventListener('click',function(){ var wasNew=Me.complete(id); if(wasNew) toast(t.name+' complete!','+15 XP'); if(next) go('lesson',next.id); else go('domain',t.domain); });
   $$('[data-flowx]').forEach(function(b){ b.addEventListener('click',function(){ var f=b.dataset.flowx;
-    if(f==='sandbox') go('sandbox');
+    if(f==='sandbox'){ var _pz=SBX_TOPIC[t.id]||SBX_DOM[t.domain]||null; go('sandbox');
+      if(_pz){ var _pc2=$('.sbx-pchip[data-preset="'+_pz+'"]'); if(_pc2){ _pc2.click(); toast('Sandbox tuned for '+t.name,'preset: '+_pc2.textContent.trim()); } } }
     else if(f==='lab'&&simType) openLabFull(simType);
     else if(f==='inv'){ labMode='investigate'; go('lab'); }
     else if(f==='pr'){ prMode='practice'; go('practice'); }
@@ -5603,7 +5623,9 @@ function viewLesson(id){
   }); });
   if(!window.__lensModeHook){ window.__lensModeHook=true;
     window.addEventListener('lens:mode',function(ev){ var cm=$('#comp-mode'); if(cm) cm.textContent=ev.detail.k+' · '+ev.detail.n;
-      $$('.cc-step').forEach(function(s){ s.classList.toggle('on',s.dataset.ccs===ev.detail.k); }); }); }
+      $$('.cc-step').forEach(function(s){ s.classList.toggle('on',s.dataset.ccs===ev.detail.k); });
+      /* learn the learner: only deliberate tab choices count, never the initial mount */
+      if(!ev.detail.init){ try{ var lu=JSON.parse(localStorage.getItem('peq_lensuse')||'{}'); lu[ev.detail.k]=(lu[ev.detail.k]||0)+1; localStorage.setItem('peq_lensuse',JSON.stringify(lu)); }catch(e){} } }); }
   var d2={'black-holes':.99,'general-relativity':.95,'gravitational-waves':.9,'special-relativity':.86,'twin-paradox':.86,cosmology:.82,'mass-energy':.8,entanglement:.76,tunneling:.72,wavefunction:.72,'particle-physics':.78}[t.id];
   if(d2!=null) applyTheme(t.domain,false,d2);
 }

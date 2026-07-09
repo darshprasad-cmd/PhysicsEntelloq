@@ -2589,8 +2589,53 @@ var Lens=(function(){
   /* ---- micro-sim runtime: one canvas, one rAF, dies with its DOM ---- */
   var micro={raf:0,cv:null};
   function stopMicro(){ if(micro.raf) cancelAnimationFrame(micro.raf); micro={raf:0,cv:null}; }
+  /* bespoke per-TOPIC openers where the domain-generic sim mismatches the concept */
+  var MICRO_TOPIC={
+    projectile:{hint:'drag out from the cannon and release to launch',notice:'Fire several shots — which launch angle throws it FARTHEST?',
+      init:function(){ return {balls:[],aim:null,best:0}; },
+      down:function(s,x,y){ s.aim={x:x,y:y}; },
+      move:function(s,x,y){ if(s.aim){ s.aim.x=x; s.aim.y=y; } },
+      up:function(s){ if(!s.aim)return; var cx=24,cy=(s._H||200)-16,vx=(s.aim.x-cx)*0.9,vy=(s.aim.y-cy)*0.9; s.balls.push({x:cx,y:cy,vx:vx,vy:vy,tr:[[cx,cy]],land:0,x0:cx}); if(s.balls.length>6)s.balls.shift(); s.aim=null; },
+      step:function(s,W,H,dt){ s.balls.forEach(function(b){ if(b.land)return; b.vy+=140*dt; b.x+=b.vx*dt; b.y+=b.vy*dt; b.tr.push([b.x,b.y]); if(b.tr.length>150)b.tr.shift(); if(b.y>=H-16){ b.y=H-16; b.land=Math.abs(b.x-b.x0); if(b.land>s.best)s.best=b.land; } if(b.x>W+40||b.x<-40)b.land=Math.abs(b.x-b.x0); }); },
+      draw:function(g,s,W,H){ s._H=H; var cx=24,cy=H-16;
+        g.strokeStyle='rgba(255,255,255,.12)'; g.beginPath(); g.moveTo(0,H-16); g.lineTo(W,H-16); g.stroke();
+        g.fillStyle='#34d399'; g.fillRect(cx-8,cy-7,17,14);
+        s.balls.forEach(function(b){ g.strokeStyle='rgba(52,211,153,.28)'; g.lineWidth=1.4; g.beginPath(); b.tr.forEach(function(p,i){ i?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1]); }); g.stroke(); g.fillStyle=b.land?'#7dd3fc':'#e8eefc'; g.beginPath(); g.arc(b.x,b.y,5,0,7); g.fill(); });
+        if(s.aim){ var ang=Math.atan2(cy-s.aim.y,s.aim.x-cx)*180/Math.PI; g.strokeStyle='rgba(251,191,36,.6)'; g.setLineDash([4,4]); g.beginPath(); g.moveTo(cx,cy); g.lineTo(s.aim.x,s.aim.y); g.stroke(); g.setLineDash([]); g.fillStyle='#fbbf24'; g.font='10px JetBrains Mono'; g.fillText(ang.toFixed(0)+'°',s.aim.x+6,s.aim.y); }
+        g.fillStyle='rgba(159,177,208,.85)'; g.font='11px JetBrains Mono'; g.fillText('best range: '+s.best.toFixed(0)+' px'+(s.best>0?'   (try 45°)':''),12,16); }},
+    doppler:{hint:'drag left/right to set the ambulance’s speed',notice:'Watch the wavefronts bunch up ahead. Why does the pitch drop as it passes you?',
+      init:function(W,H){ return {sx:W*0.3,dir:1,v:120,rings:[],emit:0}; },
+      down:function(s,x,y,W){ s.v=Math.max(0,Math.min(280,(x-30)/(W-60)*280)); },
+      move:function(s,x,y,W){ if(y!=null) s.v=Math.max(0,Math.min(280,(x-30)/(W-60)*280)); },
+      step:function(s,W,H,dt){ s.sx+=s.dir*s.v*dt; if(s.sx>W-24){s.dir=-1;} if(s.sx<24){s.dir=1;}
+        s.emit+=dt; if(s.emit>0.34){ s.emit=0; s.rings.push({x:s.sx,y:H*0.5,r:2}); if(s.rings.length>18)s.rings.shift(); }
+        s.rings.forEach(function(r){ r.r+=150*dt; }); s.rings=s.rings.filter(function(r){ return r.r<W; }); },
+      draw:function(g,s,W,H){ var cy=H*0.5;
+        s.rings.forEach(function(r){ g.strokeStyle='rgba(34,211,238,'+Math.max(0,0.6-r.r/W).toFixed(2)+')'; g.lineWidth=1.6; g.beginPath(); g.arc(r.x,cy,r.r,0,7); g.stroke(); });
+        g.fillStyle='#f472b6'; g.fillRect(s.sx-11,cy-6,22,12); g.fillStyle='#fff'; g.beginPath(); g.arc(s.sx-6,cy+7,3,0,7); g.arc(s.sx+6,cy+7,3,0,7); g.fill();
+        g.fillStyle='rgba(232,237,255,.5)'; g.beginPath(); g.arc(W*0.5,H-14,6,0,7); g.fill(); g.font='9px JetBrains Mono'; g.fillText('you',W*0.5-8,H-2);
+        g.fillStyle='rgba(159,177,208,.85)'; g.font='11px JetBrains Mono'; g.fillText('source speed: '+s.v.toFixed(0)+'   — ahead: higher pitch · behind: lower',12,16); }},
+    photoelectric:{hint:'drag to tune the light’s colour (frequency)',notice:'Slide toward red. Does dim-red light EVER knock an electron out — even if blindingly bright?',
+      init:function(){ return {f:600,e:[]}; },
+      down:function(s,x,y,W){ s.f=Math.max(300,Math.min(750,300+(x-20)/(W-40)*450)); },
+      move:function(s,x,y,W){ if(y!=null) s.f=Math.max(300,Math.min(750,300+(x-20)/(W-40)*450)); },
+      step:function(s,W,H,dt){ var E=1240/s.f; if(E>2.3&&Math.random()<0.28){ s.e.push({x:W*0.5+18,y:H*0.5+(Math.random()-.5)*30,vx:60+Math.random()*80,vy:(Math.random()-.5)*40,life:1}); }
+        s.e.forEach(function(el){ el.x+=el.vx*dt; el.y+=el.vy*dt; el.life-=dt*0.6; }); s.e=s.e.filter(function(el){ return el.life>0&&el.x<W; }); },
+      draw:function(g,s,W,H){ var cy=H*0.5,l=s.f,E=1240/l,
+        col=l<380?'#c084fc':l<450?'#818cf8':l<500?'#22d3ee':l<565?'#34d399':l<590?'#fbbf24':l<625?'#fb923c':'#f87171';
+        g.strokeStyle=col; g.lineWidth=2.2; g.beginPath(); for(var x=0;x<W*0.48;x+=2){ var y=cy+Math.sin(x/(l/55))*11; x?g.lineTo(x,y):g.moveTo(x,y); } g.stroke();
+        g.fillStyle='rgba(180,190,210,.85)'; g.fillRect(W*0.5,cy-36,7,72);
+        s.e.forEach(function(el){ g.globalAlpha=Math.max(0,el.life); g.fillStyle='#7dd3fc'; g.beginPath(); g.arc(el.x,el.y,3.4,0,7); g.fill(); }); g.globalAlpha=1;
+        g.fillStyle='rgba(159,177,208,.85)'; g.font='11px JetBrains Mono';
+        g.fillText('E = '+E.toFixed(2)+' eV  vs  φ = 2.3 eV   →   '+(E>2.3?'electrons OUT':'nothing, ever'),12,16); }}
+  };
+  var PREDICT_TOPIC={
+    projectile:{q:'Ignoring air, which launch angle makes a ball travel the farthest horizontal distance?',o:['As steep as possible, near 80°','45°','As flat as possible, near 10°'],a:1,why:'Range = v²·sin(2θ)/g, which peaks when 2θ = 90°, i.e. θ = 45°. Steeper trades distance for height; flatter trades away hang-time. And 30° and 60° give the SAME range — complementary angles.'},
+    doppler:{q:'A siren races toward you, passes, and speeds away. The pitch you hear…',o:['Rises the whole time','Is high approaching, then suddenly drops as it passes','Stays constant — the siren didn’t change'],a:1,why:'Approaching, each wavefront is emitted a little closer, bunching them → higher frequency. Receding, they stretch → lower. The siren’s OWN pitch never changed; the motion rewrote the spacing of the waves in the air.'},
+    photoelectric:{q:'You shine INTENSELY bright red light on a metal. Red is below its threshold. Electrons ejected?',o:['Yes — bright enough means enough energy','No — not a single one, at any brightness','Only after a long enough wait'],a:1,why:'Energy comes in photons of E = hf. Red photons are individually too weak (E < φ), and brightness only sends MORE weak photons — never a stronger one. This shattered the wave theory of light and won Einstein the Nobel.'}
+  };
   function mountMicro(stage,dk,onact){
-    stopMicro(); var M=MICRO[dk]||MICRO.mechanics;
+    stopMicro(); var M=(dk&&dk.id&&MICRO_TOPIC[dk.id])||MICRO[(dk&&dk.domain)||dk]||MICRO.mechanics;
     stage.innerHTML='<canvas class="lx-cv"></canvas><div class="lx-hint">'+esc(M.hint)+'</div>';
     var cv=stage.querySelector('canvas'),g=cv.getContext('2d'),pr=Math.min(devicePixelRatio||1,2),acts=0;
     function fitc(){ var r=cv.getBoundingClientRect(),W=Math.max(60,r.width|0),H=Math.max(60,r.height|0);
@@ -2641,16 +2686,16 @@ var Lens=(function(){
   var curSim=null;
   function bA(panel,t,lens){
     var stage=ce('div','lx-stage'); panel.appendChild(stage);
-    var M=MICRO[t.domain]||MICRO.mechanics;
+    var M=(MICRO_TOPIC&&MICRO_TOPIC[t.id])||MICRO[t.domain]||MICRO.mechanics;
     var q=ce('div','lx-q'); q.textContent=M.notice; panel.appendChild(q);
     var ready=gate(panel,lens.c,'I played — tell me what I saw ▸',2,function(wrap){
       var tx=ce('div','lx-txt'); tx.innerHTML=fmt(t.summary); wrap.appendChild(tx);
       deepenBtn(wrap,t,lens,'✦ Now tell it as a story');
     });
-    mountMicro(stage,t.domain,ready);
+    mountMicro(stage,t,ready);
   }
   function bB(panel,t,lens){
-    var P=PREDICT[t.domain]||PREDICT.mechanics;
+    var P=(PREDICT_TOPIC&&PREDICT_TOPIC[t.id])||PREDICT[t.domain]||PREDICT.mechanics;
     var q=ce('div','lx-q'); q.textContent='Commit before you touch anything: '+P.q; panel.appendChild(q);
     var picked=-1,opts=[];
     P.o.forEach(function(o,i){ var b=ce('button','lx-opt'); b.style.setProperty('--lc',lens.c);
@@ -2670,7 +2715,7 @@ var Lens=(function(){
         else { try{ localStorage.removeItem('peq_miscon_'+t.domain); }catch(e){} }
         deepenBtn(wrap,t,lens,'✦ Build the full intuition');
       });
-      mountMicro(stage,t.domain,ready);
+      mountMicro(stage,t,ready);
     }
   }
   function bC(panel,t,lens){
@@ -2680,7 +2725,7 @@ var Lens=(function(){
       try{ curSim=SIMS[sk](stage); }catch(e){}
       var cap=ce('div','lx-q'); cap.textContent='This is '+t.name+' actually running — not a picture of it.'; panel.appendChild(cap);
     } else {
-      var stage2=ce('div','lx-stage'); panel.appendChild(stage2); mountMicro(stage2,t.domain,function(){});
+      var stage2=ce('div','lx-stage'); panel.appendChild(stage2); mountMicro(stage2,t,function(){});
     }
     (t.points||[]).slice(0,3).forEach(function(p){ var c=ce('div','lx-card'); c.innerHTML='<span class="k2" style="color:'+lens.c+'">watch for</span><div class="b2">'+esc(p)+'</div>'; panel.appendChild(c); });
     deepenBtn(panel,t,lens,'✦ What exactly am I seeing?');

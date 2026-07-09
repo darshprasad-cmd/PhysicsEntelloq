@@ -4371,6 +4371,7 @@ var Sandbox=(function(){
   /* ===== verified velocity-Verlet engine (gravity / spring / Coulomb / rod / collision) ===== */
   var B=[],springs=[],rods=[],pulleys=[],chains=[],bends=[],P={G:600,kc:6000,g:0,soft:25,walls:false,rest:1,arena:{l:-460,r:460,t:-300,b:300},Bz:0,Ex:0,Ey:0,ropeIters:14,ropeStiff:0.3};
   var cam={x:0,y:0,s:1},running=true,tool='select',sel=null,raf=0,host=null,canvas=null,ctx=null,nextId=1;
+  var cradleOn=false, cradleNodes=[], cradleLive=false;
   var Ehist=[],simT=0,speed=1,showTrails=true,showVec=false,showGrid=true,showField=false,trail={};
   function accel(){ var n=B.length,fx=new Array(n).fill(0),fy=new Array(n).fill(0),i,j;
     for(i=0;i<n;i++){ fy[i]+=B[i].m*P.g; if(P.Ex)fx[i]+=B[i].q*P.Ex; if(P.Ey)fy[i]+=B[i].q*P.Ey; }
@@ -4459,8 +4460,19 @@ var Sandbox=(function(){
     if(P.walls){ var A=P.arena; B.forEach(function(c){ if(c.fixed)return; if(c.x-c.r<A.l){c.x=A.l+c.r;c.vx=Math.abs(c.vx)*P.rest;} if(c.x+c.r>A.r){c.x=A.r-c.r;c.vx=-Math.abs(c.vx)*P.rest;} if(c.y-c.r<A.t){c.y=A.t+c.r;c.vy=Math.abs(c.vy)*P.rest;} if(c.y+c.r>A.b){c.y=A.b-c.r;c.vy=-Math.abs(c.vy)*P.rest;} }); } }
   /* magnetic Lorentz rotation F=q(v×B), B=Bz ẑ → exact energy-preserving Boris rotation (does no work). Y-DOWN screen coords. */
   function magRot(b,dt){ if(b.fixed||!b.q||!P.Bz)return; var tz=(b.q*P.Bz/b.m)*(dt*0.5),s=2*tz/(1+tz*tz),vpx=b.vx+b.vy*tz,vpy=b.vy-b.vx*tz; b.vx=b.vx+vpy*s; b.vy=b.vy-vpx*s; }
+  /* Cat's-cradle hand anchoring — when hands are live, the loop's fixed anchor nodes ride your
+     fingertips (thumb 4 + pinky 20 of each hand), so the string is literally strung over your fingers.
+     No hands → the anchors ease back to their home pins (full back-compat, camera-free). */
+  function sampleAnchors(T,u){ if(T.length===1)return T[0]; var f=u*(T.length-1),i=Math.floor(f),fr=f-i,a=T[i],b=T[Math.min(i+1,T.length-1)]; return {x:a.x+(b.x-a.x)*fr,y:a.y+(b.y-a.y)*fr}; }
+  function driveCradle(){ if(!cradleOn||!cradleNodes.length||typeof PIE==='undefined'||!PIE||!PIE.anchors)return;
+    var tg=PIE.anchors(),i,nd;
+    if(!tg.length){ if(cradleLive)cradleLive=false; for(i=0;i<cradleNodes.length;i++){ nd=B[cradleNodes[i].id]; if(nd){ nd.x+=(cradleNodes[i].hx-nd.x)*0.18; nd.y+=(cradleNodes[i].hy-nd.y)*0.18; nd.vx=nd.vy=0; } } return; }
+    if(!cradleLive){ cradleLive=true; toast('Your fingers are the cradle','Spread thumb & pinky to open the figure · pinch a strand to lift it'); }
+    var A=cradleNodes.slice().sort(function(p,q){return p.hx-q.hx;}), T=tg.slice().sort(function(p,q){return p.x-q.x;});
+    for(i=0;i<A.length;i++){ var t=sampleAnchors(T,A.length>1?i/(A.length-1):0); nd=B[A[i].id]; if(!nd)continue; nd.x=t.x; nd.y=t.y; nd.vx=0; nd.vy=0; }
+  }
   /* Boris–Verlet: ½-kick (gravity/Coulomb/spring/E) → magnetic rotation → drift → ½-kick. Identical to velocity-Verlet when Bz=0. */
-  function step(dt){ var i,b,a1=accel();
+  function step(dt){ driveCradle(); var i,b,a1=accel();
     for(i=0;i<B.length;i++){ b=B[i]; if(b.fixed)continue; b.vx+=0.5*a1[i][0]*dt; b.vy+=0.5*a1[i][1]*dt; }
     if(P.Bz) for(i=0;i<B.length;i++) magRot(B[i],dt);
     for(i=0;i<B.length;i++){ b=B[i]; if(b.fixed)continue; b.x+=b.vx*dt; b.y+=b.vy*dt; }
@@ -4518,10 +4530,10 @@ var Sandbox=(function(){
       var N=52,cx=0,cy=-30,rw=340,rh=180,ids=[],i,a; for(i=0;i<N;i++){ a=i/N*6.2832; ids.push(addBody(cx+Math.cos(a)*rw*0.5, cy+Math.sin(a)*rh*0.5, {m:2,r:4,c:'#f0abfc'})); }
       for(i=0;i<N;i++){ var bb=ids[i],cc=ids[(i+1)%N],L=Math.hypot(B[cc].x-B[bb].x,B[cc].y-B[bb].y); chains.push({a:bb,b:cc,L:L}); }
       for(i=0;i<N;i++){ var d2=ids[(i+2)%N]; bends.push({a:ids[i],b:d2,L:Math.hypot(B[d2].x-B[ids[i]].x,B[d2].y-B[ids[i]].y)}); }
-      [0,(N/4|0),(N/2|0),(3*N/4|0)].forEach(function(k){ var bd=B[ids[k]]; bd.fixed=true; bd.r=7; bd.c='#fbbf24'; }); cam.s=1; },
+      cradleNodes=[]; [0,(N/4|0),(N/2|0),(3*N/4|0)].forEach(function(k){ var bd=B[ids[k]]; bd.fixed=true; bd.r=7; bd.c='#fbbf24'; cradleNodes.push({id:ids[k],hx:bd.x,hy:bd.y}); }); cradleOn=true; cradleLive=false; cam.s=1; },
     clear:function(){ reset(); P.useG=true;P.useC=false;P.g=0; }
   };
-  function reset(){ B=[];springs=[];rods=[];pulleys=[];chains=[];bends=[];sel=null;trail={};Ehist=[];simT=0; P.G=600;P.kc=6000;P.g=0;P.soft=25;P.walls=false;P.rest=1;P.useG=true;P.useC=false;P.Bz=0;P.Ex=0;P.Ey=0; rec.frames.length=0; replay.on=false; }
+  function reset(){ B=[];springs=[];rods=[];pulleys=[];chains=[];bends=[];sel=null;trail={};Ehist=[];simT=0; P.G=600;P.kc=6000;P.g=0;P.soft=25;P.walls=false;P.rest=1;P.useG=true;P.useC=false;P.Bz=0;P.Ex=0;P.Ey=0; cradleOn=false; cradleNodes=[]; cradleLive=false; rec.frames.length=0; replay.on=false; }
   function loadPreset(id){ (PRESETS[id]||PRESETS.clear)(); }
 
   /* ===== view transform ===== */
@@ -4714,6 +4726,8 @@ var Sandbox=(function(){
     function palmWorld(p){ return {x:wx(p[9].x),y:wy(p[9].y)}; }
     /* fingertip obstacles (world coords) for rope collision — tips are landmarks 4,8,12,16,20 */
     function fingerTips(){ var out=[]; if(!on)return out; SIDES.forEach(function(side){ var p=pts[side]; if(!p)return; [4,8,12,16,20].forEach(function(ti){ out.push({x:wx(p[ti].x),y:wy(p[ti].y),r:16}); }); }); return out; }
+    /* cradle anchor targets (world coords) — thumb (4) + pinky (20) tips of each detected hand */
+    function anchors(){ var out=[]; if(!on)return out; SIDES.forEach(function(side){ var p=pts[side]; if(!p)return; [4,20].forEach(function(ti){ out.push({x:wx(p[ti].x),y:wy(p[ti].y),side:side,lm:ti}); }); }); return out; }
     /* GestureRecognizer → object builder: open palm up/down cycles the object, a fist drops it in. */
     function handleBuild(side,p){ if(!cfg.buildMode){ prevG[side]=gest[side]; return; } var g=gest[side],t=performance.now();
       if(g==='palm'){ var y=p[9].y; if(palmAnchorY[side]==null) palmAnchorY[side]=y; if(t-lastCycleT>300){ var dy=y-palmAnchorY[side]; if(dy>46){ buildSel=(buildSel+1)%SPAWN.length; palmAnchorY[side]=y; lastCycleT=t; } else if(dy<-46){ buildSel=(buildSel-1+SPAWN.length)%SPAWN.length; palmAnchorY[side]=y; lastCycleT=t; } } }
@@ -4761,6 +4775,7 @@ var Sandbox=(function(){
         [0,4,8,12,16,20].forEach(function(li){ var rr=(li===4||li===8)?3.6:2.4;
           c.fillStyle='rgba(232,237,255,.9)'; c.beginPath(); c.arc(p[li].x,p[li].y,rr,0,7); c.fill();
           c.strokeStyle=col; c.globalAlpha=.55; c.lineWidth=1; c.beginPath(); c.arc(p[li].x,p[li].y,rr+2.2,0,7); c.stroke(); c.globalAlpha=1; });
+        if(typeof cradleOn!=='undefined'&&cradleOn){ [4,20].forEach(function(ti){ var ax=p[ti].x,ay=p[ti].y; c.strokeStyle='#fbbf24'; c.globalAlpha=.92; c.lineWidth=1.7; if(cfg.glow){c.shadowColor='#fbbf24';c.shadowBlur=11;} c.beginPath(); c.arc(ax,ay,6.5+0.9*Math.sin(now/220+ti),0,7); c.stroke(); c.shadowBlur=0; c.globalAlpha=1; }); }
         var pcx=(p[4].x+p[8].x)/2,pcy=(p[4].y+p[8].y)/2;
         if(g==='pinch'){ c.strokeStyle=col; c.lineWidth=1.6; if(cfg.glow){c.shadowColor=col;c.shadowBlur=8;}
           c.beginPath(); c.arc(pcx,pcy,7+1.4*Math.sin(now/160),0,7); c.stroke(); c.shadowBlur=0; }
@@ -4799,7 +4814,7 @@ var Sandbox=(function(){
     injectCSS();
     function set(k,v){ cfg[k]=v; if(k==='webcam'){ showCam=v; applyCamVis(); } else if(k==='hands'){ (v&&!on)?start():((!v&&on)?off():0); } }
     return { apply:apply, draw:draw, toggle:function(){ on?off():start(); }, toggleCam:toggleCam, stop:off, isOn:function(){return on;},
-      cfg:cfg, set:set, mouseGrab:mouseGrab, mouseMove:mouseMove, mouseRelease:mouseRelease, fingerTips:fingerTips };
+      cfg:cfg, set:set, mouseGrab:mouseGrab, mouseMove:mouseMove, mouseRelease:mouseRelease, fingerTips:fingerTips, anchors:anchors, __inject:function(res){ on=true; onResults(res); } };
   })();
   var Hand=PIE;   // back-compat alias for the existing accel / draw / stop / button hooks
   var TOOLS=[['select','✥','Move / fling / pan'],['mass','●','Mass'],['planet','☉','Planet'],['charge+','⊕','Positive charge'],['charge-','⊖','Negative charge'],['spring','∿','Spring link'],['rod','▬','Rigid rod'],['rope','⌇','Rope / string — drag out'],['pin','†','Pin / unpin'],['delete','✕','Delete']];
@@ -4829,6 +4844,7 @@ var Sandbox=(function(){
         '<div class="sbx-transport"><button class="sbx-play" id="sbx-play">‖</button><button class="mini-b" id="sbx-step">⇥ step</button><button class="mini-b" id="sbx-replay" title="Replay the last ~10 seconds at half speed">⟲ replay</button><button class="mini-b" id="sbx-hand" title="Control the physics with your hands (camera)">☞ Hands</button><button class="mini-b" id="sbx-camtog" style="display:none" title="Show the webcam behind the simulation">▣ Cam</button><span class="sbx-spd">speed <input class="sl" id="sbx-speed" type="range" min="0.25" max="3" step="0.25" value="1" style="width:90px"></span></div></div>'+
       '</div>';
     canvas=$('#sbx-c'); ctx=canvas.getContext('2d'); cam.x=0;cam.y=0; // center set on first fit
+    try{ window.__peqSbx={pie:PIE,load:loadPreset,step:step,state:function(){return {cradleOn:cradleOn,cradleNodes:cradleNodes,B:B,chains:chains,cradleLive:cradleLive};}}; }catch(e){}
     fitc(); cam.x=W()/2; cam.y=H()/2;
     loadPreset('solar'); syncForceUI();
     $$('.sbx-tool',container).forEach(function(b){ b.addEventListener('click',function(){ tool=b.dataset.tool; $$('.sbx-tool',container).forEach(function(x){x.classList.toggle('on',x===b);}); tip(); }); });

@@ -103,7 +103,11 @@ canvas{display:block}
 
 .eyebrow{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.22em;text-transform:uppercase;color:var(--blue)}
 .h-hello{font-family:var(--title);font-size:clamp(29px,4.3vw,44px);margin:10px 0 22px;font-weight:600;letter-spacing:-.03em;font-optical-sizing:auto;line-height:1.03}
-.h-sub{color:var(--ink-dim);font-size:16px;margin-bottom:30px}
+.h-sub{display:none!important}
+.titem .de{display:none}
+.lab-card p{display:none}
+.wrap .h-hello{margin-bottom:22px}
+.deep-hero h1,.jn-hero h1,.unit-head h1{font-family:var(--title);letter-spacing:-.028em}
 
 .btn{display:inline-flex;align-items:center;gap:9px;padding:11px 18px;border-radius:11px;font-weight:500;font-size:14.5px;transition:transform .2s var(--spring),box-shadow .25s,background .25s,border-color .25s}
 .btn:active{transform:scale(.97)}
@@ -318,6 +322,9 @@ input[type=range].sl::-moz-range-thumb{width:14px;height:14px;border:0;border-ra
 @media (prefers-reduced-motion: reduce){ *{animation-duration:.001ms!important;transition-duration:.001ms!important;scroll-behavior:auto!important} }
 .fade{animation:fade .4s var(--ease)}
 @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.rvl{animation:rvlIn .55s var(--ease) both;animation-delay:var(--rvd,0ms)}
+@keyframes rvlIn{from{opacity:0;transform:translateY(15px) scale(.993)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.rvl,.fade,.lesson.enter,.lesson.enter h1{animation:none!important}}
 
 /* unit header + difficulty */
 .unit-head{display:flex;align-items:center;gap:20px;margin:6px 0 22px}
@@ -2553,7 +2560,7 @@ var Lens=(function(){
     "@keyframes lxin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}"+
     ".lx-stage{position:relative;margin:8px 0 18px;min-height:264px;border:1px solid rgba(255,255,255,.09);border-radius:14px;background:radial-gradient(120% 130% at 50% 0%,#0a1020,#04060c);overflow:hidden;animation:lxin .35s var(--ease)}"+
     ".lx-stage>canvas{position:absolute;inset:0;width:100%;height:100%;display:block}"+
-    ".h-sub{display:none!important}.wrap .h-hello{margin-bottom:22px}.lens-sub{display:none}.lens-tab .ld{display:none}.titem .de{display:none}.lab-card p{display:none}.deep-hero h1,.jn-hero h1,.unit-head h1{font-family:var(--title);letter-spacing:-.028em}"+
+    ".lens-sub{display:none}.lens-tab .ld{display:none}"+
     ".lx-cv{display:block;width:100%;height:230px;touch-action:none;cursor:crosshair}"+
     ".lx-hint{position:absolute;top:9px;right:11px;font-family:var(--mono,monospace);font-size:10px;color:rgba(232,237,255,.55);background:rgba(4,6,12,.55);border:1px solid rgba(255,255,255,.09);padding:4px 9px;border-radius:7px;pointer-events:none}"+
     ".lx-q{font-size:14px;color:#dbe7ff;margin:10px 0 8px;font-weight:500}"+
@@ -5660,6 +5667,7 @@ function nav(v){ $$('.nav-i,[data-go]').forEach(function(n){ n.classList.toggle(
 function setCrumb(parts){ crumb.innerHTML=parts.map(function(p,i){ return (i?'<span class="sep">›</span>':'')+(p.go?'<a data-link="'+p.go+(p.id?(':'+p.id):'')+'" style="cursor:pointer">'+esc(p.t)+'</a>':'<span>'+esc(p.t)+'</span>'); }).join(' '); }
 var homeSim=null, labThumbs=[], labMode='labs';
 function stopThumbs(){ labThumbs.forEach(function(h){ if(h){ if(h._ft) clearTimeout(h._ft); if(h._inst&&h._inst.stop) h._inst.stop(); } }); labThumbs=[]; }
+function cinematicReveal(){ try{ if(window.matchMedia&&matchMedia('(prefers-reduced-motion:reduce)').matches) return; var grids=main.querySelectorAll('.dom-grid,.tlist,.lab-grid,.rs-grid,.rec-grid'); for(var g=0;g<grids.length;g++){ var kids=grids[g].children,i; for(i=0;i<kids.length;i++){ kids[i].style.setProperty('--rvd',(Math.min(i,14)*40)+'ms'); kids[i].classList.add('rvl'); } } }catch(e){} }
 function go(v,id){ stopSim();
   if(homeSim&&homeSim.stop){ homeSim.stop(); homeSim=null; }
   if(curView==='lab'&&v!=='lab'){ stopThumbs(); Research.stop(); Theory.stop(); Investigate.stop(); DesignLab.stop(); CompareDeck.stop(); }
@@ -5687,6 +5695,7 @@ function go(v,id){ stopSim();
   else if(v==='deeps') viewDeeps();
   else if(v==='journeys') viewJourneys();
   else if(v==='journey') viewJourney(id);
+  cinematicReveal();
 }
 function viewSandbox(){ stopSim(); setCrumb([{t:'Sandbox'}]); main.innerHTML='<div class="wrap-full fade" id="sbx-host"></div>'; Sandbox.mount($('#sbx-host')); }
 /* ===== RESEARCH — first-class investigations space (routes into the Lab's research engines) ===== */

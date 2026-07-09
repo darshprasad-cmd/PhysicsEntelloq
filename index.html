@@ -4576,7 +4576,7 @@ var Sandbox=(function(){
         if(dq<bestD){ bestD=dq; bestI=rci; } }
       /* inspecting is the point of X-ray mode — a node only wins the click if you're truly inside it */
       var insideNode=false; if(ix!==-1){ var nb=B[ix]; if(nb&&Math.hypot(nb.x-bwx,nb.y-bwy)<=nb.r+1.5) insideNode=true; }
-      if(!insideNode&&bestI>=0&&bestD*cam.s<18){ showRopeInfo(bestI,px,py); return; } }
+      if(!insideNode&&bestI>=0&&bestD*cam.s<22){ showRopeInfo(bestI,px,py); return; } }
     if(tool==='select'){ if(ix>=0){ sel=ix; if(PIE.cfg.physicalDrag&&PIE.mouseGrab(wx(px),wy(py),ix)){ drag={mgrab:true}; } else { drag={i:ix,fix:B[ix].fixed}; B[ix].fixed=true; fling=[]; } } else { drag={pan:true,px:px,py:py,cx:cam.x,cy:cam.y}; sel=null; } refreshInspect(); }
     else if(tool==='spring'||tool==='rod'){ if(ix>=0){ pend={a:ix,kind:tool}; pmx=px; pmy=py; } }
     else if(tool==='pin'){ if(ix>=0){ B[ix].fixed=!B[ix].fixed; B[ix].vx=B[ix].vy=0; } }

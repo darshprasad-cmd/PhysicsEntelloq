@@ -328,6 +328,9 @@ input[type=range].sl::-moz-range-thumb{width:14px;height:14px;border:0;border-ra
 #main{transition:opacity .28s var(--ease)}
 #main.view-out{opacity:0;transition:opacity .13s var(--ease)}
 @media (prefers-reduced-motion:reduce){#main,#main.view-out{transition:none!important;opacity:1!important}}
+.l-sim .ctl{opacity:.55;transition:opacity .35s var(--ease)}
+.l-sim:hover .ctl,.l-sim:focus-within .ctl{opacity:1}
+@media (prefers-reduced-motion:reduce){.l-sim .ctl{opacity:1;transition:none}}
 
 /* unit header + difficulty */
 .unit-head{display:flex;align-items:center;gap:20px;margin:6px 0 22px}

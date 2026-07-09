@@ -325,6 +325,9 @@ input[type=range].sl::-moz-range-thumb{width:14px;height:14px;border:0;border-ra
 .rvl{animation:rvlIn .55s var(--ease) both;animation-delay:var(--rvd,0ms)}
 @keyframes rvlIn{from{opacity:0;transform:translateY(15px) scale(.993)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){.rvl,.fade,.lesson.enter,.lesson.enter h1{animation:none!important}}
+#main{transition:opacity .28s var(--ease)}
+#main.view-out{opacity:0;transition:opacity .13s var(--ease)}
+@media (prefers-reduced-motion:reduce){#main,#main.view-out{transition:none!important;opacity:1!important}}
 
 /* unit header + difficulty */
 .unit-head{display:flex;align-items:center;gap:20px;margin:6px 0 22px}
@@ -5682,6 +5685,7 @@ function go(v,id){ stopSim();
   var dk=v==='domain'?id:(v==='lesson'?(topicById(id)&&topicById(id).domain):null);
   applyTheme(dk, v==='lesson'||v==='domain', v==='universe'?.7:undefined);
   try{ var _pdk=dk; if(v==='deep'){ var _dt=Deep.get(id); _pdk=_dt&&_dt.domain; } if(typeof Tutor!=='undefined'&&Tutor.persona) Tutor.persona(Personas.forContext(v,_pdk)); }catch(e){}
+  var _render=function(){
   if(v==='home') viewHome();
   else if(v==='universe') viewUniverse();
   else if(v==='solve') viewSolve();
@@ -5698,6 +5702,13 @@ function go(v,id){ stopSim();
   else if(v==='journeys') viewJourneys();
   else if(v==='journey') viewJourney(id);
   cinematicReveal();
+  };
+  /* cinematic crossfade: dip #main out, swap behind the dip, fade in (child .fade/.rvl supply the rise) */
+  var _sc=$('#main-scroll');
+  if(go._t){ clearTimeout(go._t); go._t=0; }
+  if(!main||(window.matchMedia&&matchMedia('(prefers-reduced-motion:reduce)').matches)){ if(main)main.classList.remove('view-out'); _render(); if(_sc)_sc.scrollTop=0; return; }
+  main.classList.add('view-out');
+  go._t=setTimeout(function(){ go._t=0; _render(); if(_sc)_sc.scrollTop=0; void main.offsetWidth; main.classList.remove('view-out'); }, 145);
 }
 function viewSandbox(){ stopSim(); setCrumb([{t:'Sandbox'}]); main.innerHTML='<div class="wrap-full fade" id="sbx-host"></div>'; Sandbox.mount($('#sbx-host')); }
 /* ===== RESEARCH — first-class investigations space (routes into the Lab's research engines) ===== */

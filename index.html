@@ -4396,7 +4396,7 @@ var Sandbox=(function(){
       if(!b.fixed){ b.x+=nx*pen*t/ca; b.y+=ny*pen*t/ca; vn=b.vx*nx+b.vy*ny; if(vn<0){ b.vx-=vn*nx; b.vy-=vn*ny; } } } } } }
   /* ---- Cat's Cradle X-ray: tension physics made visible ---- */
   var xrayStats={mx:0,mean:0,pe:0,eq:false,mi:-1}, xraySel=-1, xrayTick=0,
-      chalSt={pluck:false,eq:false,calmArmed:false,calm:false};
+      chalSt={pluck:false,eq:false,calmArmed:false,calm:false,balance:false};
   var ENGX=[
     ['Suspension bridge','The deck’s weight flows into cable tension exactly like your plucked strand — the Golden Gate’s main cables run at roughly a quarter of their breaking strain, always elastic.'],
     ['Spider web','A web is a pre-tensioned net: stiff radial threads carry the load, stretchy spiral threads soak up energy. A fly hitting the web is your pluck.'],
@@ -4410,7 +4410,7 @@ var Sandbox=(function(){
   function updateRopeCard(){
     var rc=$('#sbx-rope-card'); if(!rc) return;
     var want=chains.length?'':'none';
-    if(rc.style.display!==want){ rc.style.display=want; if(want==='none'){ chalSt={pluck:false,eq:false,calmArmed:false,calm:false}; xraySel=-1; } }
+    if(rc.style.display!==want){ rc.style.display=want; if(want==='none'){ chalSt={pluck:false,eq:false,calmArmed:false,calm:false,balance:false}; xraySel=-1; } }
     if(!chains.length) return;
     var mx=xrayStats.mx*100, mean=xrayStats.mean*100;
     var e1=$('#sbx-rt-max'); if(e1) e1.textContent=mx.toFixed(1)+'%';
@@ -4418,12 +4418,14 @@ var Sandbox=(function(){
     var e3=$('#sbx-rt-pe'); if(e3) e3.textContent=xrayStats.pe.toFixed(1);
     var e4=$('#sbx-rt-eq'); if(e4){ e4.textContent=xrayStats.eq?'✓ equilibrium':'settling…'; e4.style.color=xrayStats.eq?'#34d399':'#fbbf24'; }
     var e5=$('#sbx-rt-load'); if(e5) e5.textContent=cradleLive?(cradleLoadTot.toFixed(1)+' N'):'—';
+    var bw=$('#sbx-rt-balwrap'); if(bw){ if(cradleLive){ bw.style.display='block'; var hlb=handLoads(),tb=(hlb.L+hlb.R)||1,lp=Math.round(hlb.L/tb*100),bl=$('#sbx-rt-balL'),br=$('#sbx-rt-balR'),bt=$('#sbx-rt-baltxt'); if(bl)bl.style.width=lp+'%'; if(br)br.style.width=(100-lp)+'%'; if(bt)bt.textContent='L '+hlb.L.toFixed(1)+' N · R '+hlb.R.toFixed(1)+' N · '+(Math.abs(lp-50)<=6?'balanced ✓':(lp>50?'left works harder':'right works harder')); } else bw.style.display='none'; }
     /* challenges — each one teaches a concept by making you chase a number */
     if(!chalSt.pluck&&mx>=12){ chalSt.pluck=true; toast('Challenge ✓ — 12% stretch. Feel how tension fought back harder the further you pulled?','+10 XP'); try{ Me.award(10,'Rope: pluck'); }catch(e){} }
     if(!chalSt.eq&&chains.length>=8&&mx>0.5&&xrayStats.mx<=1.6*xrayStats.mean){ chalSt.eq=true; toast('Challenge ✓ — near-equal tension. A uniform net shares load like a good bridge.','+10 XP'); try{ Me.award(10,'Rope: equalize'); }catch(e){} }
     if(!chalSt.calmArmed&&mx>=5) chalSt.calmArmed=true;
     if(chalSt.calmArmed&&!chalSt.calm&&xrayStats.eq&&mx<1.5){ chalSt.calm=true; toast('Challenge ✓ — strained, then settled to calm. That decay was energy leaving as damping.','+10 XP'); try{ Me.award(10,'Rope: settle'); }catch(e){} }
     var rows=[['pluck','Pluck a strand to 12% stretch',chalSt.pluck],['eq','Get max ≤ 1.6× mean (equal tension)',chalSt.eq],['calm','Strain it ≥5%, then settle to calm',chalSt.calm]];
+    if(cradleLive){ var hlc=handLoads(),tc=hlc.L+hlc.R; if(!chalSt.balance&&tc>6&&Math.abs(hlc.L-hlc.R)<=0.12*tc){ chalSt.balance=true; toast('Challenge ✓ — balanced hands. Equal load left & right; the loop shares tension symmetrically.','+10 XP'); try{Me.award(10,'Cradle: balance');}catch(e){} } rows.push(['balance','Balance your hands — L≈R load (±12%)',chalSt.balance]); }
     var host=$('#sbx-chal'); if(host) host.innerHTML=rows.map(function(rw){ return '<div class="sbx-ck" style="cursor:default;color:'+(rw[2]?'#34d399':'var(--ink-dim)')+'">'+(rw[2]?'✓':'○')+' '+rw[1]+'</div>'; }).join('');
   }
   function showRopeInfo(ci,px,py){
@@ -4470,7 +4472,8 @@ var Sandbox=(function(){
     if(!tg.length){ if(cradleLive)cradleLive=false; for(i=0;i<cradleNodes.length;i++){ nd=B[cradleNodes[i].id]; if(nd){ nd.x+=(cradleNodes[i].hx-nd.x)*0.18; nd.y+=(cradleNodes[i].hy-nd.y)*0.18; nd.vx=nd.vy=0; } } return; }
     if(!cradleLive){ cradleLive=true; toast('Your fingers are the cradle','Spread thumb & pinky to open the figure · pinch a strand to lift it'); }
     var A=cradleNodes.slice().sort(function(p,q){return p.hx-q.hx;}), T=tg.slice().sort(function(p,q){return p.x-q.x;});
-    for(i=0;i<A.length;i++){ var t=sampleAnchors(T,A.length>1?i/(A.length-1):0); nd=B[A[i].id]; if(!nd)continue; nd.x=t.x; nd.y=t.y; nd.vx=0; nd.vy=0; }
+    for(i=0;i<A.length;i++){ var t=sampleAnchors(T,A.length>1?i/(A.length-1):0); nd=B[A[i].id]; if(!nd)continue; nd.x=t.x; nd.y=t.y; nd.vx=0; nd.vy=0;
+      var bs=null,bd=1e9,z; for(z=0;z<T.length;z++){ var sdx=T[z].x-nd.x,sdy=T[z].y-nd.y,sq=sdx*sdx+sdy*sdy; if(sq<bd){bd=sq;bs=T[z].side;} } A[i].side=bs; }
   }
   /* Per-finger load — the reaction each anchored fingertip must supply to hold its node = vector
      sum of the string tensions meeting there (T = EA·strain, Hooke). This is the force YOU feel. */
@@ -4480,6 +4483,7 @@ var Sandbox=(function(){
       var dx=ot.x-b0.x,dy=ot.y-b0.y,d=Math.hypot(dx,dy)||1e-9,stn=(d-c.L)/c.L; if(stn<=0)continue;
       var T=EA_ROPE*stn; fx+=T*dx/d; fy+=T*dy/d; Tsum+=T; }
     return {fx:fx,fy:fy,mag:Math.hypot(fx,fy),T:Tsum}; }
+  function handLoads(){ var Ld=0,Rd=0,i; for(i=0;i<cradleNodes.length;i++){ var s=cradleNodes[i].side,m=anchorLoad(cradleNodes[i].id).mag; if(s==='Left')Ld+=m; else if(s==='Right')Rd+=m; } return {L:Ld,R:Rd}; }
   /* Boris–Verlet: ½-kick (gravity/Coulomb/spring/E) → magnetic rotation → drift → ½-kick. Identical to velocity-Verlet when Bz=0. */
   function step(dt){ driveCradle(); var i,b,a1=accel();
     for(i=0;i<B.length;i++){ b=B[i]; if(b.fixed)continue; b.vx+=0.5*a1[i][0]*dt; b.vy+=0.5*a1[i][1]*dt; }
@@ -4850,7 +4854,7 @@ var Sandbox=(function(){
         '<div class="sbx-card"><div class="sbx-h">Conserved quantities</div><div class="sbx-stats" id="sbx-stat">'+st('bodies','sbx-n')+st('kinetic E','sbx-ke')+st('potential E','sbx-pe')+st('total E','sbx-e','#34d399')+st('momentum |p|','sbx-p')+st('time','sbx-t')+'</div><canvas id="sbx-spark" class="sbx-spark"></canvas></div>'+
         '<div class="sbx-card" id="sbx-rope-card" style="display:none"><div class="sbx-h">Rope physics · X-ray</div>'+
           '<button class="mini-b" id="sbx-xray">◉ X-ray tension</button>'+
-          '<div class="sbx-stats" style="margin-top:10px">'+st('max stretch','sbx-rt-max','#f87171')+st('mean stretch','sbx-rt-mean')+st('elastic PE (rel.)','sbx-rt-pe','#a78bfa')+st('state','sbx-rt-eq','#34d399')+st('hand load','sbx-rt-load','#fbbf24')+'</div>'+
+          '<div class="sbx-stats" style="margin-top:10px">'+st('max stretch','sbx-rt-max','#f87171')+st('mean stretch','sbx-rt-mean')+st('elastic PE (rel.)','sbx-rt-pe','#a78bfa')+st('state','sbx-rt-eq','#34d399')+st('hand load','sbx-rt-load','#fbbf24')+'</div>'+'<div id="sbx-rt-balwrap" style="display:none;margin-top:9px"><div class="sbx-muted" style="margin-bottom:4px">Hand balance — left vs right load</div><div style="height:9px;border-radius:6px;overflow:hidden;background:#16213a;display:flex"><div id="sbx-rt-balL" style="height:100%;background:#22d3ee;width:50%;transition:width .12s"></div><div id="sbx-rt-balR" style="height:100%;background:#f472b6;width:50%;transition:width .12s"></div></div><div id="sbx-rt-baltxt" class="sbx-muted" style="margin-top:5px"></div></div>'+
           '<div class="sbx-muted" style="margin-top:8px">T = k·ΔL — in X-ray, color IS tension. Click any strand to interrogate it.</div>'+
           '<div class="sbx-h" style="margin-top:13px">Challenges</div><div id="sbx-chal"></div>'+
           '<div class="sbx-h" style="margin-top:13px">Same physics as</div><div id="sbx-eng" style="display:flex;gap:6px;flex-wrap:wrap"></div><div class="sbx-muted" id="sbx-engout" style="margin-top:7px;display:none"></div>'+
@@ -4866,7 +4870,7 @@ var Sandbox=(function(){
         '<div class="sbx-transport"><button class="sbx-play" id="sbx-play">‖</button><button class="mini-b" id="sbx-step">⇥ step</button><button class="mini-b" id="sbx-replay" title="Replay the last ~10 seconds at half speed">⟲ replay</button><button class="mini-b" id="sbx-hand" title="Control the physics with your hands (camera)">☞ Hands</button><button class="mini-b" id="sbx-camtog" style="display:none" title="Show the webcam behind the simulation">▣ Cam</button><span class="sbx-spd">speed <input class="sl" id="sbx-speed" type="range" min="0.25" max="3" step="0.25" value="1" style="width:90px"></span></div></div>'+
       '</div>';
     canvas=$('#sbx-c'); ctx=canvas.getContext('2d'); cam.x=0;cam.y=0; // center set on first fit
-    try{ window.__peqSbx={pie:PIE,load:loadPreset,step:step,draw:draw,anchorLoad:anchorLoad,state:function(){return {cradleOn:cradleOn,cradleNodes:cradleNodes,B:B,chains:chains,cradleLive:cradleLive,loadTot:cradleLoadTot,loadPeak:cradleLoadPeak};}}; }catch(e){}
+    try{ window.__peqSbx={pie:PIE,load:loadPreset,step:step,draw:draw,anchorLoad:anchorLoad,handLoads:handLoads,state:function(){return {cradleOn:cradleOn,cradleNodes:cradleNodes,B:B,chains:chains,cradleLive:cradleLive,loadTot:cradleLoadTot,loadPeak:cradleLoadPeak};}}; }catch(e){}
     fitc(); cam.x=W()/2; cam.y=H()/2;
     loadPreset('solar'); syncForceUI();
     $$('.sbx-tool',container).forEach(function(b){ b.addEventListener('click',function(){ tool=b.dataset.tool; $$('.sbx-tool',container).forEach(function(x){x.classList.toggle('on',x===b);}); tip(); }); });

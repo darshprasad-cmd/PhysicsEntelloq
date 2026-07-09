@@ -2574,6 +2574,7 @@ var Lens=(function(){
     ".lx-opt.bad{border-color:rgba(248,113,113,.55);background:rgba(248,113,113,.07)}"+
     ".lx-step{border:1px solid rgba(255,255,255,.09);border-radius:13px;padding:16px 18px;margin:13px 0;background:rgba(255,255,255,.02);animation:lxin .35s var(--ease)}"+
     ".lx-step .f{font-family:var(--mono,monospace);font-size:17px;color:#dfd6ff;display:block;margin:5px 0 6px}"+
+    ".eqtok{display:inline-block;animation:eqtokIn .5s var(--ease) both;animation-delay:var(--td,0ms)}@keyframes eqtokIn{from{opacity:0;transform:translateY(7px) scale(.86);filter:blur(2px)}to{opacity:1;transform:none;filter:none}}.eqsyms{animation:fade .5s var(--ease) .3s both}@media(prefers-reduced-motion:reduce){.eqtok,.eqsyms{animation:none}}"+
     ".lx-step .d{font-size:13px;color:rgba(232,237,255,.6)}"+
     ".lx-sym{display:inline-block;font-family:var(--mono,monospace);font-size:11px;color:#c9b8ff;border:1px solid rgba(167,139,250,.35);border-radius:7px;padding:2px 8px;margin:8px 6px 0 0;cursor:pointer;background:none}"+
     ".lx-sym:hover{background:rgba(167,139,250,.12)}"+
@@ -2740,6 +2741,7 @@ var Lens=(function(){
     (t.points||[]).slice(0,3).forEach(function(p){ var c=ce('div','lx-card'); c.innerHTML='<span class="k2" style="color:'+lens.c+'">watch for</span><div class="b2">'+esc(p)+'</div>'; panel.appendChild(c); });
     deepenBtn(panel,t,lens,'✦ What exactly am I seeing?');
   }
+  function assembleEq(str){ var toks=String(str).split(/(\s+)/),n=0; return toks.map(function(tk){ if(/^\s+$/.test(tk)) return tk; var o='<span class="eqtok" style="--td:'+(n*70)+'ms">'+esc(tk)+'</span>'; n++; return o; }).join(''); }
   function bD(panel,t,lens){
     var eqs=(t.eqs&&t.eqs.length)?t.eqs:null;
     if(!eqs){ var tx=ce('div','lx-txt'); tx.innerHTML=fmt(t.summary); panel.appendChild(tx); deepenBtn(panel,t,lens,'✦ Build the math'); return; }
@@ -2749,8 +2751,8 @@ var Lens=(function(){
     var btn=ce('button','lx-more'); btn.style.setProperty('--lc',lens.c); btn.textContent='▸ Next step ('+eqs.length+' total)';
     function stepIn(){
       var e=eqs[i],d=ce('div','lx-step');
-      d.innerHTML='<span style="font-family:var(--mono,monospace);font-size:9.5px;color:'+lens.c+';letter-spacing:.12em">STEP '+(i+1)+' OF '+eqs.length+'</span><span class="f">'+esc(e[0])+'</span><span class="d">'+esc(e[1])+'</span>';
-      var symwrap=ce('div');
+      d.innerHTML='<span style="font-family:var(--mono,monospace);font-size:9.5px;color:'+lens.c+';letter-spacing:.12em">STEP '+(i+1)+' OF '+eqs.length+'</span><span class="f">'+assembleEq(e[0])+'</span><span class="d">'+esc(e[1])+'</span>';
+      var symwrap=ce('div','eqsyms');
       symsOf(e[0]).forEach(function(sy){ var b=ce('button','lx-sym'); b.textContent=sy; symwrap.appendChild(b);
         b.addEventListener('click',function(){ var old=d.querySelector('.lx-symd');
           if(old){ var same=old.dataset.s===sy; old.remove(); if(same) return; }

@@ -4371,7 +4371,7 @@ var Sandbox=(function(){
   /* ===== verified velocity-Verlet engine (gravity / spring / Coulomb / rod / collision) ===== */
   var B=[],springs=[],rods=[],pulleys=[],chains=[],bends=[],P={G:600,kc:6000,g:0,soft:25,walls:false,rest:1,arena:{l:-460,r:460,t:-300,b:300},Bz:0,Ex:0,Ey:0,ropeIters:14,ropeStiff:0.3};
   var cam={x:0,y:0,s:1},running=true,tool='select',sel=null,raf=0,host=null,canvas=null,ctx=null,nextId=1;
-  var cradleOn=false, cradleNodes=[], cradleLive=false;
+  var cradleOn=false, cradleNodes=[], cradleLive=false, cradleLoadTot=0, cradleLoadPeak=0;
   var Ehist=[],simT=0,speed=1,showTrails=true,showVec=false,showGrid=true,showField=false,trail={};
   function accel(){ var n=B.length,fx=new Array(n).fill(0),fy=new Array(n).fill(0),i,j;
     for(i=0;i<n;i++){ fy[i]+=B[i].m*P.g; if(P.Ex)fx[i]+=B[i].q*P.Ex; if(P.Ey)fy[i]+=B[i].q*P.Ey; }
@@ -4417,6 +4417,7 @@ var Sandbox=(function(){
     var e2=$('#sbx-rt-mean'); if(e2) e2.textContent=mean.toFixed(1)+'%';
     var e3=$('#sbx-rt-pe'); if(e3) e3.textContent=xrayStats.pe.toFixed(1);
     var e4=$('#sbx-rt-eq'); if(e4){ e4.textContent=xrayStats.eq?'✓ equilibrium':'settling…'; e4.style.color=xrayStats.eq?'#34d399':'#fbbf24'; }
+    var e5=$('#sbx-rt-load'); if(e5) e5.textContent=cradleLive?(cradleLoadTot.toFixed(1)+' N'):'—';
     /* challenges — each one teaches a concept by making you chase a number */
     if(!chalSt.pluck&&mx>=12){ chalSt.pluck=true; toast('Challenge ✓ — 12% stretch. Feel how tension fought back harder the further you pulled?','+10 XP'); try{ Me.award(10,'Rope: pluck'); }catch(e){} }
     if(!chalSt.eq&&chains.length>=8&&mx>0.5&&xrayStats.mx<=1.6*xrayStats.mean){ chalSt.eq=true; toast('Challenge ✓ — near-equal tension. A uniform net shares load like a good bridge.','+10 XP'); try{ Me.award(10,'Rope: equalize'); }catch(e){} }
@@ -4471,6 +4472,14 @@ var Sandbox=(function(){
     var A=cradleNodes.slice().sort(function(p,q){return p.hx-q.hx;}), T=tg.slice().sort(function(p,q){return p.x-q.x;});
     for(i=0;i<A.length;i++){ var t=sampleAnchors(T,A.length>1?i/(A.length-1):0); nd=B[A[i].id]; if(!nd)continue; nd.x=t.x; nd.y=t.y; nd.vx=0; nd.vy=0; }
   }
+  /* Per-finger load — the reaction each anchored fingertip must supply to hold its node = vector
+     sum of the string tensions meeting there (T = EA·strain, Hooke). This is the force YOU feel. */
+  var EA_ROPE=140;
+  function anchorLoad(ni){ var b0=B[ni]; if(!b0)return {fx:0,fy:0,mag:0,T:0}; var fx=0,fy=0,Tsum=0,q;
+    for(q=0;q<chains.length;q++){ var c=chains[q]; if(c.a!==ni&&c.b!==ni)continue; var ot=B[c.a===ni?c.b:c.a]; if(!ot)continue;
+      var dx=ot.x-b0.x,dy=ot.y-b0.y,d=Math.hypot(dx,dy)||1e-9,stn=(d-c.L)/c.L; if(stn<=0)continue;
+      var T=EA_ROPE*stn; fx+=T*dx/d; fy+=T*dy/d; Tsum+=T; }
+    return {fx:fx,fy:fy,mag:Math.hypot(fx,fy),T:Tsum}; }
   /* Boris–Verlet: ½-kick (gravity/Coulomb/spring/E) → magnetic rotation → drift → ½-kick. Identical to velocity-Verlet when Bz=0. */
   function step(dt){ driveCradle(); var i,b,a1=accel();
     for(i=0;i<B.length;i++){ b=B[i]; if(b.fixed)continue; b.vx+=0.5*a1[i][0]*dt; b.vy+=0.5*a1[i][1]*dt; }
@@ -4607,8 +4616,21 @@ var Sandbox=(function(){
       if(showVec&&!b.fixed){ var vs=0.25; ctx.strokeStyle='rgba(251,191,36,.8)'; ctx.lineWidth=1.5; arrow(X,Y,X+b.vx*vs*cam.s,Y+b.vy*vs*cam.s); }
       if(i===sel){ ctx.strokeStyle='#34d399'; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(X,Y,R+6,0,7); ctx.stroke(); } });
     if(typeof Hand!=='undefined'&&Hand.draw) Hand.draw(ctx,Wd,Hd);
+    if(cradleLive) drawCradleLoads();
     var el=$('#sbx-stat'); if(el) updateTelemetry(); }
   function shade(c){ return c; }
+  /* on-canvas per-finger force readout: a reaction arrow + Newton label at each anchored fingertip */
+  function drawCradleLoads(){ if(!cradleNodes.length)return; var tot=0,peak=0; ctx.shadowBlur=0;
+    for(var ai=0;ai<cradleNodes.length;ai++){ var nd=B[cradleNodes[ai].id]; if(!nd)continue; var ld=anchorLoad(cradleNodes[ai].id); tot+=ld.mag; if(ld.mag>peak)peak=ld.mag;
+      var X=sx(nd.x),Y=sy(nd.y),col=ld.mag>8?'#f87171':(ld.mag>3?'#fbbf24':'#7dd3fc');
+      if(ld.mag>0.05){ var m=ld.mag,ux=-ld.fx/m,uy=-ld.fy/m,al=(12+Math.min(40,m*3))*Math.max(0.6,cam.s),ex=X+ux*al,ey=Y+uy*al,aa=Math.atan2(uy,ux);
+        ctx.strokeStyle=col; ctx.fillStyle=col; ctx.lineWidth=2.2;
+        ctx.beginPath(); ctx.moveTo(X,Y); ctx.lineTo(ex,ey); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(ex,ey); ctx.lineTo(ex-Math.cos(aa-0.42)*7,ey-Math.sin(aa-0.42)*7); ctx.lineTo(ex-Math.cos(aa+0.42)*7,ey-Math.sin(aa+0.42)*7); ctx.closePath(); ctx.fill(); }
+      var txt=ld.mag.toFixed(1)+' N'; ctx.font='10px JetBrains Mono'; var tw=ctx.measureText(txt).width;
+      ctx.fillStyle='rgba(6,9,18,.82)'; ctx.beginPath(); if(ctx.roundRect)ctx.roundRect(X-tw/2-5,Y-30,tw+10,16,6); else ctx.rect(X-tw/2-5,Y-30,tw+10,16); ctx.fill();
+      ctx.fillStyle=col; ctx.textAlign='center'; ctx.fillText(txt,X,Y-18); ctx.textAlign='left'; }
+    cradleLoadTot=tot; cradleLoadPeak=peak; }
   function spring(x1,y1,x2,y2){ var dx=x2-x1,dy=y2-y1,L=Math.hypot(dx,dy)||1,ux=dx/L,uy=dy/L,nx=-uy,ny=ux,seg=Math.max(6,L/12|0); ctx.beginPath(); ctx.moveTo(x1,y1); for(var i=1;i<seg;i++){ var t=i/seg,amp=(i>1&&i<seg-1)?6:0,s=(i%2?1:-1); ctx.lineTo(x1+dx*t+nx*amp*s,y1+dy*t+ny*amp*s); } ctx.lineTo(x2,y2); ctx.stroke(); }
   function arrow(x1,y1,x2,y2){ ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke(); var a=Math.atan2(y2-y1,x2-x1),h=5; ctx.beginPath(); ctx.moveTo(x2,y2); ctx.lineTo(x2-h*Math.cos(a-0.4),y2-h*Math.sin(a-0.4)); ctx.lineTo(x2-h*Math.cos(a+0.4),y2-h*Math.sin(a+0.4)); ctx.closePath(); ctx.fillStyle=ctx.strokeStyle; ctx.fill(); }
   function drawField(){ var Wd=W(),Hd=H(),step=34,x,y; ctx.lineWidth=1; for(x=step/2;x<Wd;x+=step) for(y=step/2;y<Hd;y+=step){ var ox=wx(x),oy=wy(y),ex=0,ey=0; B.forEach(function(b){ if(!b.q)return; var dx=ox-b.x,dy=oy-b.y,r2=dx*dx+dy*dy+P.soft,r=Math.sqrt(r2); ex+=P.kc*b.q*dx/(r2*r); ey+=P.kc*b.q*dy/(r2*r); }); ex+=P.Ex*0.6; ey+=P.Ey*0.6; var m=Math.hypot(ex,ey)||1e-9,sc=Math.min(13,m*0.6)/m; ctx.strokeStyle='rgba(167,139,250,'+Math.min(.5,m*0.02+.08)+')'; arrow(x,y,x+ex*sc,y+ey*sc); } }
@@ -4828,7 +4850,7 @@ var Sandbox=(function(){
         '<div class="sbx-card"><div class="sbx-h">Conserved quantities</div><div class="sbx-stats" id="sbx-stat">'+st('bodies','sbx-n')+st('kinetic E','sbx-ke')+st('potential E','sbx-pe')+st('total E','sbx-e','#34d399')+st('momentum |p|','sbx-p')+st('time','sbx-t')+'</div><canvas id="sbx-spark" class="sbx-spark"></canvas></div>'+
         '<div class="sbx-card" id="sbx-rope-card" style="display:none"><div class="sbx-h">Rope physics · X-ray</div>'+
           '<button class="mini-b" id="sbx-xray">◉ X-ray tension</button>'+
-          '<div class="sbx-stats" style="margin-top:10px">'+st('max stretch','sbx-rt-max','#f87171')+st('mean stretch','sbx-rt-mean')+st('elastic PE (rel.)','sbx-rt-pe','#a78bfa')+st('state','sbx-rt-eq','#34d399')+'</div>'+
+          '<div class="sbx-stats" style="margin-top:10px">'+st('max stretch','sbx-rt-max','#f87171')+st('mean stretch','sbx-rt-mean')+st('elastic PE (rel.)','sbx-rt-pe','#a78bfa')+st('state','sbx-rt-eq','#34d399')+st('hand load','sbx-rt-load','#fbbf24')+'</div>'+
           '<div class="sbx-muted" style="margin-top:8px">T = k·ΔL — in X-ray, color IS tension. Click any strand to interrogate it.</div>'+
           '<div class="sbx-h" style="margin-top:13px">Challenges</div><div id="sbx-chal"></div>'+
           '<div class="sbx-h" style="margin-top:13px">Same physics as</div><div id="sbx-eng" style="display:flex;gap:6px;flex-wrap:wrap"></div><div class="sbx-muted" id="sbx-engout" style="margin-top:7px;display:none"></div>'+
@@ -4844,7 +4866,7 @@ var Sandbox=(function(){
         '<div class="sbx-transport"><button class="sbx-play" id="sbx-play">‖</button><button class="mini-b" id="sbx-step">⇥ step</button><button class="mini-b" id="sbx-replay" title="Replay the last ~10 seconds at half speed">⟲ replay</button><button class="mini-b" id="sbx-hand" title="Control the physics with your hands (camera)">☞ Hands</button><button class="mini-b" id="sbx-camtog" style="display:none" title="Show the webcam behind the simulation">▣ Cam</button><span class="sbx-spd">speed <input class="sl" id="sbx-speed" type="range" min="0.25" max="3" step="0.25" value="1" style="width:90px"></span></div></div>'+
       '</div>';
     canvas=$('#sbx-c'); ctx=canvas.getContext('2d'); cam.x=0;cam.y=0; // center set on first fit
-    try{ window.__peqSbx={pie:PIE,load:loadPreset,step:step,state:function(){return {cradleOn:cradleOn,cradleNodes:cradleNodes,B:B,chains:chains,cradleLive:cradleLive};}}; }catch(e){}
+    try{ window.__peqSbx={pie:PIE,load:loadPreset,step:step,draw:draw,anchorLoad:anchorLoad,state:function(){return {cradleOn:cradleOn,cradleNodes:cradleNodes,B:B,chains:chains,cradleLive:cradleLive,loadTot:cradleLoadTot,loadPeak:cradleLoadPeak};}}; }catch(e){}
     fitc(); cam.x=W()/2; cam.y=H()/2;
     loadPreset('solar'); syncForceUI();
     $$('.sbx-tool',container).forEach(function(b){ b.addEventListener('click',function(){ tool=b.dataset.tool; $$('.sbx-tool',container).forEach(function(x){x.classList.toggle('on',x===b);}); tip(); }); });

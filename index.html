@@ -331,6 +331,42 @@ input[type=range].sl::-moz-range-thumb{width:14px;height:14px;border:0;border-ra
 .l-sim .ctl{opacity:.55;transition:opacity .35s var(--ease)}
 .l-sim:hover .ctl,.l-sim:focus-within .ctl{opacity:1}
 @media (prefers-reduced-motion:reduce){.l-sim .ctl{opacity:1;transition:none}}
+/* ===== FEATURE A — Living Knowledge Graph connections panel ===== */
+.kg-conn{margin:26px 0 6px;border:1px solid var(--line);border-radius:16px;padding:18px 20px 16px;background:rgba(255,255,255,.015)}
+.kg-conn .kg-h{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-faint);margin:0 0 14px;display:flex;align-items:center;gap:9px}
+.kg-verdict{display:flex;align-items:flex-start;gap:11px;font-size:13.5px;line-height:1.55;padding:12px 15px;border-radius:12px;margin-bottom:16px;border:1px solid}
+.kg-verdict b{color:inherit}
+.kg-verdict .ic{font-size:15px;line-height:1.3;flex:0 0 auto}
+.kg-verdict.ok{color:#8ff0c8;background:rgba(52,211,153,.08);border-color:rgba(52,211,153,.28)}
+.kg-verdict.hold{color:#fcd9a6;background:rgba(251,191,36,.07);border-color:rgba(251,191,36,.28)}
+.kg-group{margin:15px 0 0}
+.kg-gh{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:9px}
+.kg-row{display:flex;align-items:center;gap:10px;padding:9px 12px;border:1px solid var(--line-2);border-radius:11px;margin:6px 0;cursor:pointer;transition:border-color .18s var(--ease),background .18s var(--ease),transform .18s var(--ease)}
+.kg-row:hover{border-color:var(--line);background:rgba(255,255,255,.03);transform:translateX(3px)}
+.kg-row .dot{width:8px;height:8px;border-radius:50%;flex:0 0 auto}
+.kg-row .st{font-family:var(--mono);font-size:12px;width:14px;text-align:center;flex:0 0 auto}
+.kg-row .st.done{color:var(--emerald)}
+.kg-row .st.todo{color:var(--ink-ghost)}
+.kg-row .nm{font-size:13px;color:var(--ink);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.kg-row .ty{font-family:var(--mono);font-size:8.5px;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:20px;border:1px solid;flex:0 0 auto}
+.kg-row .go{color:var(--ink-ghost);font-size:15px;flex:0 0 auto}
+.kg-row:hover .go{color:var(--ink-dim)}
+.kg-res{display:flex;flex-wrap:wrap;gap:8px}
+.kg-res .chip{cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:border-color .18s var(--ease),color .18s var(--ease),transform .18s var(--ease)}
+.kg-res .chip:hover{border-color:var(--violet);color:var(--ink);transform:translateY(-1px)}
+.kg-res .chip i{width:6px;height:6px;border-radius:50%;display:inline-block;flex:0 0 auto}
+.kg-more{font-family:var(--mono);font-size:10px;color:var(--ink-faint);margin-top:8px;letter-spacing:.04em}
+/* compact — inside the universe star-card */
+.uni-conn{margin-top:12px;border-top:1px solid var(--line-2);padding-top:11px}
+.kg-mini{font-size:11.5px;line-height:1.45;font-weight:500}
+.kg-mini.ok{color:#8ff0c8}
+.kg-mini.hold{color:#fcd9a6}
+.kg-mini-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px}
+.kg-mc{font-family:var(--mono);font-size:9.5px;padding:3px 8px;border:1px solid var(--line);border-radius:20px;cursor:pointer;color:var(--ink-dim);display:inline-flex;align-items:center;gap:5px;transition:border-color .16s var(--ease),color .16s var(--ease)}
+.kg-mc:hover{border-color:var(--blue);color:var(--ink)}
+.kg-mc i{width:6px;height:6px;border-radius:50%;display:inline-block}
+.kg-mc .st{font-size:9px}
+.kg-mini-u{font-family:var(--mono);font-size:9.5px;color:var(--ink-faint);margin-top:9px;letter-spacing:.04em}
 
 /* unit header + difficulty */
 .unit-head{display:flex;align-items:center;gap:20px;margin:6px 0 22px}
@@ -3342,6 +3378,7 @@ var Uni=(function(){
     var lvb=card.querySelector('.lv'); lvb.textContent=lv.n; lvb.style.color=lv.c; lvb.style.borderColor=lv.c+'66';
     card.querySelector('p').textContent=n.t.summary;
     card.dataset.id=n.t.id;
+    try{ Graph.renderConnections(card.querySelector('.uni-conn'),n.t.id,{compact:true}); }catch(e){}
     var cx=Math.min(Math.max(p[0]+18,10),W-286),cy=Math.min(Math.max(p[1]-40,10),H-180);
     card.style.left=cx+'px'; card.style.top=cy+'px'; card.classList.add('on'); sel=n;
   }
@@ -3353,7 +3390,7 @@ var Uni=(function(){
       '<div class="uni-stat"><b>'+Me.doneCount()+'</b> / '+DB.length+' ignited<br>'+DB.length+' concepts · '+DOMAINS.length+' fields</div></div>'+
       '<div class="uni-legend">'+DOMAINS.map(function(d){return '<span class="lg"><i style="background:'+d.c+'"></i>'+esc(d.n)+'</span>';}).join('')+'</div>'+
       '<div class="uni-ctrls"><button data-z="1.3" title="Zoom in">+</button><button data-z="0.77" title="Zoom out">−</button><button id="uni-home" title="Show all">⊙</button></div>'+
-      '<div class="uni-card"><div style="display:flex;align-items:center;gap:8px"><span class="dm"></span><span class="lv" style="margin-left:auto"></span></div><h4></h4><p></p><div class="acts"><button class="btn btn-pri btn-sm" data-act="open">Open lesson →</button><button class="btn btn-ghost btn-sm" data-act="ask">✦ Ask</button></div></div>'+
+      '<div class="uni-card"><div style="display:flex;align-items:center;gap:8px"><span class="dm"></span><span class="lv" style="margin-left:auto"></span></div><h4></h4><p></p><div class="acts"><button class="btn btn-pri btn-sm" data-act="open">Open lesson →</button><button class="btn btn-ghost btn-sm" data-act="ask">✦ Ask</button></div><div class="uni-conn"></div></div>'+
       '<div class="uni-hint">drag to fly · scroll to zoom · click a star to enter its concept</div>';
     cv=host.querySelector('canvas'); ctx=cv.getContext('2d'); card=host.querySelector('.uni-card'); searchEl=host.querySelector('#uni-q');
     var rb=cv.getBoundingClientRect(); W=rb.width; H=rb.height; fitAll();
@@ -3377,6 +3414,117 @@ var Uni=(function(){
   function stop(){ running=false; cancelAnimationFrame(raf); }
   return { mount:mount, stop:stop };
 })();
+
+/* ============================================================
+   FEATURE A — LIVING KNOWLEDGE GRAPH
+   Single source of truth: typed directed edges over the real DB
+   topic ids + prereqsOf / unlocks / relatedOf / readiness + a
+   per-concept Connections panel (full + compact).
+   Paste inside the app IIFE AFTER the Uni engine block (needs
+   DB / topicById / DMAP / Me / go / esc already defined).
+   ============================================================ */
+var KG_TYPE={
+  prereq:{c:'#fbbf24',label:'prerequisite — understand first'},
+  builds:{c:'#a78bfa',label:'builds on / generalises it'},
+  enables:{c:'#34d399',label:'enables / unlocks it'},
+  applies:{c:'#22d3ee',label:'applied together in a real system'},
+  contrasts:{c:'#fb923c',label:'instructive contrast'}
+};
+var GRAPH=(function(){ var R=[
+  /* MECHANICS */
+  ['kinematics','projectile','prereq'],['kinematics','newton-laws','prereq'],['kinematics','circular-motion','prereq'],['kinematics','work-energy','prereq'],
+  ['newton-laws','friction','prereq'],['newton-laws','work-energy','prereq'],['newton-laws','momentum','prereq'],['newton-laws','circular-motion','prereq'],
+  ['newton-laws','gravitation','prereq'],['newton-laws','rotational','builds'],['newton-laws','fluids','prereq'],['newton-laws','elasticity','prereq'],['newton-laws','terminal-velocity','prereq'],
+  ['friction','terminal-velocity','contrasts'],['work-energy','momentum','contrasts'],['work-energy','shm','prereq'],['work-energy','fluids','prereq'],['work-energy','first-law','prereq'],
+  ['circular-motion','gravitation','prereq'],['circular-motion','cyclotron','prereq'],['center-of-mass','momentum','prereq'],['center-of-mass','rotational','prereq'],['momentum','rotational','builds'],
+  ['rotational','gravitation','applies'],['gravitation','general-relativity','builds'],['gravitation','stars','prereq'],['elasticity','shm','prereq'],
+  ['shm','wave-basics','prereq'],['shm','resonance','prereq'],['shm','damped-oscillation','builds'],['shm','lc-oscillations','contrasts'],
+  /* WAVES */
+  ['wave-basics','superposition','prereq'],['wave-basics','doppler','prereq'],['wave-basics','sound-intensity','prereq'],['wave-basics','em-waves','builds'],['wave-basics','matter-waves','builds'],['wave-basics','interference-optics','prereq'],
+  ['superposition','standing-waves','prereq'],['superposition','beats','prereq'],['superposition','interference-optics','enables'],
+  ['damped-oscillation','resonance','builds'],['resonance','standing-waves','applies'],['resonance','ac-circuits','applies'],['doppler','cosmology','applies'],['standing-waves','bohr-model','applies'],
+  /* THERMO */
+  ['temp-heat','kinetic-theory','prereq'],['temp-heat','thermal-expansion','prereq'],['temp-heat','heat-transfer','prereq'],['temp-heat','first-law','prereq'],
+  ['kinetic-theory','first-law','prereq'],['kinetic-theory','degrees-of-freedom','prereq'],['kinetic-theory','maxwell-boltzmann','prereq'],['degrees-of-freedom','first-law','applies'],
+  ['first-law','second-law','prereq'],['first-law','heat-engines','prereq'],['second-law','heat-engines','prereq'],['maxwell-boltzmann','second-law','enables'],
+  ['second-law','black-holes','applies'],['second-law','cosmology','applies'],['heat-transfer','stars','applies'],
+  /* OPTICS */
+  ['reflection','refraction','contrasts'],['reflection','optical-instruments','prereq'],['refraction','lenses','prereq'],['refraction','dispersion-prisms','prereq'],['refraction','human-eye','prereq'],
+  ['lenses','optical-instruments','prereq'],['lenses','human-eye','applies'],['interference-optics','diffraction','prereq'],['diffraction','polarization','builds'],
+  ['diffraction','optical-instruments','applies'],['diffraction','atomic-spectra','applies'],['interference-optics','photoelectric','contrasts'],['em-waves','polarization','prereq'],['em-waves','refraction','enables'],
+  /* ELECTROSTATICS */
+  ['charge','coulomb','prereq'],['charge','van-de-graaff','applies'],['coulomb','e-field','prereq'],['coulomb','gauss','builds'],['coulomb','gravitation','contrasts'],
+  ['e-field','potential','prereq'],['e-field','gauss','builds'],['e-field','capacitance','prereq'],['e-field','electric-dipole','prereq'],['e-field','drift-velocity','prereq'],
+  ['potential','capacitance','prereq'],['potential','electric-dipole','applies'],['potential','van-de-graaff','applies'],['potential','ohms-law','prereq'],
+  ['capacitance','dielectrics','prereq'],['capacitance','rc-circuits','prereq'],['capacitance','lc-oscillations','prereq'],['gauss','gravitation','contrasts'],['gauss','em-waves','enables'],
+  /* CURRENT */
+  ['ohms-law','resistor-networks','prereq'],['ohms-law','power-electrical','prereq'],['ohms-law','emf-internal','prereq'],['ohms-law','rc-circuits','prereq'],['ohms-law','drift-velocity','builds'],['ohms-law','biot-savart','prereq'],
+  ['resistor-networks','kirchhoff','builds'],['resistor-networks','wheatstone','prereq'],['kirchhoff','wheatstone','prereq'],['emf-internal','kirchhoff','applies'],['rc-circuits','lc-oscillations','contrasts'],['power-electrical','transformers','applies'],
+  /* MAGNETISM */
+  ['magnetic-field','biot-savart','prereq'],['magnetic-field','em-induction','prereq'],['magnetic-field','cyclotron','prereq'],['biot-savart','inductance','prereq'],['biot-savart','em-waves','prereq'],
+  ['em-induction','inductance','prereq'],['em-induction','ac-circuits','prereq'],['em-induction','transformers','prereq'],['em-induction','em-waves','prereq'],['inductance','ac-circuits','prereq'],
+  ['inductance','lc-oscillations','prereq'],['inductance','transformers','applies'],['ac-circuits','lc-oscillations','builds'],['em-waves','special-relativity','enables'],['em-waves','photoelectric','prereq'],
+  /* MODERN */
+  ['photoelectric','bohr-model','prereq'],['photoelectric','matter-waves','contrasts'],['photoelectric','semiconductors','applies'],['bohr-model','atomic-spectra','prereq'],['bohr-model','semiconductors','builds'],['bohr-model','wavefunction','builds'],
+  ['matter-waves','uncertainty','prereq'],['matter-waves','bohr-model','applies'],['matter-waves','wavefunction','prereq'],['uncertainty','wavefunction','prereq'],['atomic-spectra','lasers','prereq'],['atomic-spectra','stars','applies'],
+  /* QUANTUM & NUCLEAR */
+  ['wavefunction','tunneling','prereq'],['wavefunction','entanglement','prereq'],['wavefunction','particle-physics','builds'],['tunneling','radioactivity','applies'],['tunneling','semiconductors','applies'],
+  ['nuclear-binding','radioactivity','prereq'],['nuclear-binding','fission-fusion','prereq'],['radioactivity','carbon-dating','prereq'],['radioactivity','fission-fusion','builds'],
+  ['mass-energy','nuclear-binding','prereq'],['mass-energy','fission-fusion','prereq'],['mass-energy','particle-physics','prereq'],['fission-fusion','stars','applies'],['particle-physics','cosmology','applies'],
+  /* RELATIVITY & ASTRO */
+  ['special-relativity','mass-energy','prereq'],['special-relativity','twin-paradox','prereq'],['special-relativity','general-relativity','prereq'],
+  ['general-relativity','black-holes','prereq'],['general-relativity','cosmology','prereq'],['general-relativity','gravitational-waves','prereq'],
+  ['black-holes','gravitational-waves','applies'],['stars','black-holes','prereq'],['stars','cosmology','applies'],['mass-energy','stars','applies']
+]; var o=[]; for(var i=0;i<R.length;i++) o.push({from:R[i][0],to:R[i][1],type:R[i][2]}); return o; })();
+
+/* ---- index (skips any edge whose endpoints are not real topics) ---- */
+var KG_OUT={}, KG_IN={}, KG_PAIR={};
+(function(){ for(var i=0;i<GRAPH.length;i++){ var e=GRAPH[i]; if(!topicById(e.from)||!topicById(e.to)) continue;
+  (KG_OUT[e.from]=KG_OUT[e.from]||[]).push(e); (KG_IN[e.to]=KG_IN[e.to]||[]).push(e); KG_PAIR[e.from+'>'+e.to]=e.type; } })();
+
+/* ---- module-global API (adaptive practice + universe consume these) ---- */
+function kgEdgeType(a,b){ return KG_PAIR[a+'>'+b]||null; }
+function prereqsOf(id){ var o=[],seen={},a=KG_IN[id]||[],i,e; for(i=0;i<a.length;i++){ e=a[i]; if((e.type==='prereq'||e.type==='builds')&&!seen[e.from]){ seen[e.from]=1; o.push(e.from); } } return o; }
+function unlocks(id){ var o=[],seen={},a=KG_OUT[id]||[],i,e; for(i=0;i<a.length;i++){ e=a[i]; if((e.type==='prereq'||e.type==='builds'||e.type==='enables')&&!seen[e.to]){ seen[e.to]=1; o.push(e.to); } } return o; }
+function relatedOf(id){ var o=[],seen={},ex={},pre=prereqsOf(id),unl=unlocks(id),k; for(k=0;k<pre.length;k++)ex[pre[k]]=1; for(k=0;k<unl.length;k++)ex[unl[k]]=1;
+  var mine=topicById(id),md=mine?mine.domain:null;
+  function add(other,type,dir){ if(other===id||ex[other]||seen[other]) return; var ot=topicById(other); if(!ot) return; var cross=ot.domain!==md;
+    if(type==='applies'||type==='contrasts'||type==='enables'||cross){ seen[other]=1; o.push({id:other,type:type,dir:dir,cross:cross}); } }
+  var oi=KG_OUT[id]||[],i; for(i=0;i<oi.length;i++) add(oi[i].to,oi[i].type,'out');
+  var ii=KG_IN[id]||[],j; for(j=0;j<ii.length;j++) add(ii[j].from,ii[j].type,'in');
+  return o;
+}
+function readiness(id){ var pre=prereqsOf(id),miss=[],i; for(i=0;i<pre.length;i++) if(!Me.isDone(pre[i])) miss.push(pre[i]); return {ready:miss.length===0,missing:miss,total:pre.length}; }
+function kgEdgesOf(id){ var o=[],a,i; a=KG_OUT[id]||[]; for(i=0;i<a.length;i++)o.push({from:a[i].from,to:a[i].to,type:a[i].type,dir:'out',other:a[i].to}); a=KG_IN[id]||[]; for(i=0;i<a.length;i++)o.push({from:a[i].from,to:a[i].to,type:a[i].type,dir:'in',other:a[i].from}); return o; }
+
+/* ---- Connections panel ---- */
+function kgWire(host){ var els=host.querySelectorAll('[data-goto]'),i; for(i=0;i<els.length;i++){ (function(el){ el.addEventListener('click',function(e){ e.stopPropagation(); var gid=el.getAttribute('data-goto'); if(gid&&topicById(gid)) go('lesson',gid); }); })(els[i]); } }
+function kgRow(other,type,role){ var tp=topicById(other); if(!tp) return ''; var c=DMAP[tp.domain].c, done=Me.isDone(other), tm=KG_TYPE[type]||KG_TYPE.prereq;
+  var tag = role==='pre' ? (type==='builds'?'foundation':'prereq') : (type==='prereq'?'leads to':type==='builds'?'extends':type);
+  var st = done?'<span class="st done" title="completed">✓</span>':'<span class="st todo" title="not learned yet">○</span>';
+  return '<div class="kg-row" data-goto="'+other+'" title="'+esc(tm.label)+'"><span class="dot" style="background:'+c+'"></span>'+st+'<span class="nm">'+esc(tp.name)+'</span><span class="ty" style="color:'+tm.c+';border-color:'+tm.c+'55">'+tag+'</span><span class="go">›</span></div>'; }
+function renderConnections(host,id,opts){ if(!host) return; opts=opts||{}; var t=topicById(id); if(!t){ host.innerHTML=''; return; }
+  var pre=prereqsOf(id), unl=unlocks(id), rel=relatedOf(id), rd=readiness(id);
+  if(opts.compact){ var mc='', v;
+    if(rd.ready) v=pre.length?'✓ Foundations complete — ready':'✦ Entry point — start here';
+    else v='△ Learn '+esc(topicById(rd.missing[0]).name)+(rd.missing.length>1?' +'+(rd.missing.length-1)+' more':'')+' first';
+    mc+='<div class="kg-mini '+(rd.ready?'ok':'hold')+'">'+v+'</div>';
+    if(pre.length){ mc+='<div class="kg-mini-chips">'+pre.slice(0,4).map(function(pid){ var c=DMAP[topicById(pid).domain].c,d=Me.isDone(pid); return '<span class="kg-mc" data-goto="'+pid+'"><i style="background:'+c+'"></i><span class="st" style="color:'+(d?'var(--emerald)':'var(--ink-ghost)')+'">'+(d?'✓':'○')+'</span>'+esc(topicById(pid).name)+'</span>'; }).join('')+'</div>'; }
+    if(unl.length||rel.length){ mc+='<div class="kg-mini-u">→ unlocks '+unl.length+' concept'+(unl.length===1?'':'s')+(rel.length?' · '+rel.length+' resonance'+(rel.length===1?'':'s'):'')+'</div>'; }
+    host.innerHTML=mc; kgWire(host); return; }
+  var H='<div class="kg-h"><span style="color:var(--violet)">◈</span> How this connects · the living graph</div>';
+  if(rd.ready) H+='<div class="kg-verdict ok"><span class="ic">✓</span><span>'+(pre.length?'You have the foundations — ready to learn <b>'+esc(t.name)+'</b>.':'<b>'+esc(t.name)+'</b> is a first-principles entry point — no prerequisites. Dive in.')+'</span></div>';
+  else { var mn=rd.missing.map(function(m){ return '<b>'+esc(topicById(m).name)+'</b>'; }); var joined=mn.length===1?mn[0]:mn.slice(0,-1).join(', ')+' and '+mn[mn.length-1];
+    H+='<div class="kg-verdict hold"><span class="ic">△</span><span>Best learned after '+joined+' — '+rd.missing.length+' of '+rd.total+' foundations still open.</span></div>'; }
+  if(pre.length){ H+='<div class="kg-group"><div class="kg-gh">Prerequisites · understand first</div>'+pre.map(function(pid){ return kgRow(pid,kgEdgeType(pid,id)||'prereq','pre'); }).join('')+'</div>'; }
+  if(unl.length){ var us=unl.slice(0,6),um=unl.length-us.length; H+='<div class="kg-group"><div class="kg-gh">Unlocks · where this leads</div>'+us.map(function(uid){ return kgRow(uid,kgEdgeType(id,uid)||'builds','unlock'); }).join('')+(um>0?'<div class="kg-more">+'+um+' more downstream concepts</div>':'')+'</div>'; }
+  if(rel.length){ var rs=rel.slice(0,8),rm=rel.length-rs.length; H+='<div class="kg-group"><div class="kg-gh">Cross-field resonances</div><div class="kg-res">'+rs.map(function(r){ var c=DMAP[topicById(r.id).domain].c,tm=KG_TYPE[r.type]||KG_TYPE.applies; var rt=r.type==='applies'?'applies':r.type==='contrasts'?'contrast':r.type==='enables'?'enables':r.type; return '<span class="chip" data-goto="'+r.id+'" title="'+esc(tm.label)+'"><i style="background:'+c+'"></i>'+esc(topicById(r.id).name)+'<span style="color:'+tm.c+';opacity:.9"> · '+rt+'</span></span>'; }).join('')+'</div>'+(rm>0?'<div class="kg-more">+'+rm+' more resonances</div>':'')+'</div>'; }
+  host.className='kg-conn'; host.innerHTML=H; kgWire(host);
+}
+
+/* ---- public handle (Uni + practice consume this) ---- */
+var Graph={ edges:function(){ return GRAPH; }, edgesOf:kgEdgesOf, typeMeta:KG_TYPE, edgeType:kgEdgeType,
+  prereqsOf:prereqsOf, unlocks:unlocks, relatedOf:relatedOf, readiness:readiness, renderConnections:renderConnections };
 
 /* ===== SOLVE — type any problem, get a reasoned step-by-step solution ===== */
 var Solve=(function(){
@@ -6140,7 +6288,7 @@ function viewLesson(id){
     ((t.eqs&&t.eqs.length)?('<div class="l-sec"><h3>Key equations</h3>'+t.eqs.map(function(e){ return '<div class="eq"><span class="f">'+esc(e[0])+'</span><span class="d">'+esc(e[1])+'</span></div>'; }).join('')+'</div>'):'')+
     ((t.points&&t.points.length)?('<div class="l-sec"><h3>Core concepts</h3>'+t.points.map(function(p){ return '<div class="pt"><span class="b">●</span><span>'+esc(p)+'</span></div>'; }).join('')+'</div>'):'')+
     ((t.exam&&t.exam.length)?('<div class="callout"><div class="h">★ Exam focus</div>'+t.exam.map(function(p){ return '<div class="pt"><span class="b">●</span><span>'+esc(p)+'</span></div>'; }).join('')+'</div>'):'')+
-    '<div class="l-sec"><h3>Keep the flow — never a dead end</h3><div class="flow-rail">'+
+    '<div id="conn-host"></div>'+'<div class="l-sec"><h3>Keep the flow — never a dead end</h3><div class="flow-rail">'+
       '<button class="btn btn-ghost btn-sm" data-flowx="sandbox">⊙ Build it in the Sandbox</button>'+
       (simType?'<button class="btn btn-ghost btn-sm" data-flowx="lab">▸ Run the '+esc(SIM_META[simType].n)+' investigation</button>':'')+
       '<button class="btn btn-ghost btn-sm" data-flowx="inv">∫ Investigate a question</button>'+
@@ -6154,6 +6302,7 @@ function viewLesson(id){
   main.innerHTML=html;
   try{ Lens.mount($('#lens-host'),t); }catch(e){}
   try{ MultiRep.mount($('#mrep-host'),t); }catch(e){}
+  try{ Graph.renderConnections($('#conn-host'),id); }catch(e){}
   if(simType){ var inst=SIMS[simType]($('#lesson-sim')); activeSim=inst; if(inst.controls) inst.controls($('#lesson-ctl')); }
   if(IEQ[t.id]){ mountEqViz($('#eqviz-host'), IEQ[t.id]); }
   $('#ask-this').addEventListener('click',function(){ Tutor.open(t.name); Tutor.ask('Explain '+t.name+' simply, with the key intuition.', t.name); });

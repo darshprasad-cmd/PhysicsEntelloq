@@ -2701,10 +2701,164 @@ var Lens=(function(){
   function symsOf(fstr){ var out=[],seen={}; (String(fstr).match(/KE|PE|[A-Za-zλωμθεΦ]/g)||[]).forEach(function(sy){ if(SYM[sy]&&!seen[sy]){ seen[sy]=1; out.push(sy); } }); return out.slice(0,7); }
   /* ---- the six modality builders ---- */
   var curSim=null;
+  /* ---- VIZ: structural visualizations for the Visual lens (distinct from Experience play) ---- */
+  var VIZMONO='11px JetBrains Mono, monospace';
+  function vzArrow(g,x0,y0,x1,y1,col){ g.strokeStyle=col; g.fillStyle=col; g.lineWidth=2; g.beginPath(); g.moveTo(x0,y0); g.lineTo(x1,y1); g.stroke(); var a=Math.atan2(y1-y0,x1-x0); g.beginPath(); g.moveTo(x1,y1); g.lineTo(x1-Math.cos(a-0.4)*8,y1-Math.sin(a-0.4)*8); g.lineTo(x1-Math.cos(a+0.4)*8,y1-Math.sin(a+0.4)*8); g.closePath(); g.fill(); }
+  function vzLabel(g,txt,x,y,col){ g.fillStyle=col||'rgba(159,177,208,.9)'; g.font=VIZMONO; g.fillText(txt,x,y); }
+  var VIZ={
+    mechanics:{ hint:'kinetic \u21c4 potential — the total never changes',
+      init:function(){ return {th:0.87,w:0,amp:0.87}; },
+      scrub:{label:'release angle',min:10,max:85,val:50,unit:'\u00b0',on:function(s,v){ s.amp=v*Math.PI/180; s.th=s.amp; s.w=0; }},
+      draw:function(g,s,W,H,t){ var w0=2.3,dt=0.016; s.w+=-w0*w0*Math.sin(s.th)*dt; s.th+=s.w*dt;
+        var px=W*0.5,py=H*0.14,L=Math.min(W*0.62,H*0.6); var bx=px+Math.sin(s.th)*L,by=py+Math.cos(s.th)*L;
+        g.strokeStyle='rgba(255,255,255,.25)'; g.lineWidth=1.5; g.beginPath(); g.moveTo(px,py); g.lineTo(bx,by); g.stroke();
+        g.fillStyle='rgba(125,211,252,.4)'; g.beginPath(); g.arc(px,py,3,0,7); g.fill();
+        var vx=Math.cos(s.th)*s.w,vy=-Math.sin(s.th)*s.w,vm=Math.hypot(vx,vy)||1,vlen=Math.min(52,Math.abs(s.w)*20);
+        if(vlen>3) vzArrow(g,bx,by,bx+vx/vm*vlen,by+vy/vm*vlen,'#fbbf24');
+        g.fillStyle='#7dd3fc'; g.beginPath(); g.arc(bx,by,9,0,7); g.fill();
+        var peF=(1-Math.cos(s.th))/((1-Math.cos(s.amp))||1); peF=Math.max(0,Math.min(1,peF)); var keF=1-peF;
+        var barY=H-16,barH=Math.min(H*0.5,110);
+        g.fillStyle='rgba(255,255,255,.07)'; g.fillRect(14,barY-barH,15,barH); g.fillRect(35,barY-barH,15,barH);
+        g.fillStyle='#f472b6'; g.fillRect(14,barY-barH*peF,15,barH*peF);
+        g.fillStyle='#34d399'; g.fillRect(35,barY-barH*keF,15,barH*keF);
+        vzLabel(g,'PE',13,barY+4,'#f472b6'); vzLabel(g,'KE',35,barY+4,'#34d399');
+        vzLabel(g,'energy conserved:  KE + PE = constant',12,20,'#fff'); } },
+    waves:{ hint:'two waves add point-by-point',
+      init:function(){ return {phase:Math.PI}; },
+      scrub:{label:'phase shift \u0394\u03c6',min:0,max:360,val:180,unit:'\u00b0',on:function(s,v){ s.phase=v*Math.PI/180; }},
+      draw:function(g,s,W,H,t){ var y0=H*0.34,A=Math.min(H*0.13,40),k=6.283/(W*0.34),sp=t*2.2,ph=s.phase,x;
+        function w1(off,col){ g.strokeStyle=col; g.lineWidth=1.5; g.beginPath(); for(x=0;x<=W;x+=2){ var y=y0+A*Math.sin(k*x-sp+off); x?g.lineTo(x,y):g.moveTo(x,y);} g.stroke(); }
+        w1(0,'rgba(125,211,252,.5)'); w1(ph,'rgba(244,114,182,.5)');
+        var y1=H*0.74,R=2*Math.abs(Math.cos(ph/2));
+        g.strokeStyle='#fff'; g.lineWidth=2.4; g.beginPath(); for(x=0;x<=W;x+=2){ var y=y1+A*(Math.sin(k*x-sp)+Math.sin(k*x-sp+ph)); x?g.lineTo(x,y):g.moveTo(x,y);} g.stroke();
+        vzLabel(g,'wave 1  +  wave 2',12,18,'rgba(190,220,255,.9)');
+        vzLabel(g,'resultant   A = 2A\u00b7cos(\u0394\u03c6/2) = '+R.toFixed(2)+'A',12,y1-A-12,'#fff');
+        vzLabel(g, ph<0.35||ph>6.0?'in phase \u2192 constructive':(Math.abs(ph-Math.PI)<0.4?'opposite phase \u2192 they cancel':'partial interference'),12,H-10,'rgba(159,177,208,.9)'); } },
+    thermo:{ hint:'raise T — the speed spread widens',
+      init:function(){ var p=[],i; for(i=0;i<44;i++) p.push({x:Math.random(),y:Math.random(),a:Math.random()*6.283}); return {p:p,T:2}; },
+      scrub:{label:'temperature',min:1,max:6,val:2,unit:'\u00d7 T\u2080',on:function(s,v){ s.T=v; }},
+      draw:function(g,s,W,H,t){ var bx=W*0.05,by=H*0.1,bw=W*0.5,bh=H*0.8,sp=Math.sqrt(s.T),i;
+        g.strokeStyle='rgba(251,146,60,.4)'; g.lineWidth=1.4; g.strokeRect(bx,by,bw,bh);
+        s.p.forEach(function(pt){ var v=sp*0.006; pt.x+=Math.cos(pt.a)*v; pt.y+=Math.sin(pt.a)*v;
+          if(pt.x<0){pt.x=0;pt.a=Math.PI-pt.a;} if(pt.x>1){pt.x=1;pt.a=Math.PI-pt.a;} if(pt.y<0){pt.y=0;pt.a=-pt.a;} if(pt.y>1){pt.y=1;pt.a=-pt.a;}
+          g.fillStyle='#fb923c'; g.beginPath(); g.arc(bx+pt.x*bw,by+pt.y*bh,2.6,0,7); g.fill(); });
+        var gx=W*0.62,gy=H*0.86,gw=W*0.33,gh=H*0.64,peak=0,vals=[];
+        for(i=0;i<=60;i++){ var vv=i/60*4.5,f=vv*vv*Math.exp(-vv*vv/(2*s.T)); vals.push(f); if(f>peak)peak=f; }
+        g.strokeStyle='rgba(255,255,255,.15)'; g.lineWidth=1; g.beginPath(); g.moveTo(gx,gy-gh); g.lineTo(gx,gy); g.lineTo(gx+gw,gy); g.stroke();
+        g.strokeStyle='#fbbf24'; g.lineWidth=2; g.beginPath(); for(i=0;i<=60;i++){ var xx=gx+i/60*gw,yy=gy-(vals[i]/(peak||1))*gh*0.9; i?g.lineTo(xx,yy):g.moveTo(xx,yy);} g.stroke();
+        vzLabel(g,'speed distribution',gx,gy+14,'rgba(159,177,208,.9)');
+        vzLabel(g,'v_rms \u221d \u221aT',gx,gy-gh-4,'#fbbf24'); } },
+    optics:{ hint:'drag the angle — Snell bends the ray',
+      init:function(){ return {ai:40}; },
+      scrub:{label:'incidence \u03b8\u2081',min:5,max:85,val:40,unit:'\u00b0',on:function(s,v){ s.ai=v; }},
+      draw:function(g,s,W,H,t){ var cx=W*0.5,cy=H*0.5,n1=1.0,n2=1.5,L=Math.min(W,H)*0.4;
+        g.fillStyle='rgba(167,139,250,.07)'; g.fillRect(0,cy,W,H-cy);
+        g.strokeStyle='rgba(255,255,255,.28)'; g.lineWidth=1.4; g.beginPath(); g.moveTo(0,cy); g.lineTo(W,cy); g.stroke();
+        g.setLineDash([4,5]); g.strokeStyle='rgba(255,255,255,.3)'; g.beginPath(); g.moveTo(cx,cy-L); g.lineTo(cx,cy+L); g.stroke(); g.setLineDash([]);
+        var a1=s.ai*Math.PI/180,sinr=n1*Math.sin(a1)/n2,a2=Math.asin(Math.max(-1,Math.min(1,sinr)));
+        vzArrow(g,cx-Math.sin(a1)*L,cy-Math.cos(a1)*L,cx,cy,'#7dd3fc');
+        vzArrow(g,cx,cy,cx+Math.sin(a2)*L,cy+Math.cos(a2)*L,'#a78bfa');
+        g.strokeStyle='rgba(125,211,252,.25)'; g.lineWidth=1.4; g.beginPath(); g.moveTo(cx,cy); g.lineTo(cx+Math.sin(a1)*L,cy-Math.cos(a1)*L); g.stroke();
+        vzLabel(g,'air   n\u2081 = 1.0',12,cy-10,'rgba(159,177,208,.9)');
+        vzLabel(g,'glass n\u2082 = 1.5',12,cy+20,'rgba(167,139,250,.9)');
+        vzLabel(g,'\u03b8\u2081 = '+s.ai.toFixed(0)+'\u00b0    \u03b8\u2082 = '+(a2*180/Math.PI).toFixed(1)+'\u00b0',12,20,'#fff');
+        vzLabel(g,'n\u2081 sin\u03b8\u2081 = n\u2082 sin\u03b8\u2082',12,H-10,'rgba(255,255,255,.75)'); } },
+    electrostatics:{ hint:'field lines leave + and end on \u2212',
+      init:function(){ return {q:1}; },
+      scrub:{label:'+ charge strength',min:1,max:4,val:1,unit:'\u00d7',on:function(s,v){ s.q=v; }},
+      draw:function(g,s,W,H,t){ var cy=H*0.5,sep=Math.min(W,H)*0.26,cx=W*0.5,i,j;
+        var A={x:cx-sep,y:cy,q:s.q},B={x:cx+sep,y:cy,q:-1},N=Math.round(8*s.q)+4;
+        for(i=0;i<N;i++){ var ang=i/N*6.283,x=A.x+Math.cos(ang)*8,y=A.y+Math.sin(ang)*8;
+          g.strokeStyle='rgba(250,204,21,.45)'; g.lineWidth=1.1; g.beginPath(); g.moveTo(x,y);
+          for(j=0;j<260;j++){ var ex=0,ey=0; [A,B].forEach(function(p){ var dx=x-p.x,dy=y-p.y,d2=dx*dx+dy*dy+25,d=Math.sqrt(d2),e=p.q/d2; ex+=e*dx/d; ey+=e*dy/d; });
+            var m=Math.hypot(ex,ey)||1; x+=ex/m*3.2; y+=ey/m*3.2; g.lineTo(x,y);
+            if(x<-5||x>W+5||y<-5||y>H+5) break; if(Math.hypot(x-B.x,y-B.y)<8) break; }
+          g.stroke(); }
+        g.textAlign='center'; g.font='bold 14px sans-serif';
+        g.fillStyle='#f87171'; g.beginPath(); g.arc(A.x,A.y,11,0,7); g.fill(); g.fillStyle='#fff'; g.fillText('+',A.x,A.y+5);
+        g.fillStyle='#60a5fa'; g.beginPath(); g.arc(B.x,B.y,11,0,7); g.fill(); g.fillStyle='#fff'; g.fillText('\u2212',B.x,B.y+5);
+        g.textAlign='left'; vzLabel(g,'E \u221d 1/r\u00b2   \u00b7  lines never cross',12,H-10,'rgba(159,177,208,.9)'); } },
+    current:{ hint:'electrons drift slowly through a lattice',
+      init:function(){ var e=[],i; for(i=0;i<28;i++) e.push({x:Math.random(),y:Math.random(),a:Math.random()*6.283}); return {e:e,V:2}; },
+      scrub:{label:'voltage',min:0,max:6,val:2,unit:'V',on:function(s,v){ s.V=v; }},
+      draw:function(g,s,W,H,t){ var wx=W*0.06,wy=H*0.36,ww=W*0.88,wh=H*0.32,ix,iy;
+        g.strokeStyle='rgba(52,211,153,.4)'; g.lineWidth=1.4; g.strokeRect(wx,wy,ww,wh);
+        for(ix=0;ix<9;ix++) for(iy=0;iy<3;iy++){ g.fillStyle='rgba(148,163,184,.45)'; g.beginPath(); g.arc(wx+(ix+0.5)/9*ww,wy+(iy+0.5)/3*wh,3.2,0,7); g.fill(); }
+        var drift=s.V*0.0012;
+        s.e.forEach(function(el){ el.a+=(Math.random()-0.5)*0.9; el.x+=Math.cos(el.a)*0.0035+drift; el.y+=Math.sin(el.a)*0.0035;
+          if(el.x>1) el.x-=1; if(el.x<0) el.x+=1; if(el.y<0){el.y=0;el.a=-el.a;} if(el.y>1){el.y=1;el.a=-el.a;}
+          g.fillStyle='#7dd3fc'; g.beginPath(); g.arc(wx+el.x*ww,wy+el.y*wh,2.4,0,7); g.fill(); });
+        if(s.V>0) vzArrow(g,wx+ww*0.42,wy-14,wx+ww*0.58,wy-14,'#34d399');
+        vzLabel(g,'drift velocity   ( I = n\u00b7A\u00b7v\u00b7q )',wx,wy-22,'rgba(52,211,153,.9)');
+        vzLabel(g, s.V>0?'field applied \u2192 net current flows':'no field \u2192 only random motion, no current',12,H-10,'rgba(159,177,208,.9)'); } },
+    magnetism:{ hint:'a moving charge curves in a magnetic field',
+      init:function(){ return {v:2,th:0}; },
+      scrub:{label:'charge speed',min:1,max:5,val:2,unit:'\u00d7 v',on:function(s,v){ s.v=v; }},
+      draw:function(g,s,W,H,t){ var cx=W*0.5,cy=H*0.5,r;
+        for(r=20;r<Math.min(W,H)*0.48;r+=22){ g.strokeStyle='rgba(96,165,250,'+(0.35*(1-r/(Math.min(W,H)*0.48))).toFixed(2)+')'; g.lineWidth=1.1; g.beginPath(); g.arc(cx,cy,r,0,7); g.stroke(); }
+        g.fillStyle='#60a5fa'; g.beginPath(); g.arc(cx,cy,7,0,7); g.fill(); g.fillStyle='#04060c'; g.beginPath(); g.arc(cx,cy,2.5,0,7); g.fill();
+        var R=Math.min(W,H)*0.14+s.v*Math.min(W,H)*0.03; s.th+=0.02;
+        var px=cx+Math.cos(s.th)*R,py=cy+Math.sin(s.th)*R;
+        g.fillStyle='#facc15'; g.beginPath(); g.arc(px,py,5,0,7); g.fill();
+        vzArrow(g,px,py,px-Math.sin(s.th)*34,py+Math.cos(s.th)*34,'#fbbf24');
+        var fx=cx-px,fy=cy-py,fm=Math.hypot(fx,fy)||1; vzArrow(g,px,py,px+fx/fm*26,py+fy/fm*26,'#f87171');
+        vzLabel(g,'\u2299 current out of page  \u00b7 B-field circles',12,20,'rgba(96,165,250,.9)');
+        vzLabel(g,'F = qv\u00d7B (\u22a5 v) \u2192 circular path, r = mv/qB',12,H-10,'rgba(159,177,208,.9)'); } },
+    modern:{ hint:'electrons jump between fixed energy levels',
+      init:function(){ return {ph:0}; },
+      draw:function(g,s,W,H,t){ var xL=W*0.14,xR=W*0.6,n,Emin=-13.6,Emax=-0.6,x;
+        function yOf(E){ return H*0.9-(E-Emin)/(Emax-Emin)*(H*0.78); }
+        for(n=1;n<=4;n++){ var E=-13.6/(n*n),y=yOf(E); g.strokeStyle='rgba(244,114,182,.55)'; g.lineWidth=1.5; g.beginPath(); g.moveTo(xL,y); g.lineTo(xR,y); g.stroke();
+          vzLabel(g,'n='+n+'   '+E.toFixed(2)+' eV',xR+8,y+4,'rgba(232,237,255,.72)'); }
+        var y3=yOf(-13.6/9),y2=yOf(-13.6/4); s.ph=(s.ph+0.006)%1; var ey=y3+(y2-y3)*s.ph,mx=(xL+xR)/2;
+        g.fillStyle='#f472b6'; g.beginPath(); g.arc(mx,ey,5,0,7); g.fill();
+        if(s.ph>0.9){ g.strokeStyle='#fbbf24'; g.lineWidth=2; g.beginPath(); g.moveTo(mx+8,y2); for(x=0;x<44;x+=2){ g.lineTo(mx+8+x,y2+Math.sin(x/2.2)*4); } g.stroke(); }
+        vzLabel(g,'energy is quantized \u2014 no rungs between',xL,20,'#f472b6');
+        vzLabel(g,'photon out:  \u0394E = hf   (n=3\u21922, 656 nm red)',xL,H-10,'rgba(159,177,208,.9)'); } },
+    quantum:{ hint:'only whole standing waves fit the box',
+      init:function(){ return {n:2}; },
+      scrub:{label:'quantum number n',min:1,max:5,val:2,unit:'',step:1,on:function(s,v){ s.n=Math.round(v); }},
+      draw:function(g,s,W,H,t){ var bx=W*0.14,bw=W*0.72,y0=H*0.54,n=s.n,i;
+        g.strokeStyle='rgba(192,132,252,.5)'; g.lineWidth=2; g.beginPath(); g.moveTo(bx,H*0.14); g.lineTo(bx,H*0.9); g.moveTo(bx+bw,H*0.14); g.lineTo(bx+bw,H*0.9); g.stroke();
+        g.strokeStyle='rgba(255,255,255,.12)'; g.lineWidth=1; g.beginPath(); g.moveTo(bx,y0); g.lineTo(bx+bw,y0); g.stroke();
+        g.fillStyle='rgba(192,132,252,.2)'; g.beginPath(); g.moveTo(bx,y0);
+        for(i=0;i<=120;i++){ var xx=i/120,ps=Math.sin(n*Math.PI*xx); g.lineTo(bx+xx*bw,y0-ps*ps*H*0.3); }
+        g.lineTo(bx+bw,y0); g.closePath(); g.fill();
+        g.strokeStyle='#c084fc'; g.lineWidth=2; g.beginPath();
+        for(i=0;i<=120;i++){ var xx2=i/120,ps2=Math.sin(n*Math.PI*xx2)*Math.cos(t*2)*H*0.22,X=bx+xx2*bw,Y=y0-ps2; i?g.lineTo(X,Y):g.moveTo(X,Y); } g.stroke();
+        vzLabel(g,'|\u03c8|\u00b2 = probability of finding the particle',bx,H-10,'rgba(192,132,252,.9)');
+        vzLabel(g,'n = '+n+'   \u00b7   '+(n-1)+' node'+((n-1)===1?'':'s')+'   \u00b7   E\u2099 \u221d n\u00b2',bx,20,'#fff'); } },
+    relativity:{ hint:'faster \u2192 the moving clock ticks slower',
+      init:function(){ return {v:0.5,ph:0}; },
+      scrub:{label:'speed',min:0,max:0.95,val:0.5,unit:'c',on:function(s,v){ s.v=v; }},
+      draw:function(g,s,W,H,t){ var gamma=1/Math.sqrt(1-s.v*s.v),top=H*0.28,bot=H*0.72,mx=W*0.5;
+        g.strokeStyle='rgba(248,113,113,.7)'; g.lineWidth=1.5; g.beginPath(); g.moveTo(mx-16,top); g.lineTo(mx+16,top); g.moveTo(mx-16,bot); g.lineTo(mx+16,bot); g.stroke();
+        g.strokeStyle='rgba(253,230,138,.3)'; g.lineWidth=1; g.beginPath(); g.moveTo(mx,top); g.lineTo(mx,bot); g.stroke();
+        s.ph=(s.ph+0.02/gamma)%2; var py=s.ph<1?top+(bot-top)*s.ph:bot-(bot-top)*(s.ph-1);
+        g.fillStyle='#fde68a'; g.beginPath(); g.arc(mx,py,4.5,0,7); g.fill();
+        g.fillStyle='rgba(255,255,255,.1)'; g.fillRect(14,32,W-28,5); g.fillStyle='#f87171'; g.fillRect(14,32,(W-28)*s.v,5);
+        vzLabel(g,'\u03b3 = 1/\u221a(1\u2212v\u00b2/c\u00b2) = '+gamma.toFixed(2),14,24,'#f87171');
+        vzLabel(g,'1 s here  =  '+gamma.toFixed(2)+' s on the moving clock',14,H-10,'rgba(159,177,208,.9)'); } }
+  };
+  function mountViz(stage,t,panel){
+    var dk=(t&&t.domain)||'mechanics'; var V=VIZ[dk]||VIZ.mechanics;
+    stage.innerHTML='<canvas class="lx-cv"></canvas>'+(V.hint?'<div class="lx-hint">'+esc(V.hint)+'</div>':'');
+    var cv=stage.querySelector('canvas'),g=cv.getContext('2d'),pr=Math.min(devicePixelRatio||1,2);
+    function fitc(){ var r=cv.getBoundingClientRect(),W=Math.max(60,r.width|0),H=Math.max(60,r.height|0); if(cv.width!==W*pr){ cv.width=W*pr; cv.height=H*pr; g.setTransform(pr,0,0,pr,0,0);} cv._W=W; cv._H=H; }
+    fitc(); var st=V.init?V.init(cv._W,cv._H):{},raf=0,alive=true,t0=performance.now();
+    function redraw(){ fitc(); g.clearRect(0,0,cv._W,cv._H); V.draw(g,st,cv._W,cv._H,(performance.now()-t0)/1000); }
+    function frame(){ if(!alive)return; if(!cv.isConnected){ alive=false; return; } redraw(); raf=requestAnimationFrame(frame); }
+    if(V.scrub&&panel){ var sc=V.scrub,sl=ce('div','lx-slider');
+      sl.innerHTML='<span>'+esc(sc.label)+'</span><input type="range" class="sl" min="'+sc.min+'" max="'+sc.max+'" step="'+(sc.step||((sc.max-sc.min)>10?1:0.05))+'" value="'+sc.val+'"><b style="min-width:66px;text-align:right;color:#c9b8ff">'+sc.val+' '+esc(sc.unit||'')+'</b>';
+      panel.appendChild(sl); if(sc.on) sc.on(st,+sc.val);
+      sl.querySelector('input').addEventListener('input',function(){ var v=+this.value; if(sc.on)sc.on(st,v); sl.querySelector('b').textContent=(Math.round(v*100)/100)+' '+(sc.unit||''); if(STILL)redraw(); }); }
+    if(STILL){ redraw(); } else frame();
+    return { stop:function(){ alive=false; cancelAnimationFrame(raf); } };
+  }
   function bA(panel,t,lens){
     var stage=ce('div','lx-stage'); panel.appendChild(stage);
     var M=(MICRO_TOPIC&&MICRO_TOPIC[t.id])||MICRO[t.domain]||MICRO.mechanics;
-    var q=ce('div','lx-q'); q.textContent=M.notice; panel.appendChild(q);
+    var q=ce('div','lx-q'); q.textContent='Play with it \u2014 no numbers yet. '+M.notice; panel.appendChild(q);
     var ready=gate(panel,lens.c,'I played — tell me what I saw ▸',2,function(wrap){
       var tx=ce('div','lx-txt'); tx.innerHTML=fmt(t.summary); wrap.appendChild(tx);
       deepenBtn(wrap,t,lens,'✦ Now tell it as a story');
@@ -2742,7 +2896,8 @@ var Lens=(function(){
       try{ curSim=SIMS[sk](stage); }catch(e){}
       var cap=ce('div','lx-q'); cap.textContent='This is '+t.name+' actually running — not a picture of it.'; panel.appendChild(cap);
     } else {
-      var stage2=ce('div','lx-stage'); panel.appendChild(stage2); mountMicro(stage2,t,function(){});
+      var stage2=ce('div','lx-stage'); panel.appendChild(stage2); mountViz(stage2,t,panel);
+      var cap2=ce('div','lx-q'); cap2.textContent='The hidden structure of '+t.name+', drawn from its real equations \u2014 drag to explore.'; panel.appendChild(cap2);
     }
     (t.points||[]).slice(0,3).forEach(function(p){ var c=ce('div','lx-card'); c.innerHTML='<span class="k2" style="color:'+lens.c+'">watch for</span><div class="b2">'+esc(p)+'</div>'; panel.appendChild(c); });
     deepenBtn(panel,t,lens,'✦ What exactly am I seeing?');

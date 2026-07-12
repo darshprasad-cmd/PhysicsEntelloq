@@ -370,6 +370,10 @@ input[type=range].sl::-moz-range-thumb{width:14px;height:14px;border:0;border-ra
 .ti-rd{font-family:var(--mono);font-size:8.5px;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:20px;border:1px solid;white-space:nowrap;align-self:center}
 .ti-rd.ok{color:var(--emerald);border-color:rgba(52,211,153,.4)}
 .ti-rd.hold{color:var(--amber);border-color:rgba(251,191,36,.32)}
+.mz-conf{display:flex;align-items:center;gap:8px;flex-wrap:wrap;animation:fade .3s var(--ease)}
+.mz-q{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);margin-right:2px}
+.mz-cb{font-size:12.5px;padding:7px 14px;border-radius:10px;border:1px solid var(--line);background:rgba(255,255,255,.02);color:var(--ink-dim);cursor:pointer;transition:border-color .16s var(--ease),color .16s var(--ease),transform .16s var(--ease)}
+.mz-cb:hover{border-color:var(--mc);color:#fff;transform:translateY(-1px)}
 
 /* unit header + difficulty */
 .unit-head{display:flex;align-items:center;gap:20px;margin:6px 0 22px}
@@ -3529,6 +3533,48 @@ function renderConnections(host,id,opts){ if(!host) return; opts=opts||{}; var t
 var Graph={ edges:function(){ return GRAPH; }, edgesOf:kgEdgesOf, typeMeta:KG_TYPE, edgeType:kgEdgeType,
   prereqsOf:prereqsOf, unlocks:unlocks, relatedOf:relatedOf, readiness:readiness, renderConnections:renderConnections };
 
+/* ============================================================
+   FEATURE B — ADAPTIVE MASTERY (SM-2 scheduling + forgetting curve)
+   Per-topic memory model, seeded when you rate a finished lesson;
+   surfaces what is fading. Consumes Graph.readiness for remediation.
+   localStorage: peq_mastery_v1
+   ============================================================ */
+var Mastery=(function(){
+  var KEY='peq_mastery_v1', DAY=86400000, d=load();
+  function load(){ try{ return JSON.parse(localStorage.getItem(KEY)||'{}'); }catch(e){ return {}; } }
+  function save(){ try{ localStorage.setItem(KEY,JSON.stringify(d)); }catch(e){} }
+  function nowT(){ return (new Date()).getTime(); }
+  /* grade 0..5 (SM-2); >=3 is a pass. conf 0..2 (guessed/unsure/confident) */
+  function record(id,grade,conf){
+    var r=d[id]||{seen:0,reps:0,ease:2.5,interval:0,last:0,due:0,conf:0,lapses:0};
+    r.seen++; if(conf!=null) r.conf=conf;
+    if(grade>=3){ r.reps++; r.interval = r.reps===1?1 : (r.reps===2?4 : Math.round(r.interval*r.ease));
+      r.ease=Math.max(1.3, r.ease + 0.1 - (5-grade)*(0.08+(5-grade)*0.02)); }
+    else { r.reps=0; r.interval=1; r.lapses++; r.ease=Math.max(1.3,r.ease-0.2); }
+    r.last=nowT(); r.due=r.last + r.interval*DAY; d[id]=r; save(); return r;
+  }
+  /* recall probability from an exponential forgetting curve R=exp(-t/S), stability S grows with the interval */
+  function retention(id){ var r=d[id]; if(!r||!r.last) return null; var days=(nowT()-r.last)/DAY, S=Math.max(0.4, r.interval*0.85); return Math.exp(-days/S); }
+  function rec(id){ return d[id]||null; }
+  function tracked(){ return Object.keys(d).length; }
+  function due(){ var o=[],k,t=nowT(); for(k in d){ if(d[k].due&&d[k].due<=t) o.push(k); } return o; }
+  function weak(th){ th=(th==null)?0.7:th; var o=[],k; for(k in d){ var rt=retention(k); if(rt!=null&&rt<th) o.push(k); } return o; }
+  /* the review queue — fading recall + low confidence + prerequisite gaps, most-urgent first */
+  function queue(){
+    var seen={}, out=[], k, t=nowT();
+    function push(id,why,pri,ret){ if(seen[id]||!topicById(id)) return; seen[id]=1; out.push({id:id,why:why,pri:pri,ret:ret}); }
+    for(k in d){ var r=d[k], rt=retention(k);
+      if(r.due&&r.due<=t) push(k,'recall fading',(rt!=null?1-rt:0.5)+r.lapses*0.15,rt);
+      else if(rt!=null&&rt<0.6) push(k,'recall fading',1-rt,rt);
+      else if(r.conf===0&&r.reps<=1) push(k,'you were unsure',0.5,rt);
+    }
+    if(typeof Graph!=='undefined'&&Graph.readiness){ out.slice().forEach(function(it){ try{ var rd=Graph.readiness(it.id); (rd.missing||[]).forEach(function(m){ push(m,'shaky prerequisite',0.9,retention(m)); }); }catch(e){} }); }
+    out.sort(function(a,b){ return b.pri-a.pri; });
+    return out;
+  }
+  return { record:record, retention:retention, rec:rec, tracked:tracked, due:due, weak:weak, queue:queue, save:save };
+})();
+
 /* ===== SOLVE — type any problem, get a reasoned step-by-step solution ===== */
 var Solve=(function(){
   var level='JEE', busy=false;
@@ -6310,7 +6356,13 @@ function viewLesson(id){
   if(simType){ var inst=SIMS[simType]($('#lesson-sim')); activeSim=inst; if(inst.controls) inst.controls($('#lesson-ctl')); }
   if(IEQ[t.id]){ mountEqViz($('#eqviz-host'), IEQ[t.id]); }
   $('#ask-this').addEventListener('click',function(){ Tutor.open(t.name); Tutor.ask('Explain '+t.name+' simply, with the key intuition.', t.name); });
-  $('#complete-btn').addEventListener('click',function(){ var wasNew=Me.complete(id); if(wasNew) toast(t.name+' complete!','+15 XP'); if(next) go('lesson',next.id); else go('domain',t.domain); });
+  $('#complete-btn').addEventListener('click',function(){ var cb=this;
+    if(Me.isDone(id)){ if(next) go('lesson',next.id); else go('domain',t.domain); return; }
+    var wrap=cb.parentNode; if(wrap.querySelector('.mz-conf')) return;
+    var box=ce('div','mz-conf'); box.innerHTML='<span class="mz-q">How solid do you feel?</span>'+[['Shaky',2,0,'#f87171'],['Getting it',3,1,'#fbbf24'],['Confident',5,2,'#34d399']].map(function(o){ return '<button class="mz-cb" data-g="'+o[1]+'" data-c="'+o[2]+'" style="--mc:'+o[3]+'">'+o[0]+'</button>'; }).join('');
+    cb.style.display='none'; wrap.appendChild(box);
+    $$('.mz-cb',box).forEach(function(bb){ bb.addEventListener('click',function(){ var g=+bb.dataset.g,c=+bb.dataset.c; try{ Mastery.record(id,g,c); }catch(e){} var wasNew=Me.complete(id); if(wasNew) toast(t.name+' complete!','+15 XP'); if(next) go('lesson',next.id); else go('domain',t.domain); }); });
+  });
   $$('[data-flowx]').forEach(function(b){ b.addEventListener('click',function(){ var f=b.dataset.flowx;
     if(f==='sandbox'){ var _pz=SBX_TOPIC[t.id]||SBX_DOM[t.domain]||null; go('sandbox');
       if(_pz){ var _pc2=$('.sbx-pchip[data-preset="'+_pz+'"]'); if(_pc2){ _pc2.click(); toast('Sandbox tuned for '+t.name,'preset: '+_pc2.textContent.trim()); } } }

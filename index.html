@@ -1528,6 +1528,26 @@ html[data-theme="light"] #eq-pres{background:rgba(255,255,255,.94)}
 #gx-cv{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:crosshair;touch-action:none}
 html[data-theme="light"] .gx-stage{background:radial-gradient(120% 130% at 50% 0%,#0a1020,#04060c)}
 @media(max-width:900px){.gx-wrap{grid-template-columns:1fr}.gx-stage{min-height:380px}}
+/* — futuristic lab mode bar + vignettes + blue scope (Pass 53) — */
+.lm-bar{position:relative;display:flex;align-items:center;gap:6px;margin:0 0 22px;padding:7px 9px;border:1px solid var(--line-2);border-radius:12px;background:linear-gradient(180deg,rgba(125,211,252,.045),rgba(255,255,255,.008));overflow-x:auto;scrollbar-width:none}
+.lm-bar::-webkit-scrollbar{display:none}
+.lm-tag{font-family:var(--mono);font-size:8.5px;letter-spacing:.22em;color:var(--ink-ghost);padding:0 8px 0 4px;flex:0 0 auto}
+.lm-seg{position:relative;flex:0 0 auto;font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-dim);background:none;border:1px solid transparent;border-radius:8px;padding:7px 12px;cursor:pointer;white-space:nowrap;transition:color .18s var(--ease),background .18s var(--ease),border-color .18s var(--ease)}
+.lm-seg:hover{color:var(--ink);background:rgba(125,211,252,.06)}
+.lm-seg.on{color:var(--blue);border-color:rgba(125,211,252,.35);background:rgba(125,211,252,.09);box-shadow:0 0 18px -8px rgba(125,211,252,.7),inset 0 -1px 0 rgba(125,211,252,.5)}
+/* vignette block replaces the icon square */
+.lab-blue .rs-cic.vig{position:relative;width:86px;min-width:86px;height:58px;border-radius:11px;overflow:hidden;font-size:0;background:radial-gradient(120% 130% at 50% 0%,#0a1020,#04060c);border:1px solid rgba(125,211,252,.22)}
+/* blue unification — inline rainbow accents lose */
+.lab-blue .rs-cic{color:var(--blue)!important;border-color:rgba(125,211,252,.33)!important}
+.lab-blue .xp-dom{color:var(--blue)!important;--xc:rgba(125,211,252,.33)!important}
+.lab-blue .xp-badge{color:var(--blue)!important;border-color:rgba(125,211,252,.33)!important}
+.lab-blue .rs-ct .dm[style*="color:"]{color:var(--ink-faint)!important;opacity:1!important}
+/* futuristic card chrome */
+.lab-blue .rs-card{position:relative;overflow:hidden}
+.lab-blue .rs-card::after{content:"";position:absolute;top:0;left:-70%;width:45%;height:100%;background:linear-gradient(100deg,transparent,rgba(125,211,252,.06),transparent);transform:skewX(-18deg);transition:left .55s var(--ease);pointer-events:none}
+.lab-blue .rs-card:hover::after{left:125%}
+.lab-blue .rs-card:hover{border-color:rgba(125,211,252,.4)}
+@media(prefers-reduced-motion:reduce){.lab-blue .rs-card::after{display:none}}
 </style>
 <script>/* THEME bootstrap — set html[data-theme] before first paint (no dark->light flash) */
 (function(){ var m='dark'; try{ m=localStorage.getItem('peq_theme')||'dark'; }catch(e){}
@@ -6781,7 +6801,7 @@ function stopThumbs(){ labThumbs.forEach(function(h){ if(h){ if(h._ft) clearTime
 function cinematicReveal(){ try{ if(window.matchMedia&&matchMedia('(prefers-reduced-motion:reduce)').matches) return; var grids=main.querySelectorAll('.dom-grid,.tlist,.lab-grid,.rs-grid,.rec-grid'); for(var g=0;g<grids.length;g++){ var kids=grids[g].children,i; for(i=0;i<kids.length;i++){ kids[i].style.setProperty('--rvd',(Math.min(i,14)*40)+'ms'); kids[i].classList.add('rvl'); } } }catch(e){} }
 function go(v,id){ stopSim();
   if(homeSim&&homeSim.stop){ homeSim.stop(); homeSim=null; }
-  if(curView==='lab'&&v!=='lab'){ stopThumbs(); Research.stop(); Theory.stop(); Investigate.stop(); DesignLab.stop(); CompareDeck.stop(); }
+  if(curView==='lab'&&v!=='lab'){ stopThumbs(); Research.stop(); Theory.stop(); Investigate.stop(); DesignLab.stop(); CompareDeck.stop(); try{ LabVig.stop(); }catch(e){} }
   if(curView==='lesson'&&v!=='lesson'){ try{ Lens.stop(); }catch(e){} }
   if(curView==='universe'&&v!=='universe') Uni.stop();
   if(curView==='sandbox'&&v!=='sandbox') Sandbox.stop();
@@ -7550,8 +7570,8 @@ var Expt=(function(){
 function viewLab(){
   stopSim(); CompareDeck.stop(); setCrumb([{t:'Lab'}]);
   var MODES=[['labs','∇ Labs'],['graphs','∿ Graphs'],['play','⊚ Playground'],['theory','∮ Theory Lab'],['research','∴ Research Lab'],['investigate','∫ Investigate'],['design','⧉ Design'],['compare','⇄ Compare'],['discover','✦ Discover']];
-  var toggle='<div class="pr-diff" style="margin-bottom:20px;flex-wrap:wrap;row-gap:8px"><span class="lab">Mode</span>'+MODES.map(function(md){ return '<button class="lvl-chip'+(labMode===md[0]?' on':'')+'" data-lm="'+md[0]+'">'+md[1]+'</button>'; }).join('')+'</div>';
-  function wireToggle(){ $$('[data-lm]').forEach(function(b){ b.addEventListener('click',function(){ labMode=b.dataset.lm; viewLab(); }); }); }
+  var toggle='<div class="lm-bar"><span class="lm-tag">MODE</span>'+MODES.map(function(md){ return '<button class="lm-seg'+(labMode===md[0]?' on':'')+'" data-lm="'+md[0]+'">'+md[1]+'</button>'; }).join('')+'</div>';
+  function wireToggle(){ try{ var fw=main.firstElementChild; if(fw) fw.classList.add('lab-blue'); LabVig.decorate(main); }catch(e){} $$('[data-lm]').forEach(function(b){ b.addEventListener('click',function(){ labMode=b.dataset.lm; viewLab(); }); }); }
   if(labMode==='graphs'){ main.innerHTML='<div class="wrap fade"><div class="eyebrow">Direct manipulation</div><h1 class="h-hello" style="font-size:30px">Sketch the mathematics</h1>'+toggle+'<div id="gx-host"></div></div>'; wireToggle(); try{ Grapher.mount($('#gx-host')); }catch(e){} return; }
   if(labMode==='labs'){ Expt.hub(main,toggle,wireToggle); return; }
   if(labMode==='discover'){ Expt.discover(main,toggle,wireToggle); return; }
@@ -7564,7 +7584,7 @@ function viewLab(){
   if(labMode==='theory'){
     var thAll=Theory.list(), thUsed={};
     var thCard=function(m){ var bl=(m.blurb||'').replace(/<[^>]*>/g,''); if(bl.length>170) bl=bl.slice(0,167)+'…';
-      return '<button class="rs-card" data-tid="'+m.id+'" style="align-items:flex-start"><div class="rs-cic" style="color:'+m.c+';border-color:'+m.c+'55">'+m.icon+'</div><div class="rs-ct"><div class="nm">'+esc(m.name)+'</div><div class="dm" style="margin-top:2px;color:'+m.c+';opacity:.85">'+esc(m.tag)+'</div>'+(bl?'<div class="dm" style="margin-top:7px;line-height:1.55;white-space:normal">'+esc(bl)+'</div>':'')+'</div><span class="arr">›</span></button>'; };
+      return '<button class="rs-card" data-tid="'+m.id+'" style="align-items:flex-start"><div class="rs-cic" style="color:'+m.c+';border-color:'+m.c+'55">'+m.icon+'</div><div class="rs-ct"><div class="nm">'+esc(m.name)+'</div><div class="dm" style="margin-top:2px;color:'+m.c+';opacity:.85">'+esc(m.tag)+'</div>'+'</div><span class="arr">›</span></button>'; };
     var TG=[
       ['Foundations — the language of motion','#7dd3fc','States, symmetries and the deepest reformulations of mechanics.',['phase-space','least-action','vector-calculus']],
       ['Chaos & Nonlinearity','#f87171','Where determinism stops meaning predictability.',['double-pendulum','lorenz','bifurcation']],
@@ -7591,8 +7611,8 @@ function viewLab(){
     var rBench=Research.list();
     var rFmt=function(x){ var a=Math.abs(x); return (a>=1e4||(a>0&&a<0.01))?x.toExponential(1):(''+x); };
     var rCard=function(e){ var mth=(e.method||'').split('. ')[0]; if(mth.length>150) mth=mth.slice(0,147)+'…'; else if(mth&&mth.slice(-1)!=='.') mth+='.';
-      return '<button class="rs-card" data-eid="'+e.id+'" style="align-items:flex-start"><div class="rs-cic" style="color:'+e.c+';border-color:'+e.c+'55">'+e.icon+'</div><div class="rs-ct"><div class="nm">'+esc(e.name)+'</div><div class="dm" style="margin-top:2px;color:'+e.c+';opacity:.9">measure '+esc(e.konst.sym)+' — accepted '+rFmt(e.konst.accepted)+' '+esc(e.konst.unit)+'</div><div class="dm" style="margin-top:7px;line-height:1.55;white-space:normal">'+esc(mth)+'</div></div><span class="arr">›</span></button>'; };
-    var thLink=function(id,nm,dm,ic,c){ return '<button class="rs-card" data-thjump="'+id+'" style="align-items:flex-start"><div class="rs-cic" style="color:'+c+';border-color:'+c+'55">'+ic+'</div><div class="rs-ct"><div class="nm">'+esc(nm)+'</div><div class="dm" style="margin-top:6px;line-height:1.55;white-space:normal">'+esc(dm)+'</div><span class="xp-badge" style="color:'+c+';border-color:'+c+'55">∮ runs in the Theory Lab</span></div><span class="arr">›</span></button>'; };
+      return '<button class="rs-card" data-eid="'+e.id+'" style="align-items:flex-start"><div class="rs-cic" style="color:'+e.c+';border-color:'+e.c+'55">'+e.icon+'</div><div class="rs-ct"><div class="nm">'+esc(e.name)+'</div><div class="dm" style="margin-top:2px;color:'+e.c+';opacity:.9">measure '+esc(e.konst.sym)+' — accepted '+rFmt(e.konst.accepted)+' '+esc(e.konst.unit)+'</div></div><span class="arr">›</span></button>'; };
+    var thLink=function(id,nm,dm,ic,c){ return '<button class="rs-card" data-thjump="'+id+'" style="align-items:flex-start"><div class="rs-cic" style="color:'+c+';border-color:'+c+'55">'+ic+'</div><div class="rs-ct"><div class="nm">'+esc(nm)+'</div><span class="xp-badge" style="color:'+c+';border-color:'+c+'55">∮ runs in the Theory Lab</span></div><span class="arr">›</span></button>'; };
     main.innerHTML='<div class="wrap fade"><div class="eyebrow">Research Lab</div><h1 class="h-hello" style="font-size:30px">You decide the methodology</h1><div class="h-sub">Advanced investigations in three tracks. <b style="color:var(--ink)">Measure</b> a constant of nature from noisy apparatus — design the sweep, fit the line, defend the error bar. Go <b style="color:var(--ink)">computational</b> where equations have no closed form. Then enter the systems where <b style="color:var(--ink)">prediction itself breaks down</b>.</div>'+toggle+
     '<div id="rs-pick">'+
       '<div class="xp-dom" style="--xc:#34d39955;color:#34d399">Experimental physics — measure a constant<span class="bar"></span><span class="ct">'+rBench.length+' benches</span></div><div class="dm" style="margin:-6px 0 12px;color:var(--ink-faint);font-size:13px">Noisy data from a real law. Choose your sweep, linearize, least-squares fit — the slope hands you the constant, the residuals hand you the truth about your method.</div><div class="rs-grid">'+rBench.map(rCard).join('')+'</div>'+
@@ -10072,6 +10092,129 @@ var Grapher=(function(){
   }
   window.__peqGx={ compile:function(s){ return compile(s); }, view:function(){ return V; }, params:function(){ return P; }, redraw:draw };
   return { mount:mount };
+})();
+
+/* ===== LABVIG — living vignettes for every lab-tab card =====
+   Replaces written descriptions with a visual snapshot: each .rs-card's icon
+   block becomes a small animated canvas keyed to what the card opens.
+   ONE shared rAF for all visible vignettes; stopped on lab exit.        */
+var LabVig=(function(){
+  var BL='#7dd3fc',B2='#4cb8f5',VI='#a78bfa',CY='#22d3ee',DIM='rgba(125,211,252,.4)';
+  var hosts=[],raf=0,running=false;
+  function pl(x,pts,c,w){ if(pts.length<2)return; x.strokeStyle=c||BL; x.lineWidth=w||1.3; x.beginPath(); x.moveTo(pts[0][0],pts[0][1]); for(var i=1;i<pts.length;i++)x.lineTo(pts[i][0],pts[i][1]); x.stroke(); }
+  function dt2(x,px,py,r,c){ x.fillStyle=c||'#eaf6ff'; x.beginPath(); x.arc(px,py,r,0,7); x.fill(); }
+  var K={
+  orbit:function(x,W,H,t){ var cx=W/2,cy=H/2;
+    x.strokeStyle='rgba(125,211,252,.3)'; x.beginPath(); x.ellipse(cx,cy,W*.36,H*.26,-.4,0,7); x.stroke();
+    dt2(x,cx,cy,2.6,BL); var a=t*1.6;
+    dt2(x,cx+Math.cos(a)*W*.36*Math.cos(-.4)-Math.sin(a)*H*.26*Math.sin(-.4),cy+Math.cos(a)*W*.36*Math.sin(-.4)+Math.sin(a)*H*.26*Math.cos(-.4),2.2,CY); },
+  chaos:function(x,W,H,t){ var p=[],i;
+    for(i=0;i<70;i++){ var u=i/70*6.28+t*.5;
+      p.push([W/2+Math.sin(u*1.7+Math.sin(t*.4))*W*.34*Math.cos(u*.6),H/2+Math.cos(u*2.3)*H*.33*Math.sin(u*.8+t*.2)]); }
+    pl(x,p,'rgba(125,211,252,.55)',1.1); var lp=p[p.length-1]; dt2(x,lp[0],lp[1],2,CY); },
+  spots:function(x,W,H,t){ var i;
+    for(i=0;i<6;i++){ var px=W*(.2+.6*((i*.37+Math.sin(t*.4+i)*.1+1)%1)),py=H*(.25+.5*((i*.61+Math.cos(t*.3+i*2)*.12+1)%1)),r=3+2.4*Math.sin(t*.8+i*2.1);
+      var g=x.createRadialGradient(px,py,0,px,py,Math.abs(r)*2.4); g.addColorStop(0,'rgba(125,211,252,.8)'); g.addColorStop(1,'rgba(125,211,252,0)');
+      x.fillStyle=g; x.beginPath(); x.arc(px,py,Math.abs(r)*2.4,0,7); x.fill(); } },
+  flock:function(x,W,H,t){ var i;
+    for(i=0;i<8;i++){ var a=t*.7+i*1.3,px=W*(.5+.33*Math.sin(a+i)),py=H*(.5+.3*Math.cos(a*1.2+i*2)),hd=a+1.57;
+      x.fillStyle='rgba(125,211,252,.75)'; x.save(); x.translate(px,py); x.rotate(hd);
+      x.beginPath(); x.moveTo(4,0); x.lineTo(-3,2.4); x.lineTo(-3,-2.4); x.fill(); x.restore(); } },
+  quantum:function(x,W,H,t){ var p=[],i;
+    for(i=0;i<=W;i+=2){ var u=(i-W/2)/(W*.16),env=Math.exp(-u*u);
+      p.push([i,H*.55-env*Math.cos(u*6-t*3)*H*.3]); }
+    pl(x,p,BL,1.3);
+    x.strokeStyle='rgba(167,139,250,.4)'; x.setLineDash([2,3]); x.beginPath();
+    for(i=0;i<=W;i+=3){ var u2=(i-W/2)/(W*.16); var yy=H*.55-Math.exp(-u2*u2)*H*.3; if(i===0)x.moveTo(i,yy); else x.lineTo(i,yy); }
+    x.stroke(); x.setLineDash([]); },
+  star:function(x,W,H,t){ var cx=W/2,cy=H/2,i;
+    for(i=0;i<3;i++){ var r=((t*.5+i/3)%1)*Math.min(W,H)*.45;
+      x.strokeStyle='rgba(125,211,252,'+(.6-((t*.5+i/3)%1)*.6)+')'; x.beginPath(); x.arc(cx,cy,r,0,7); x.stroke(); }
+    var g=x.createRadialGradient(cx,cy,0,cx,cy,7); g.addColorStop(0,'#eaf6ff'); g.addColorStop(1,'rgba(125,211,252,0)');
+    x.fillStyle=g; x.beginPath(); x.arc(cx,cy,7,0,7); x.fill(); },
+  pen:function(x,W,H,t){ var i;
+    x.strokeStyle='rgba(125,211,252,.12)'; x.beginPath();
+    for(i=6;i<W;i+=9){ x.moveTo(i,4); x.lineTo(i,H-4); } for(i=6;i<H;i+=9){ x.moveTo(4,i); x.lineTo(W-4,i); } x.stroke();
+    var prog=(t*.25)%1,p=[],k,N=Math.floor(prog*40);
+    for(k=0;k<=N;k++){ var fx=k/40; p.push([6+fx*(W-12),H*.75-Math.pow(fx,1.6)*H*.5-6*Math.sin(fx*9)]); }
+    pl(x,p,CY,1.4); var lp=p[p.length-1]; if(lp) dt2(x,lp[0],lp[1],2.2,'#eaf6ff'); },
+  race:function(x,W,H,t){ var runs=[[BL,1],[VI,1.35],[CY,1.9]],i,k;
+    for(i=0;i<3;i++){ var p=[],sp=runs[i][1],pr=((t*.3*sp)%1.15);
+      for(k=0;k<=40;k++){ var fx=k/40*Math.min(pr,1); p.push([5+fx*(W-10),H*.8-Math.sin(fx*2.6)*H*.55*(1-.18*i)]); }
+      pl(x,p,runs[i][0],1.2); } },
+  split:function(x,W,H,t){ x.strokeStyle=DIM; x.beginPath(); x.moveTo(W/2,3); x.lineTo(W/2,H-3); x.stroke();
+    var i,p1=[],p2=[];
+    for(i=0;i<=W/2-4;i+=2){ var u=i/(W/2)*4;
+      p1.push([2+i,H/2-Math.sin(u*2-t*1.4)*H*.3]);
+      p2.push([W/2+2+i,H/2-Math.sin(u*2-t*1.4)*Math.exp(-u*.4)*H*.3]); }
+    pl(x,p1,BL,1.2); pl(x,p2,VI,1.2); },
+  bench:function(x,W,H,t){ var i;
+    x.strokeStyle='rgba(125,211,252,.14)'; x.beginPath();
+    for(i=6;i<W;i+=8){ x.moveTo(i,3); x.lineTo(i,H-3); } x.stroke();
+    var p=[]; for(i=0;i<=W;i+=2){ var u=i/W;
+      p.push([i,H/2-Math.sin(u*12+t*2)*H*.24*Math.exp(-Math.pow((u-.5)*2.6,2))]); }
+    pl(x,p,CY,1.3);
+    x.fillStyle='rgba(163,177,204,.7)'; x.fillRect(3,3,10,2); x.fillRect(3,3,2,6); x.fillRect(W-13,H-5,10,2); x.fillRect(W-5,H-9,2,6); },
+  atom:function(x,W,H,t){ var cx=W/2,cy=H/2,i;
+    dt2(x,cx,cy,3,VI);
+    for(i=0;i<3;i++){ x.strokeStyle='rgba(125,211,252,.35)'; x.save(); x.translate(cx,cy); x.rotate(i*1.05);
+      x.beginPath(); x.ellipse(0,0,W*.36,H*.16,0,0,7); x.stroke();
+      var a=t*(1.4+i*.3)+i*2; dt2(x,Math.cos(a)*W*.36,Math.sin(a)*H*.16,1.8,CY); x.restore(); } },
+  action:function(x,W,H,t){ var i,k;
+    for(i=0;i<5;i++){ var dev=(i-2)*.5*Math.max(0,1-t*.12%1.3),p=[];
+      for(k=0;k<=30;k++){ var fx=k/30;
+        p.push([4+fx*(W-8),H*.8-Math.sin(fx*3.14)*H*.55-dev*Math.sin(fx*6.28)*H*.3]); }
+      pl(x,p,i===2?CY:'rgba(125,211,252,'+(.5-Math.abs(i-2)*.13)+')',i===2?1.6:1); } },
+  lens:function(x,W,H,t){ var cx=W/2;
+    x.strokeStyle=BL; x.lineWidth=1.4; x.beginPath(); x.ellipse(cx,H/2,4.5,H*.4,0,0,7); x.stroke();
+    var sy=H*(.5+.28*Math.sin(t*.6)),i;
+    for(i=-1;i<=1;i++){ pl(x,[[3,sy+i*5],[cx,sy+i*5]],'rgba(125,211,252,.5)',1);
+      pl(x,[[cx,sy+i*5],[W-4,H-sy-i*5]],'rgba(167,139,250,.6)',1); } },
+  wave:function(x,W,H,t){ var p=[],i;
+    for(i=0;i<=W;i+=2) p.push([i,H/2-Math.sin(i/W*9-t*1.8)*H*.3]);
+    pl(x,p,BL,1.4); }
+  };
+  var IDMAP={'phase-space':'orbit','least-action':'action','vector-calculus':'pen','double-pendulum':'chaos','lorenz':'chaos','bifurcation':'chaos','numerical-methods':'race','integrators':'race','maxwell-boltzmann':'spots','reaction-diffusion':'spots','boids':'flock','particle-life':'flock','schrodinger':'quantum','relativity':'orbit','gr-precession':'orbit','optics-bench':'lens','standard-model':'atom','stellar-evolution':'star'};
+  function pick(card){
+    var id=card.dataset.tid||card.dataset.thjump||'';
+    if(IDMAP[id]) return IDMAP[id];
+    if(card.dataset.nid) return 'pen';
+    if(card.dataset.dq!==undefined) return 'star';
+    if(card.dataset.eid) return 'bench';
+    return 'wave';
+  }
+  function decorate(root){
+    $$('.rs-card .rs-cic',root).forEach(function(ic){
+      if(ic.querySelector('canvas')) return;
+      var card=ic.parentElement;
+      ic.classList.add('vig');
+      var c=ce('canvas'); c.style.cssText='position:absolute;inset:0;width:100%;height:100%;display:block';
+      ic.appendChild(c);
+      var s=(card.dataset.tid||card.dataset.nid||card.dataset.eid||card.dataset.thjump||card.textContent||'').slice(0,24),seed=0,i;
+      for(i=0;i<s.length;i++) seed=(seed*31+s.charCodeAt(i))>>>0;
+      hosts.push({c:c,x:c.getContext('2d'),k:pick(card),seed:(seed%1000)/1000});
+    });
+    if(hosts.length&&!running) start();
+  }
+  function frame(now){
+    var i,h2;
+    for(i=0;i<hosts.length;i++){ h2=hosts[i];
+      if(!document.body.contains(h2.c)) continue;
+      var s=fitC(h2.c,h2.x);
+      h2.x.clearRect(0,0,s.w,s.h);
+      try{ K[h2.k](h2.x,s.w,s.h,now/1000+h2.seed*9); }catch(e){}
+    }
+    hosts=hosts.filter(function(h3){ return document.body.contains(h3.c); });
+  }
+  function start(){ if(running) return; running=true;
+    if(STILL){ frame(performance.now()); running=false; return; }
+    function tick(now){ if(!running) return; frame(now);
+      if(!hosts.length){ running=false; return; }
+      raf=requestAnimationFrame(tick); }
+    raf=requestAnimationFrame(tick);
+  }
+  function stop(){ running=false; cancelAnimationFrame(raf); hosts=[]; }
+  return { decorate:decorate, stop:stop };
 })();
 
 /* ===== INIT ===== */

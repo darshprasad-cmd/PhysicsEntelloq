@@ -2924,7 +2924,7 @@ var Lens=(function(){
   };
   function mountViz(stage,t,panel){
     var dk=(t&&t.domain)||'mechanics'; var V=VIZ[dk]||VIZ.mechanics;
-    stage.innerHTML='<canvas class="lx-cv"></canvas>'+(V.hint?'<div class="lx-hint">'+esc(V.hint)+'</div>':'');
+    stage.innerHTML='<canvas class="lx-cv"></canvas>'+(V.hint?'<div class="lx-hint">'+esc(V.hint)+(V.scrub?' \u00b7 drag anywhere':'')+'</div>':'');
     var cv=stage.querySelector('canvas'),g=cv.getContext('2d'),pr=Math.min(devicePixelRatio||1,2);
     function fitc(){ var r=cv.getBoundingClientRect(),W=Math.max(60,r.width|0),H=Math.max(60,r.height|0); if(cv.width!==W*pr){ cv.width=W*pr; cv.height=H*pr; g.setTransform(pr,0,0,pr,0,0);} cv._W=W; cv._H=H; }
     fitc(); var st=V.init?V.init(cv._W,cv._H):{},raf=0,alive=true,t0=performance.now();
@@ -2933,7 +2933,12 @@ var Lens=(function(){
     if(V.scrub&&panel){ var sc=V.scrub,sl=ce('div','lx-slider');
       sl.innerHTML='<span>'+esc(sc.label)+'</span><input type="range" class="sl" min="'+sc.min+'" max="'+sc.max+'" step="'+(sc.step||((sc.max-sc.min)>10?1:0.05))+'" value="'+sc.val+'"><b style="min-width:66px;text-align:right;color:#c9b8ff">'+sc.val+' '+esc(sc.unit||'')+'</b>';
       panel.appendChild(sl); if(sc.on) sc.on(st,+sc.val);
-      sl.querySelector('input').addEventListener('input',function(){ var v=+this.value; if(sc.on)sc.on(st,v); sl.querySelector('b').textContent=(Math.round(v*100)/100)+' '+(sc.unit||''); if(STILL)redraw(); }); }
+      sl.querySelector('input').addEventListener('input',function(){ var v=+this.value; if(sc.on)sc.on(st,v); sl.querySelector('b').textContent=(Math.round(v*100)/100)+' '+(sc.unit||''); if(STILL)redraw(); });
+      var vzDrag=function(e){ var r2=cv.getBoundingClientRect(),fx=Math.max(0,Math.min(1,(e.clientX-r2.left)/Math.max(1,r2.width)));
+        var v=sc.min+fx*(sc.max-sc.min); if(sc.step&&sc.step>=1) v=Math.round(v); v=Math.round(v*100)/100;
+        if(sc.on)sc.on(st,v); sl.querySelector('input').value=v; sl.querySelector('b').textContent=v+' '+(sc.unit||''); if(STILL)redraw(); };
+      cv.addEventListener('pointerdown',function(e){ e.preventDefault(); try{ cv.setPointerCapture(e.pointerId); }catch(x){} vzDrag(e); });
+      cv.addEventListener('pointermove',function(e){ if(e.buttons) vzDrag(e); }); }
     if(STILL){ redraw(); } else frame();
     return { stop:function(){ alive=false; cancelAnimationFrame(raf); } };
   }

@@ -1459,6 +1459,45 @@ html[data-theme="light"] #eq-pres{background:rgba(255,255,255,.94)}
 .lv-card .lv-meta .s{font-family:var(--mono);font-size:11px;color:var(--ink-dim);margin-top:2px}
 .lv-card .rank-row .rk{font-size:12px}
 @media(prefers-reduced-motion:reduce){.side-card.lv-card,.side-card.lv-card:hover{transform:none}}
+/* ===== XG — Labs hub redesign: unified futuristic blue instrument grid ===== */
+.xg-cont{display:flex;align-items:center;gap:12px;margin:0 0 16px;padding:13px 17px;border:1px solid rgba(125,211,252,.22);border-radius:13px;background:rgba(125,211,252,.035);cursor:pointer;transition:border-color .2s var(--ease),transform .2s var(--ease),box-shadow .25s}
+.xg-cont:hover{border-color:rgba(125,211,252,.5);transform:translateY(-1px);box-shadow:0 0 26px -14px rgba(125,211,252,.55)}
+.xg-cont .ic{color:var(--blue);font-size:13px}
+.xg-cont .tx{font-size:13px;color:var(--ink-dim)}
+.xg-cont .tx b{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--blue)}
+.xg-cont .go{margin-left:auto;font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--blue);white-space:nowrap}
+.xg-bar{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 2px 12px;margin:0 0 16px;background:linear-gradient(var(--bg) 78%,transparent)}
+.xg-bar .sp{flex:1}
+.xg-sig{font-family:var(--mono);font-size:9px;letter-spacing:.16em;color:var(--ink-ghost);margin-right:6px}
+.xg-chip{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;color:var(--ink-dim);background:none;border:1px solid var(--line-2);border-radius:20px;padding:5px 13px;cursor:pointer;transition:border-color .18s var(--ease),color .18s var(--ease),background .18s,box-shadow .2s}
+.xg-chip:hover{border-color:rgba(125,211,252,.45);color:var(--ink)}
+.xg-chip.on{color:var(--blue);border-color:rgba(125,211,252,.55);background:rgba(125,211,252,.07);box-shadow:0 0 14px -6px rgba(125,211,252,.5)}
+.xg-find input{background:none;border:1px solid var(--line-2);border-radius:20px;padding:6px 14px;width:200px;font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--ink);outline:none;transition:border-color .18s var(--ease),box-shadow .2s}
+.xg-find input::placeholder{color:var(--ink-ghost)}
+.xg-find input:focus{border-color:rgba(125,211,252,.55);box-shadow:0 0 16px -8px rgba(125,211,252,.6)}
+.xg-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(235px,1fr));gap:18px}
+.xg-card{position:relative;border:1px solid var(--line-2);border-radius:14px;overflow:hidden;background:var(--card);cursor:pointer;transition:transform .2s var(--ease),border-color .2s,box-shadow .25s;animation:xgin .5s var(--ease) backwards;animation-delay:calc(var(--gi,0)*26ms)}
+.xg-card:hover{transform:translateY(-3px);border-color:rgba(125,211,252,.55);box-shadow:0 16px 44px -24px rgba(0,0,0,.9),0 0 34px -14px rgba(125,211,252,.5)}
+.xg-card::after{content:"";position:absolute;left:-8%;right:-8%;top:-46%;height:36%;z-index:2;pointer-events:none;opacity:0;background:linear-gradient(180deg,transparent,rgba(125,211,252,.08),transparent)}
+.xg-card:hover::after{opacity:1;animation:xgscan 1.5s linear infinite}
+@keyframes xgscan{0%{transform:translateY(0)}100%{transform:translateY(480%)}}
+@keyframes xgin{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}
+.xg-c{position:absolute;width:9px;height:9px;z-index:3;pointer-events:none;opacity:.32;transition:opacity .2s var(--ease)}
+.xg-c.c1{top:7px;left:7px;border-top:1px solid var(--blue);border-left:1px solid var(--blue)}
+.xg-c.c2{top:7px;right:7px;border-top:1px solid var(--blue);border-right:1px solid var(--blue)}
+.xg-c.c3{bottom:7px;left:7px;border-bottom:1px solid var(--blue);border-left:1px solid var(--blue)}
+.xg-c.c4{bottom:7px;right:7px;border-bottom:1px solid var(--blue);border-right:1px solid var(--blue)}
+.xg-card:hover .xg-c{opacity:.95}
+.xg-thumb{position:relative;height:132px;border-bottom:1px solid var(--line-2);background:radial-gradient(120% 120% at 50% 30%,rgba(14,20,38,.6),#04060c);overflow:hidden}
+.xg-thumb canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.xg-thumb::after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(125,211,252,.035) 0 1px,transparent 1px 3px);opacity:.55}
+.xg-badge{position:absolute;top:8px;left:10px;z-index:2;font-family:var(--mono);font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--blue);background:rgba(4,6,12,.74);border:1px solid rgba(125,211,252,.28);border-radius:6px;padding:2px 7px;pointer-events:none}
+.xg-b{padding:13px 15px 12px}
+.xg-b h4{font-size:14.5px;line-height:1.32;margin:0 0 8px;color:var(--ink)}
+.xg-meta{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--blue);opacity:.75}
+.xg-meta .tag{margin-left:auto;color:var(--ink-ghost);opacity:1}
+.xg-empty{font-family:var(--mono);font-size:10px;letter-spacing:.16em;color:var(--ink-ghost);padding:36px 4px;text-align:center;border:1px dashed var(--line-2);border-radius:12px;margin-top:4px}
+@media (prefers-reduced-motion:reduce){.xg-card{animation:none}.xg-card:hover::after{animation:none;opacity:0}}
 </style>
 <script>/* THEME bootstrap — set html[data-theme] before first paint (no dark->light flash) */
 (function(){ var m='dark'; try{ m=localStorage.getItem('peq_theme')||'dark'; }catch(e){}
@@ -7322,47 +7361,102 @@ var Expt=(function(){
   function hub(main,toggle,wireToggle){
     var filt=hub._f||'all';
     var last=null; try{ last=JSON.parse(localStorage.getItem('peq_lab_last')||'null'); }catch(e){}
+    var flat=[]; SEC.forEach(function(sec,si){ sec.items.forEach(function(it,ii){ flat.push({si:si,ii:ii,it:it,sec:sec}); }); });
+    var nLive=0,i; for(i=0;i<flat.length;i++){ if(flat[i].it.s) nLive++; }
     var H='<div class="wrap fade"><div class="eyebrow">Structured experiments</div><h1 class="h-hello" style="font-size:30px">Work like an experimentalist</h1>'+toggle;
-    if(last&&SEC[last.si]&&SEC[last.si].items[last.ii]){ var lsec=SEC[last.si],lit=lsec.items[last.ii];
-      H+='<div class="xh-cont" data-xsec="'+last.si+'" data-xit="'+last.ii+'"><span class="ic" style="color:'+lsec.c+'">'+(lit.s?'\u25b8':'\u25a4')+'</span><span class="tx"><b>Continue</b> \u2014 '+esc2(lit.n)+'</span><span class="go">Resume \u2192</span></div>'; }
-    H+='<div class="xh-bar">'+SEC.map(function(sec,si){ return '<button class="xh-jump" data-xj="'+si+'" style="--xc:'+sec.c+'"><i></i>'+esc2(sec.h)+'<span>'+sec.items.length+'</span></button>'; }).join('')+
-       '<span class="sp"></span>'+[['all','All'],['live','\u25b8 live'],['bench','\u25a4 bench']].map(function(f){ return '<button class="lvl-chip'+(filt===f[0]?' on':'')+'" data-xf="'+f[0]+'">'+f[1]+'</button>'; }).join('')+'</div>';
-    SEC.forEach(function(sec,si){
-      var items=sec.items.map(function(it,ii){ return {it:it,ii:ii}; }).filter(function(o){ return filt==='all'||(filt==='live'?!!o.it.s:!o.it.s); });
-      if(!items.length) return;
-      H+='<div class="xp-dom" id="xh-sec'+si+'" style="--xc:'+sec.c+'55;color:'+sec.c+'">'+esc2(sec.h)+'<span class="bar"></span><span class="ct">'+items.length+' experiments</span></div><div class="lab-grid xh-grid">';
-      items.forEach(function(o){ var it=o.it,ii=o.ii,live=!!it.s;
-        H+='<div class="lab-card xh-card" data-xsec="'+si+'" data-xit="'+ii+'"><div class="thumb"'+(live?' id="xh-th-'+si+'-'+ii+'"':' style="display:flex;align-items:center;justify-content:center;padding:12px 14px"')+'>'+
-          (live?'':'<span class="xh-rel" style="color:'+sec.c+'">'+esc2(it.rel||'')+'</span>')+
-          '<span class="xh-badge" style="color:'+(live?'#34d399':'#7dd3fc')+'">'+(live?'\u25b8 live':'\u25a4 bench')+'</span></div>'+
-          '<div class="lc-b"><h4>'+esc2(it.n)+'</h4><p>'+esc2(it.ob)+'</p></div></div>';
-      });
-      H+='</div>';
+    if(last&&SEC[last.si]&&SEC[last.si].items[last.ii]){ var lit=SEC[last.si].items[last.ii];
+      H+='<div class="xg-cont" data-xsec="'+last.si+'" data-xit="'+last.ii+'"><span class="ic">'+(lit.s?'▸':'▤')+'</span><span class="tx"><b>Continue</b> — '+esc2(lit.n)+'</span><span class="go">RESUME →</span></div>'; }
+    H+='<div class="xg-bar"><span class="xg-sig">LAB INDEX · '+flat.length+' EXPT · '+nLive+' LIVE</span>'+
+       [['all','ALL'],['live','▸ LIVE'],['bench','▤ BENCH']].map(function(f){ return '<button class="xg-chip'+(filt===f[0]?' on':'')+'" data-xf="'+f[0]+'">'+f[1]+'</button>'; }).join('')+
+       '<span class="sp"></span><span class="xg-find"><input id="xg-q" type="text" autocomplete="off" spellcheck="false" placeholder="SEARCH EXPERIMENTS"></span></div>';
+    H+='<div class="xg-grid">';
+    flat.forEach(function(o,k){ var live=!!o.it.s;
+      H+='<div class="xg-card" data-xsec="'+o.si+'" data-xit="'+o.ii+'" data-live="'+(live?1:0)+'" data-nm="'+esc2(o.it.n.toLowerCase())+'" style="--gi:'+Math.min(k,18)+'">'+
+        '<i class="xg-c c1"></i><i class="xg-c c2"></i><i class="xg-c c3"></i><i class="xg-c c4"></i>'+
+        '<div class="xg-thumb" id="xg-th-'+o.si+'-'+o.ii+'"><span class="xg-badge">'+(live?'▸ LIVE':'▤ BENCH')+'</span></div>'+
+        '<div class="xg-b"><h4>'+esc2(o.it.n)+'</h4><div class="xg-meta"><span>'+(live?'▸ SIM':'▤ PROTOCOL')+'</span><span class="tag">'+esc2(o.sec.h)+'</span></div></div></div>';
     });
-    H+='<div id="xp-work"></div></div>';
+    H+='</div><div class="xg-empty" style="display:none">NO MATCH — ADJUST SEARCH OR FILTER</div><div id="xp-work"></div></div>';
     main.innerHTML=H; wireToggle();
-    $$('[data-xsec]').forEach(function(b){ b.addEventListener('click',function(){
-      var si=+b.dataset.xsec, ii=+b.dataset.xit;
-      var sec=SEC[si], it=sec.items[ii]; if(!sec||!it) return;
+    function applyFilter(){
+      var q=(hub._q||'').toLowerCase(), toks=[], vis=0, em;
+      q.split(/\s+/).forEach(function(t){ if(t) toks.push(t); });
+      $$('.xg-card',main).forEach(function(c){
+        var ok=true, j, nm;
+        if(hub._f==='live'&&c.getAttribute('data-live')!=='1') ok=false;
+        if(hub._f==='bench'&&c.getAttribute('data-live')==='1') ok=false;
+        if(ok&&toks.length){ nm=c.getAttribute('data-nm')||''; for(j=0;j<toks.length;j++){ if(nm.indexOf(toks[j])<0){ ok=false; break; } } }
+        c.style.display=ok?'':'none'; if(ok) vis++;
+      });
+      em=$('.xg-empty',main); if(em) em.style.display=vis?'none':'';
+    }
+    $$('.xg-card,.xg-cont',main).forEach(function(b){ b.addEventListener('click',function(){
+      var si=+b.getAttribute('data-xsec'), ii=+b.getAttribute('data-xit');
+      var sec=SEC[si], it=sec&&sec.items[ii]; if(!sec||!it) return;
       try{ localStorage.setItem('peq_lab_last',JSON.stringify({si:si,ii:ii})); }catch(e){}
       if(it.s){ openLabFull(it.s); } else { openProtocol(sec,it); }
     }); });
-    $$('.xh-jump').forEach(function(b){ b.addEventListener('click',function(){ var t=$('#xh-sec'+b.dataset.xj); if(t) t.scrollIntoView({behavior:'smooth',block:'start'}); }); });
-    $$('[data-xf]').forEach(function(b){ b.addEventListener('click',function(){ hub._f=b.dataset.xf; hub(main,toggle,wireToggle); }); });
-    stopThumbs(); labThumbs=[];
-    SEC.forEach(function(sec,si){ sec.items.forEach(function(it,ii){ if(!it.s) return; var host=$('#xh-th-'+si+'-'+ii); if(!host||typeof SIMS==='undefined'||!SIMS[it.s]) return;
-      (function(s){
-        function freeze(){ if(host._inst&&host._inst.stop) host._inst.stop(); host._live=false; }
-        function play(){ if(host._live) return; if(host._ft){ clearTimeout(host._ft); host._ft=null; } if(host._inst&&host._inst.stop) host._inst.stop(); var bd=host.querySelector('.xh-badge'); host.innerHTML=''; if(bd) host.appendChild(bd); try{ host._inst=SIMS[s](host); host._live=true; }catch(e){} }
-        try{ host._inst=SIMS[s](host); host._live=true; host._ft=setTimeout(freeze,650); }catch(e){}
-        host.addEventListener('pointerenter',play); host.addEventListener('pointerleave',freeze);
-        labThumbs.push(host);
-      })(it.s);
+    $$('[data-xf]',main).forEach(function(b){ b.addEventListener('click',function(){
+      hub._f=b.getAttribute('data-xf');
+      $$('[data-xf]',main).forEach(function(x){ x.className='xg-chip'+(x===b?' on':''); });
+      applyFilter();
     }); });
+    var qEl=$('#xg-q',main);
+    if(qEl){ qEl.value=hub._q||''; qEl.addEventListener('input',function(){
+      if(hub._dt) clearTimeout(hub._dt);
+      hub._dt=setTimeout(function(){ hub._q=qEl.value; applyFilter(); },140);
+    }); }
+    function benchSketch(host,it,seed){
+      var cv=document.createElement('canvas'); host.appendChild(cv);
+      var ctx=cv.getContext('2d'); var f=fitC(cv,ctx), w=f.w, h=f.h;
+      var s=(seed*2654435)%233280+7; function rnd(){ s=(s*9301+49297)%233280; return s/233280; }
+      var kind=Math.floor(rnd()*4);
+      function fy(t){
+        if(kind===0) return .08+.84*t;
+        if(kind===1) return .92*Math.sqrt(t);
+        if(kind===2) return .95*(1-Math.exp(-3.2*t));
+        return .5+.4*Math.sin(t*9.42477);
+      }
+      var gx; ctx.strokeStyle='rgba(125,211,252,.06)'; ctx.lineWidth=1;
+      for(gx=14;gx<w;gx+=22){ ctx.beginPath(); ctx.moveTo(gx+.5,6); ctx.lineTo(gx+.5,h-6); ctx.stroke(); }
+      for(gx=12;gx<h;gx+=22){ ctx.beginPath(); ctx.moveTo(8,gx+.5); ctx.lineTo(w-8,gx+.5); ctx.stroke(); }
+      var x0=24,y0=h-18,x1=w-14,y1=14;
+      ctx.strokeStyle='rgba(125,211,252,.4)'; ctx.beginPath(); ctx.moveTo(x0+.5,y1); ctx.lineTo(x0+.5,y0+.5); ctx.lineTo(x1,y0+.5); ctx.stroke();
+      ctx.strokeStyle='rgba(125,211,252,.85)'; ctx.lineWidth=1.4; ctx.beginPath();
+      var i2,t,px,py;
+      for(i2=0;i2<=44;i2++){ t=i2/44; px=x0+(x1-x0)*t; py=y0-(y0-y1)*Math.max(.02,Math.min(.98,fy(t))); if(i2===0) ctx.moveTo(px,py); else ctx.lineTo(px,py); }
+      ctx.stroke();
+      ctx.fillStyle='rgba(125,211,252,.95)'; ctx.shadowColor='rgba(125,211,252,.8)'; ctx.shadowBlur=5;
+      for(i2=0;i2<7;i2++){ t=(i2+.5)/7; px=x0+(x1-x0)*t; py=y0-(y0-y1)*Math.max(.02,Math.min(.98,fy(t)+(rnd()-.5)*.09)); ctx.beginPath(); ctx.arc(px,py,1.8,0,6.2832); ctx.fill(); }
+      ctx.shadowBlur=0; ctx.fillStyle='rgba(125,211,252,.45)'; ctx.font='8px ui-monospace,Menlo,Consolas,monospace';
+      var dv=it.dv||[];
+      if(dv[0]) ctx.fillText(String(dv[0]).toUpperCase().slice(0,14), x0+6, h-6);
+      if(dv[1]) ctx.fillText(String(dv[1]).toUpperCase().slice(0,14), x0+6, 10);
+    }
+    stopThumbs(); labThumbs=[];
+    flat.forEach(function(o){
+      var host=$('#xg-th-'+o.si+'-'+o.ii); if(!host) return;
+      if(o.it.s){
+        if(typeof SIMS==='undefined'||!SIMS[o.it.s]) return;
+        (function(s){
+          function freeze(){ if(host._inst&&host._inst.stop) host._inst.stop(); host._live=false; }
+          function play(){ if(host._live) return; if(host._ft){ clearTimeout(host._ft); host._ft=null; } if(host._inst&&host._inst.stop) host._inst.stop(); var bd=host.querySelector('.xg-badge'); host.innerHTML=''; if(bd) host.appendChild(bd); try{ host._inst=SIMS[s](host); host._live=true; }catch(e){} }
+          try{ host._inst=SIMS[s](host); host._live=true; host._ft=setTimeout(freeze,650); }catch(e){}
+          host.addEventListener('pointerenter',play); host.addEventListener('pointerleave',freeze);
+          labThumbs.push(host);
+        })(o.it.s);
+      } else {
+        var ok=false;
+        if(window.PeqBench&&PeqBench.has&&PeqBench.has(o.it.n)){ try{ host._inst=PeqBench.mount(host,o.it.n,{thumb:true}); ok=true; labThumbs.push(host); }catch(e){ ok=false; } }
+        if(!ok){ try{ benchSketch(host,o.it,(o.si+3)*37+o.ii*11+5); }catch(e){} }
+      }
+    });
+    applyFilter();
   }
+
   function openProtocol(sec,it){
     var w=$('#xp-work'); if(!w) return;
-    $$('.xp-dom,.rs-grid,.xh-grid,.xh-bar,.xh-cont',main).forEach(function(n){ n.style.display='none'; });
+    $$('.xp-dom,.rs-grid,.xg-grid,.xg-bar,.xg-cont,.xg-empty',main).forEach(function(n){ n.style.display='none'; });
     var rows=''; for(var r=0;r<6;r++) rows+='<tr><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td></tr>';
     w.innerHTML='<div class="xp-proto fade">'+
       '<button class="mini-b" id="xp-back" style="margin:6px 0 18px">← All experiments</button>'+
@@ -7379,7 +7473,7 @@ var Expt=(function(){
       '<div style="display:flex;gap:12px;margin-top:24px;flex-wrap:wrap"><button class="btn btn-pri" id="xp-ask">✦ Ask '+sec.pers.toUpperCase()+' about this experiment</button><button class="btn btn-ghost" id="xp-back2">Done — back to catalog</button></div>'+
     '</div>';
     $('#main-scroll').scrollTop=0;
-    function back(){ w.innerHTML=''; $$('.xp-dom,.rs-grid,.xh-grid,.xh-bar,.xh-cont',main).forEach(function(n){ n.style.display=''; }); }
+    function back(){ w.innerHTML=''; $$('.xp-dom,.rs-grid,.xg-grid,.xg-bar,.xg-cont',main).forEach(function(n){ n.style.display=''; }); }
     $('#xp-back').addEventListener('click',back); $('#xp-back2').addEventListener('click',back);
     $('#xp-addrow').addEventListener('click',function(){ var tr=document.createElement('tr'); tr.innerHTML='<td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td>'; $('#xp-rows').appendChild(tr); });
     $('#xp-ask').addEventListener('click',function(){

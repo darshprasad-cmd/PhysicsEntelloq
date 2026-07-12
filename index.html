@@ -412,6 +412,19 @@ input[type=range].sl::-moz-range-thumb{width:14px;height:14px;border:0;border-ra
 .cp-foot{display:flex;gap:14px;padding:9px 16px;border-top:1px solid var(--line-2);font-family:var(--mono);font-size:9px;color:var(--ink-ghost)}
 .kbd-hint{margin-left:auto;font-family:var(--mono);font-size:8.5px;color:var(--ink-ghost);border:1px solid var(--line-2);border-radius:5px;padding:1px 5px;letter-spacing:.04em}
 @media(prefers-reduced-motion:reduce){#cmdk.on,.cp-panel{animation:none}}
+.xh-cont{display:flex;align-items:center;gap:12px;margin:0 0 16px;padding:13px 17px;border:1px solid var(--line);border-radius:13px;background:rgba(255,255,255,.02);cursor:pointer;transition:border-color .2s var(--ease),transform .2s var(--ease)}
+.xh-cont:hover{border-color:rgba(125,211,252,.4);transform:translateY(-1px)}
+.xh-cont .tx{font-size:13.5px;color:var(--ink-dim)} .xh-cont .tx b{color:var(--ink)}
+.xh-cont .go{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--blue);white-space:nowrap}
+.xh-bar{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 2px;margin:0 0 6px;background:linear-gradient(var(--bg) 78%,transparent);backdrop-filter:blur(7px)}
+.xh-bar .sp{flex:1}
+.xh-jump{display:inline-flex;align-items:center;gap:7px;font-size:12px;color:var(--ink-dim);background:none;border:1px solid var(--line-2);border-radius:20px;padding:5px 12px;cursor:pointer;transition:border-color .18s var(--ease),color .18s var(--ease)}
+.xh-jump i{width:7px;height:7px;border-radius:50%;background:var(--xc)}
+.xh-jump span{font-family:var(--mono);font-size:9px;color:var(--ink-ghost)}
+.xh-jump:hover{border-color:var(--xc);color:var(--ink)}
+.xh-card .thumb{position:relative}
+.xh-badge{position:absolute;top:8px;left:10px;z-index:2;font-family:var(--mono);font-size:8.5px;letter-spacing:.08em;text-transform:uppercase;background:rgba(4,6,12,.72);border:1px solid var(--line);border-radius:6px;padding:2px 7px;pointer-events:none}
+.xh-rel{font-family:var(--mono);font-size:12.5px;text-align:center;line-height:1.55;opacity:.92;word-break:break-word}
 
 /* unit header + difficulty */
 .unit-head{display:flex;align-items:center;gap:20px;margin:6px 0 22px}
@@ -6773,26 +6786,49 @@ var Expt=(function(){
   function esc2(s){ return esc(s); }
   function card(nm,dm,ic,col,attrs,badge){ return '<button class="rs-card" '+attrs+'><div class="rs-cic" style="color:'+col+';border-color:'+col+'55">'+ic+'</div><div class="rs-ct"><div class="nm">'+esc2(nm)+'</div><div class="dm">'+esc2(dm)+'</div>'+(badge||'')+'</div><span class="arr">›</span></button>'; }
   function hub(main,toggle,wireToggle){
-    var H='<div class="wrap fade"><div class="eyebrow">Structured experiments</div><h1 class="h-hello" style="font-size:30px">Work like an experimentalist</h1><div class="h-sub">Objective → procedure → data → graph → uncertainty → conclusion. <b style="color:var(--ink)">▸ live</b> experiments run a real simulation in the investigation shell; <b style="color:var(--ink)">▤ bench</b> experiments guide you through the classic protocol with a data table and a specialist on call.</div>'+toggle;
+    var filt=hub._f||'all';
+    var last=null; try{ last=JSON.parse(localStorage.getItem('peq_lab_last')||'null'); }catch(e){}
+    var H='<div class="wrap fade"><div class="eyebrow">Structured experiments</div><h1 class="h-hello" style="font-size:30px">Work like an experimentalist</h1>'+toggle;
+    if(last&&SEC[last.si]&&SEC[last.si].items[last.ii]){ var lsec=SEC[last.si],lit=lsec.items[last.ii];
+      H+='<div class="xh-cont" data-xsec="'+last.si+'" data-xit="'+last.ii+'"><span class="ic" style="color:'+lsec.c+'">'+(lit.s?'\u25b8':'\u25a4')+'</span><span class="tx"><b>Continue</b> \u2014 '+esc2(lit.n)+'</span><span class="go">Resume \u2192</span></div>'; }
+    H+='<div class="xh-bar">'+SEC.map(function(sec,si){ return '<button class="xh-jump" data-xj="'+si+'" style="--xc:'+sec.c+'"><i></i>'+esc2(sec.h)+'<span>'+sec.items.length+'</span></button>'; }).join('')+
+       '<span class="sp"></span>'+[['all','All'],['live','\u25b8 live'],['bench','\u25a4 bench']].map(function(f){ return '<button class="lvl-chip'+(filt===f[0]?' on':'')+'" data-xf="'+f[0]+'">'+f[1]+'</button>'; }).join('')+'</div>';
     SEC.forEach(function(sec,si){
-      H+='<div class="xp-dom" style="--xc:'+sec.c+'55;color:'+sec.c+'">'+esc2(sec.h)+'<span class="bar"></span><span class="ct">'+sec.items.length+' experiments</span></div><div class="rs-grid">';
-      sec.items.forEach(function(it,ii){
-        var live=!!it.s;
-        var badge='<span class="xp-badge" style="color:'+(live?'#34d399':'#7dd3fc')+';border-color:'+(live?'#34d39955':'#7dd3fc55')+'">'+(live?'▸ live sim':'▤ guided bench')+'</span>';
-        H+=card(it.n,it.ob,live?'▸':'▤',sec.c,'data-xsec="'+si+'" data-xit="'+ii+'"',badge);
+      var items=sec.items.map(function(it,ii){ return {it:it,ii:ii}; }).filter(function(o){ return filt==='all'||(filt==='live'?!!o.it.s:!o.it.s); });
+      if(!items.length) return;
+      H+='<div class="xp-dom" id="xh-sec'+si+'" style="--xc:'+sec.c+'55;color:'+sec.c+'">'+esc2(sec.h)+'<span class="bar"></span><span class="ct">'+items.length+' experiments</span></div><div class="lab-grid xh-grid">';
+      items.forEach(function(o){ var it=o.it,ii=o.ii,live=!!it.s;
+        H+='<div class="lab-card xh-card" data-xsec="'+si+'" data-xit="'+ii+'"><div class="thumb"'+(live?' id="xh-th-'+si+'-'+ii+'"':' style="display:flex;align-items:center;justify-content:center;padding:12px 14px"')+'>'+
+          (live?'':'<span class="xh-rel" style="color:'+sec.c+'">'+esc2(it.rel||'')+'</span>')+
+          '<span class="xh-badge" style="color:'+(live?'#34d399':'#7dd3fc')+'">'+(live?'\u25b8 live':'\u25a4 bench')+'</span></div>'+
+          '<div class="lc-b"><h4>'+esc2(it.n)+'</h4><p>'+esc2(it.ob)+'</p></div></div>';
       });
       H+='</div>';
     });
     H+='<div id="xp-work"></div></div>';
     main.innerHTML=H; wireToggle();
     $$('[data-xsec]').forEach(function(b){ b.addEventListener('click',function(){
-      var sec=SEC[+b.dataset.xsec], it=sec.items[+b.dataset.xit];
+      var si=+b.dataset.xsec, ii=+b.dataset.xit;
+      var sec=SEC[si], it=sec.items[ii]; if(!sec||!it) return;
+      try{ localStorage.setItem('peq_lab_last',JSON.stringify({si:si,ii:ii})); }catch(e){}
       if(it.s){ openLabFull(it.s); } else { openProtocol(sec,it); }
+    }); });
+    $$('.xh-jump').forEach(function(b){ b.addEventListener('click',function(){ var t=$('#xh-sec'+b.dataset.xj); if(t) t.scrollIntoView({behavior:'smooth',block:'start'}); }); });
+    $$('[data-xf]').forEach(function(b){ b.addEventListener('click',function(){ hub._f=b.dataset.xf; hub(main,toggle,wireToggle); }); });
+    stopThumbs(); labThumbs=[];
+    SEC.forEach(function(sec,si){ sec.items.forEach(function(it,ii){ if(!it.s) return; var host=$('#xh-th-'+si+'-'+ii); if(!host||typeof SIMS==='undefined'||!SIMS[it.s]) return;
+      (function(s){
+        function freeze(){ if(host._inst&&host._inst.stop) host._inst.stop(); host._live=false; }
+        function play(){ if(host._live) return; if(host._ft){ clearTimeout(host._ft); host._ft=null; } if(host._inst&&host._inst.stop) host._inst.stop(); var bd=host.querySelector('.xh-badge'); host.innerHTML=''; if(bd) host.appendChild(bd); try{ host._inst=SIMS[s](host); host._live=true; }catch(e){} }
+        try{ host._inst=SIMS[s](host); host._live=true; host._ft=setTimeout(freeze,650); }catch(e){}
+        host.addEventListener('pointerenter',play); host.addEventListener('pointerleave',freeze);
+        labThumbs.push(host);
+      })(it.s);
     }); });
   }
   function openProtocol(sec,it){
     var w=$('#xp-work'); if(!w) return;
-    $$('.xp-dom,.rs-grid',main).forEach(function(n){ n.style.display='none'; });
+    $$('.xp-dom,.rs-grid,.xh-grid,.xh-bar,.xh-cont',main).forEach(function(n){ n.style.display='none'; });
     var rows=''; for(var r=0;r<6;r++) rows+='<tr><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td></tr>';
     w.innerHTML='<div class="xp-proto fade">'+
       '<button class="mini-b" id="xp-back" style="margin:6px 0 18px">← All experiments</button>'+
@@ -6809,7 +6845,7 @@ var Expt=(function(){
       '<div style="display:flex;gap:12px;margin-top:24px;flex-wrap:wrap"><button class="btn btn-pri" id="xp-ask">✦ Ask '+sec.pers.toUpperCase()+' about this experiment</button><button class="btn btn-ghost" id="xp-back2">Done — back to catalog</button></div>'+
     '</div>';
     $('#main-scroll').scrollTop=0;
-    function back(){ w.innerHTML=''; $$('.xp-dom,.rs-grid',main).forEach(function(n){ n.style.display=''; }); }
+    function back(){ w.innerHTML=''; $$('.xp-dom,.rs-grid,.xh-grid,.xh-bar,.xh-cont',main).forEach(function(n){ n.style.display=''; }); }
     $('#xp-back').addEventListener('click',back); $('#xp-back2').addEventListener('click',back);
     $('#xp-addrow').addEventListener('click',function(){ var tr=document.createElement('tr'); tr.innerHTML='<td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td>'; $('#xp-rows').appendChild(tr); });
     $('#xp-ask').addEventListener('click',function(){

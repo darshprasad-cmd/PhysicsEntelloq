@@ -523,6 +523,10 @@ input[type=range].sl::-moz-range-thumb{width:14px;height:14px;border:0;border-ra
 .uni-ctrls{position:absolute;right:18px;bottom:18px;display:flex;flex-direction:column;gap:7px;z-index:4}
 .uni-ctrls button{width:38px;height:38px;border-radius:11px;border:1px solid var(--line-2);background:rgba(8,11,20,.72);backdrop-filter:blur(10px);color:var(--ink-dim);font-size:17px;transition:all .2s}
 .uni-ctrls button:hover{color:#fff;border-color:rgba(125,211,252,.4)}
+/* UniHands — pinch-to-fly the universe */
+.uni-ctrls #uni-hand{font-size:15px}
+#uni-hand.on{color:var(--violet);border-color:rgba(167,139,250,.6);background:rgba(167,139,250,.13);animation:unihand-live 2.4s ease infinite}
+@keyframes unihand-live{0%,100%{box-shadow:0 0 22px -8px rgba(167,139,250,.65)}50%{box-shadow:0 0 30px -4px rgba(167,139,250,.35)}}
 .uni-card{position:absolute;width:268px;border:1px solid var(--line);border-radius:15px;background:rgba(10,14,26,.94);backdrop-filter:blur(16px);padding:16px 17px;box-shadow:0 26px 70px -22px #000;opacity:0;transform:scale(.96);transition:opacity .2s,transform .2s var(--spring);z-index:6;pointer-events:none}
 .uni-card.on{opacity:1;transform:none;pointer-events:auto}
 .uni-card .dm{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase}
@@ -3416,6 +3420,172 @@ function uniAccent(g,dk,x,y,r,col,t,ph){
   else if(dk==='relativity'){ g.strokeStyle=col; g.globalAlpha=.45; g.lineWidth=1.2; g.beginPath(); g.arc(x,y,r*2.1,0,7); g.stroke(); g.globalAlpha=.18; g.beginPath(); g.arc(x,y,r*2.7,0,7); g.stroke(); }
   g.restore();
 }
+/* ============================================================
+   FEATURE — PINCH-TO-FLY THE UNIVERSE (UniHands)
+   Hand-gesture navigation for the knowledge-universe canvas.
+   one-hand pinch + move = grab-pan the camera · two-hand pinch
+   = stretch-zoom around the midpoint · open palm = aim at the
+   nearest star (highlight) · quick pinch-release on a star =
+   fly to it + open its concept card.
+   Self-contained: lazy-loads MediaPipe Hands from jsdelivr with
+   the SAME proven pattern as the Sandbox hand engine, owns its
+   own selfie camera (started ONLY from the explicit ✋ button
+   click in .uni-ctrls), and receives the Uni engine internals
+   via UniHands.attach({...}) called from Uni.mount. Torn down
+   in Uni.stop().
+   Headless test hook (no camera needed):
+     window.__peqUniHands.inject({multiHandLandmarks:[lm,...]})
+   where lm is an array of {x,y} normalized 0..1 — landmarks
+   used: 4 thumb tip · 8 index tip · 9 middle MCP · 0 wrist
+   (optional, improves hand-scale). __peqUniHands.state() and
+   .probe(sx,sy) expose camera / hover / selection to assert on.
+   ============================================================ */
+var UniHands=(function(){
+  var A=null;                                     /* Uni bindings from attach() */
+  var on=false,loading=false,hands=null,video=null,stream=null,pump=0;
+  var sm=[null,null],cursors=[],missN=0,lastSeen=0,pan=null,zoomG=null;
+  var PINCH_IN=0.55,PALM_OUT=0.9,DEF_SCALE=0.22,TAP_PX=14,FLING=9;
+  function nowMs(){ return (new Date()).getTime(); }
+  function clampZ(z){ return Math.max(.18,Math.min(2.2,z)); }
+  /* one hand frame -> {x,y,pinch,palm} in canvas CSS px (robust to sparse synthetic landmarks) */
+  function readHand(lm,slot,Wv,Hv){
+    if(!lm||!lm[4]||!lm[8]) return null;
+    var th=lm[4],ix=lm[8],mcp=lm[9]||null,wr=lm[0]||null;
+    var scale=(wr&&mcp)?Math.max(.06,Math.hypot(wr.x-mcp.x,wr.y-mcp.y)):DEF_SCALE;
+    var pd=Math.hypot(th.x-ix.x,th.y-ix.y);
+    var pinch=pd<scale*PINCH_IN, palm=false;
+    if(!pinch){
+      if(wr&&lm[6]&&lm[10]&&lm[12]&&lm[14]&&lm[16]&&lm[18]&&lm[20]){
+        var ext=0,F=[[8,6],[12,10],[16,14],[20,18]],f;
+        for(f=0;f<F.length;f++){ if(Math.hypot(lm[F[f][0]].x-wr.x,lm[F[f][0]].y-wr.y)>Math.hypot(lm[F[f][1]].x-wr.x,lm[F[f][1]].y-wr.y)*1.05) ext++; }
+        palm=ext>=3;
+      } else palm=pd>scale*PALM_OUT;
+    }
+    var px,py;
+    if(palm&&mcp){ px=mcp.x*Wv; py=mcp.y*Hv; } else { px=(th.x+ix.x)/2*Wv; py=(th.y+ix.y)/2*Hv; }
+    var s=sm[slot]; if(!s){ sm[slot]={x:px,y:py}; } else { s.x=s.x*.55+px*.45; s.y=s.y*.55+py*.45; px=s.x; py=s.y; }
+    return {x:px,y:py,pinch:pinch,palm:palm};
+  }
+  function endPan(){
+    var p=pan; pan=null; if(!p||!A) return; var cam=A.cam;
+    if(p.mv<TAP_PX&&p.node){ A.flyTo(p.node,true); A.showCard(p.node); A.setHover(p.node); }
+    else { cam.tx-=p.vx*FLING/Math.max(cam.z,.01); cam.ty-=p.vy*FLING/Math.max(cam.z,.01); }
+  }
+  /* THE gesture pipeline — real camera frames and synthetic injections both land here */
+  function feed(res){
+    if(!A) return;
+    var cam=A.cam,WH=A.size(),Wv=WH[0]||1,Hv=WH[1]||1;
+    var list=(res&&res.multiHandLandmarks)||[],hs=[],i,h;
+    for(i=0;i<list.length&&i<2;i++){ h=readHand(list[i],i,Wv,Hv); if(h) hs.push(h); }
+    if(hs.length){
+      missN=0; lastSeen=nowMs(); cursors=hs;
+      var P=[],j; for(j=0;j<hs.length;j++) if(hs[j].pinch) P.push(hs[j]);
+      if(P.length>=2){                       /* two-hand pinch = stretch-zoom about the midpoint */
+        pan=null;
+        var mx=(P[0].x+P[1].x)/2,my=(P[0].y+P[1].y)/2,d=Math.max(1,Math.hypot(P[0].x-P[1].x,P[0].y-P[1].y));
+        if(!zoomG){ zoomG={d0:d,z0:cam.tz,wx:(mx-Wv/2)/cam.z+cam.x,wy:(my-Hv/2)/cam.z+cam.y}; A.hideCard(); }
+        else { var nz=clampZ(zoomG.z0*d/zoomG.d0); cam.tz=nz; cam.tx=zoomG.wx-(mx-Wv/2)/nz; cam.ty=zoomG.wy-(my-Hv/2)/nz; }
+      } else if(P.length===1){               /* one-hand pinch = grab-pan · tiny movement = tap-select */
+        zoomG=null; var p=P[0];
+        if(!pan){ pan={sx:p.x,sy:p.y,cx:cam.tx,cy:cam.ty,lx:p.x,ly:p.y,vx:0,vy:0,mv:0,node:A.nodeAt(p.x,p.y)}; A.hideCard(); if(pan.node) A.setHover(pan.node); }
+        else { pan.vx=pan.vx*.7+(p.x-pan.lx)*.3; pan.vy=pan.vy*.7+(p.y-pan.ly)*.3;
+          pan.mv+=Math.abs(p.x-pan.lx)+Math.abs(p.y-pan.ly); pan.lx=p.x; pan.ly=p.y;
+          cam.tx=pan.cx-(p.x-pan.sx)/Math.max(cam.z,.01); cam.ty=pan.cy-(p.y-pan.sy)/Math.max(cam.z,.01); }
+      } else {                               /* open hand: release any pan · palm aims at a star */
+        zoomG=null; if(pan) endPan();
+        var pm=null; for(j=0;j<hs.length;j++) if(hs[j].palm){ pm=hs[j]; break; }
+        if(pm) A.setHover(A.nodeAt(pm.x,pm.y));
+      }
+    } else {                                 /* hand lost — debounce a few frames, then settle */
+      missN++;
+      if(missN>8){ if(pan) endPan(); zoomG=null; cursors=[]; sm=[null,null]; }
+    }
+    A.redraw();
+  }
+  /* minimal fingertip cursor overlay — Uni.draw calls this with its own 2d ctx */
+  function overlay(c){
+    if(!A||!cursors.length||nowMs()-lastSeen>1200) return;
+    c.save();
+    if(zoomG&&cursors.length>=2){
+      c.strokeStyle='rgba(167,139,250,.45)'; c.lineWidth=1.2; if(c.setLineDash) c.setLineDash([4,5]);
+      c.beginPath(); c.moveTo(cursors[0].x,cursors[0].y); c.lineTo(cursors[1].x,cursors[1].y); c.stroke();
+      if(c.setLineDash) c.setLineDash([]);
+    }
+    for(var i=0;i<cursors.length;i++){ var h=cursors[i],col=i?'#a78bfa':'#7dd3fc';
+      if(h.pinch){
+        c.strokeStyle=col; c.globalAlpha=.95; c.lineWidth=1.6; c.beginPath(); c.arc(h.x,h.y,9,0,7); c.stroke();
+        c.fillStyle=col; c.globalAlpha=.9; c.beginPath(); c.arc(h.x,h.y,3,0,7); c.fill();
+      } else {
+        c.strokeStyle=col; c.globalAlpha=.6; c.lineWidth=1.2; c.beginPath(); c.arc(h.x,h.y,12,0,7); c.stroke();
+        c.beginPath(); c.moveTo(h.x-17,h.y); c.lineTo(h.x-8,h.y); c.moveTo(h.x+8,h.y); c.lineTo(h.x+17,h.y);
+        c.moveTo(h.x,h.y-17); c.lineTo(h.x,h.y-8); c.moveTo(h.x,h.y+8); c.lineTo(h.x,h.y+17); c.stroke();
+      }
+      c.globalAlpha=1;
+    }
+    c.restore();
+  }
+  /* ---- MediaPipe load + selfie camera (same proven pattern as the Sandbox hand engine) ---- */
+  function ensureLib(cb){
+    if(window.Hands){ cb(); return; }
+    if(loading){ var t=setInterval(function(){ if(window.Hands){ clearInterval(t); cb(); } },120); return; }
+    loading=true;
+    var s=document.createElement('script'); s.src='https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4/hands.js'; s.crossOrigin='anonymous';
+    s.onload=function(){ loading=false; cb(); };
+    s.onerror=function(){ loading=false; toast('Hand tracking unavailable','offline?'); off(); };
+    document.head.appendChild(s);
+  }
+  function start(){
+    if(on) return; on=true; syncBtn(); toast('Loading hand tracking…','one moment');
+    ensureLib(function(){ if(!on) return;
+      try{
+        if(!hands){ hands=new window.Hands({locateFile:function(f){ return 'https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4/'+f; }}); }
+        hands.setOptions({maxNumHands:2,modelComplexity:0,minDetectionConfidence:.6,minTrackingConfidence:.5,selfieMode:true});
+        hands.onResults(feed); openCam();
+      }catch(e){ toast('Hand tracking failed to start',''); off(); }
+    });
+  }
+  function openCam(){
+    if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){ toast('No camera available',''); off(); return; }
+    navigator.mediaDevices.getUserMedia({video:{width:640,height:480,facingMode:'user'},audio:false}).then(function(st){
+      if(!on){ st.getTracks().forEach(function(t){ t.stop(); }); return; }
+      stream=st;
+      if(!video){ video=ce('video'); video.id='uni-hand-cam'; video.muted=true; video.playsInline=true; video.setAttribute('playsinline','');
+        video.style.cssText='position:fixed;left:-9999px;top:0;width:2px;height:2px;opacity:0;pointer-events:none'; document.body.appendChild(video); }
+      video.srcObject=st; var pp=video.play(); if(pp&&pp.catch) pp.catch(function(){});
+      pumpLoop(); toast('Pinch-to-fly on','✋ pinch = grab-pan · two pinches = zoom · palm = aim');
+    }).catch(function(){ toast('Camera blocked','allow camera to fly by hand'); off(); });
+  }
+  function pumpLoop(){
+    if(!on) return;
+    if(video&&video.readyState>=2&&hands){ hands.send({image:video}).then(function(){ if(on) pump=requestAnimationFrame(pumpLoop); }).catch(function(){ if(on) pump=requestAnimationFrame(pumpLoop); }); }
+    else pump=requestAnimationFrame(pumpLoop);
+  }
+  function off(){
+    on=false; syncBtn();
+    try{ if(pump) cancelAnimationFrame(pump); }catch(e){} pump=0;
+    if(stream){ try{ stream.getTracks().forEach(function(t){ t.stop(); }); }catch(e){} stream=null; }
+    if(video){ try{ video.srcObject=null; }catch(e){} try{ if(video.parentNode) video.parentNode.removeChild(video); }catch(e){} video=null; }
+    pan=null; zoomG=null; cursors=[]; sm=[null,null]; missN=0;
+  }
+  function syncBtn(){
+    var b=(A&&A.host)?A.host.querySelector('#uni-hand'):null;
+    if(b){ b.classList.toggle('on',on); b.title=on?'Hand navigation on — click to turn the camera off':'Fly by hand — pinch to grab, two pinches to zoom (uses camera)'; }
+    var hint=(A&&A.host)?A.host.querySelector('.uni-hint'):null;
+    if(hint&&on){ hint.textContent='pinch & move = fly · two pinches = stretch-zoom · open palm = aim at a star'; hint.style.animation='none'; hint.style.opacity='.7'; }
+    else if(hint&&hint.style.animation==='none'){ hint.style.opacity='0'; }
+  }
+  function attach(api){ A=api; syncBtn(); }
+  /* headless verification hook — synthetic MediaPipe results run the SAME pipeline as the camera */
+  window.__peqUniHands={
+    inject:function(res){ feed(res||{}); },
+    probe:function(sx,sy){ var n=(A&&A.nodeAt)?A.nodeAt(sx,sy):null; return n?n.t.id:null; },
+    state:function(){ if(!A) return {attached:false}; var cam=A.cam,hv=A.getHover(),sl=A.getSel();
+      return {attached:true,on:on,pan:!!pan,zoom:!!zoomG,cam:{x:cam.x,y:cam.y,z:cam.z,tx:cam.tx,ty:cam.ty,tz:cam.tz},hover:(hv&&hv.t)?hv.t.id:null,sel:(sl&&sl.t)?sl.t.id:null}; }
+  };
+  return { attach:attach, start:start, stop:off, toggle:function(){ on?off():start(); }, isOn:function(){ return on; }, overlay:overlay, feed:feed, sync:syncBtn };
+})();
+
+
 var Uni=(function(){
   var host,cv,ctx,raf=0,running=false,nodes={},DC={},W=0,H=0,t=0,hover=null,sel=null,card,searchEl,dragging=false,moved=false,last=null;
   var cam={x:0,y:0,z:.5,tx:0,ty:0,tz:.5};
@@ -3479,6 +3649,7 @@ var Uni=(function(){
     // domain labels at low zoom
     if(cam.z<.66){ for(var dk2 in DC){ var c2=DC[dk2],pp=S(c2.x,c2.y); ctx.fillStyle=c2.c; ctx.globalAlpha=Math.min(1,(.66-cam.z)*4); ctx.font='600 '+(15)+'px Space Grotesk,sans-serif'; ctx.textAlign='center'; ctx.fillText(c2.n,pp[0],pp[1]-4);
       ctx.font='10px JetBrains Mono,monospace'; ctx.fillStyle='rgba(220,230,245,.55)'; ctx.fillText((UNI_ID[dk2]||{}).tag||'',pp[0],pp[1]+13); ctx.fillStyle=c2.c; ctx.globalAlpha=1; ctx.textAlign='left'; } }
+    try{ if(typeof UniHands!=='undefined') UniHands.overlay(ctx); }catch(e){}
     if(running) raf=requestAnimationFrame(draw);
   }
   function showCard(n){ if(!card) return; var d=DMAP[n.t.domain],lv=LVL[n.t.lvl],p=S(n.x,n.y);
@@ -3498,7 +3669,7 @@ var Uni=(function(){
       '<div class="uni-top"><label class="uni-search"><span style="color:var(--violet)">✦</span><input id="uni-q" placeholder="Search the universe — fly to any concept…" autocomplete="off"/></label>'+
       '<div class="uni-stat"><b>'+Me.doneCount()+'</b> / '+DB.length+' ignited<br>'+DB.length+' concepts · '+DOMAINS.length+' fields</div></div>'+
       '<div class="uni-legend">'+DOMAINS.map(function(d){return '<span class="lg"><i style="background:'+d.c+'"></i>'+esc(d.n)+'</span>';}).join('')+'</div>'+
-      '<div class="uni-ctrls"><button data-z="1.3" title="Zoom in">+</button><button data-z="0.77" title="Zoom out">−</button><button id="uni-home" title="Show all">⊙</button></div>'+
+      '<div class="uni-ctrls"><button data-z="1.3" title="Zoom in">+</button><button data-z="0.77" title="Zoom out">−</button><button id="uni-home" title="Show all">⊙</button><button id="uni-hand" title="Fly by hand — pinch to grab, two pinches to zoom (uses camera)">✋</button></div>'+
       '<div class="uni-card"><div style="display:flex;align-items:center;gap:8px"><span class="dm"></span><span class="lv" style="margin-left:auto"></span></div><h4></h4><p></p><div class="acts"><button class="btn btn-pri btn-sm" data-act="open">Open lesson →</button><button class="btn btn-ghost btn-sm" data-act="ask">✦ Ask</button></div><div class="uni-conn"></div></div>'+
       '<div class="uni-hint">drag to fly · scroll to zoom · click a star to enter its concept</div>';
     cv=host.querySelector('canvas'); ctx=cv.getContext('2d'); card=host.querySelector('.uni-card'); searchEl=host.querySelector('#uni-q');
@@ -3514,13 +3685,16 @@ var Uni=(function(){
     cv.addEventListener('wheel',function(e){ e.preventDefault(); var rr=cv.getBoundingClientRect(),mx=e.clientX-rr.left,my=e.clientY-rr.top; var wx=(mx-W/2)/cam.z+cam.x,wy=(my-H/2)/cam.z+cam.y; cam.tz=Math.max(.18,Math.min(2.2,cam.tz*(e.deltaY<0?1.12:.89))); cam.z=cam.tz; cam.tx=wx-(mx-W/2)/cam.z; cam.ty=wy-(my-H/2)/cam.z; cam.x=cam.tx; cam.y=cam.ty; },{passive:false});
     host.querySelectorAll('.uni-ctrls [data-z]').forEach(function(b){ b.addEventListener('click',function(){ cam.tz=Math.max(.18,Math.min(2.2,cam.tz*(+b.dataset.z))); }); });
     host.querySelector('#uni-home').addEventListener('click',function(){ hideCard(); fitAll(); cam.tz=cam.tz; var z=Math.min(W/2400,H/1600); cam.tz=z; });
+    var hb=host.querySelector('#uni-hand');
+    if(hb&&typeof UniHands!=='undefined'){ UniHands.attach({ host:host, cam:cam, nodeAt:nodeAt, flyTo:flyTo, showCard:showCard, hideCard:hideCard, setHover:function(n){ hover=n; }, getHover:function(){ return hover; }, getSel:function(){ return sel; }, size:function(){ return [W,H]; }, redraw:function(){ if(!running){ try{ draw(); }catch(e){} } } });
+      hb.addEventListener('click',function(){ UniHands.toggle(); }); }
     searchEl.addEventListener('input',function(){ var q=searchEl.value.trim().toLowerCase(); if(!q) return; var best=null; for(var k in nodes){ if(nodes[k].t._s.indexOf(q)>=0){ best=nodes[k]; break; } } if(best){ flyTo(best,true); hover=best; } });
     searchEl.addEventListener('keydown',function(e){ if(e.key==='Enter'&&hover){ flyTo(hover,true); showCard(hover); } });
     card.querySelector('[data-act="open"]').addEventListener('click',function(){ if(card.dataset.id) go('lesson',card.dataset.id); });
     card.querySelector('[data-act="ask"]').addEventListener('click',function(){ var tp=topicById(card.dataset.id); if(tp) Tutor.ask('Give me the big-picture intuition for '+tp.name+' and how it connects to other physics.',tp.name); });
     if(!STILL){ running=true; raf=requestAnimationFrame(draw); } else { running=false; cam.x=cam.tx; cam.y=cam.ty; cam.z=cam.tz; draw(); }
   }
-  function stop(){ running=false; cancelAnimationFrame(raf); }
+  function stop(){ running=false; cancelAnimationFrame(raf); try{ if(typeof UniHands!=='undefined') UniHands.stop(); }catch(e){} }
   return { mount:mount, stop:stop };
 })();
 

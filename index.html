@@ -1437,19 +1437,6 @@ html[data-theme="light"] .sbx{
 html[data-theme="light"] .l-sim{background:#04060e;backdrop-filter:none}
 /* the eqviz graph quadrant has no bg of its own — give the island a floor */
 html[data-theme="light"] .eqviz .ev-graph{background:radial-gradient(120% 130% at 50% 0%,#0a1020,#04060c)}
-/* — level widget in the topbar (Pass 47) — */
-.topbar .top-lv{display:flex;align-items:center;gap:9px;margin-right:12px;padding:3px 13px 3px 5px;border:1px solid var(--line-2);border-radius:999px;cursor:pointer;background:rgba(255,255,255,.02);transition:border-color .18s var(--ease),transform .18s var(--ease)}
-.topbar .top-lv:hover{border-color:rgba(125,211,252,.45);transform:translateY(-1px)}
-.top-lv .lv-ring{position:relative;width:28px;height:28px;flex:0 0 auto}
-.top-lv .lv-ring svg{width:28px;height:28px;display:block}
-.top-lv .lv-ring .n{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--mono);font-size:10px;color:var(--ink)}
-.top-lv .lv-meta{line-height:1.3;white-space:nowrap}
-.top-lv .lv-meta .t{font-size:11.5px;color:var(--ink);display:flex;gap:8px;align-items:baseline}
-.top-lv .rk{font-family:var(--mono);font-size:8.5px;letter-spacing:.13em;text-transform:uppercase;background:linear-gradient(100deg,#7dd3fc,#a78bfa);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
-.top-lv .nx{font-family:var(--mono);font-size:8.5px;color:var(--ink-ghost)}
-.top-lv .lv-meta .s{font-family:var(--mono);font-size:9.5px;color:var(--ink-faint)}
-@media(max-width:1230px){.top-lv .nx{display:none}}
-@media(max-width:1000px){.topbar .top-lv .lv-meta{display:none}.topbar .top-lv{padding:3px 5px;margin-right:8px}}
 /* — Entelloq presence chip (Pass 47) — */
 #eq-pres{position:fixed;right:88px;bottom:26px;z-index:59;display:flex;align-items:center;gap:9px;max-width:min(560px,58vw);padding:8px 10px 8px 15px;border:1px solid var(--line);border-radius:999px;background:rgba(10,15,28,.88);backdrop-filter:blur(10px);box-shadow:0 10px 34px -14px rgba(0,0,0,.65);opacity:0;transform:translateY(8px);pointer-events:none;transition:opacity .45s var(--ease),transform .45s var(--ease)}
 #eq-pres.on{opacity:1;transform:none;pointer-events:auto}
@@ -1462,6 +1449,16 @@ body.rd-focus #eq-pres,body.sbx-max #eq-pres{display:none}
 @media(max-width:860px){#eq-pres{display:none}}
 html[data-theme="light"] #eq-pres{background:rgba(255,255,255,.94)}
 @media(prefers-reduced-motion:reduce){#eq-pres{transition:none}}
+/* — prominent level card (Pass 48) — */
+.side-card.lv-card{position:relative;cursor:pointer;border:1px solid rgba(125,211,252,.26);background:linear-gradient(160deg,rgba(125,211,252,.08),rgba(167,139,250,.05) 55%,rgba(255,255,255,.01));box-shadow:0 0 30px -16px rgba(125,211,252,.55),inset 0 0 26px -20px rgba(125,211,252,.6);transition:border-color .22s var(--ease),transform .22s var(--ease),box-shadow .22s var(--ease)}
+.side-card.lv-card:hover{border-color:rgba(125,211,252,.55);transform:translateY(-2px);box-shadow:0 6px 34px -14px rgba(125,211,252,.6),inset 0 0 26px -20px rgba(125,211,252,.6)}
+.lv-card .lv-ring{width:54px;height:54px}
+.lv-card .lv-ring svg{width:54px;height:54px;filter:drop-shadow(0 0 7px rgba(125,211,252,.5))}
+.lv-card .lv-ring .n{font-size:18px}
+.lv-card .lv-meta .t{font-size:15px;font-weight:600;letter-spacing:.01em}
+.lv-card .lv-meta .s{font-family:var(--mono);font-size:11px;color:var(--ink-dim);margin-top:2px}
+.lv-card .rank-row .rk{font-size:12px}
+@media(prefers-reduced-motion:reduce){.side-card.lv-card,.side-card.lv-card:hover{transform:none}}
 </style>
 <script>/* THEME bootstrap — set html[data-theme] before first paint (no dark->light flash) */
 (function(){ var m='dark'; try{ m=localStorage.getItem('peq_theme')||'dark'; }catch(e){}
@@ -1509,6 +1506,14 @@ html[data-theme="light"] #eq-pres{background:rgba(255,255,255,.94)}
       </div>
     </div>
     
+    <div class="side-card lv-card" data-go="progress" role="button" tabindex="0" title="Open your progress">
+      <div class="lv-row">
+        <div class="lv-ring"><svg viewBox="0 0 42 42"><circle cx="21" cy="21" r="18" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="3.5"/><circle id="lv-fg" cx="21" cy="21" r="18" fill="none" stroke="url(#lg)" stroke-width="3.5" stroke-linecap="round" stroke-dasharray="113" stroke-dashoffset="113"/><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7dd3fc"/><stop offset="1" stop-color="#a78bfa"/></linearGradient></defs></svg><span class="n" id="lv-n">1</span></div>
+        <div class="lv-meta"><div class="t" id="lv-t">Level 1</div><div class="s" id="lv-xp">0 XP</div></div>
+      </div>
+      <div class="streak"><span>≋</span> <span id="streak-n"><b>1</b></span>&nbsp;day streak · <span id="done-n">0</span>/<span id="tot-n">89</span> done</div>
+      <div class="rank-row"><span class="rk" id="rank-name">Observer</span><span class="nx" id="rank-next"></span></div>
+    </div>
   </aside>
 
   <!-- MAIN -->
@@ -1516,7 +1521,6 @@ html[data-theme="light"] #eq-pres{background:rgba(255,255,255,.94)}
     <div class="topbar">
       <div class="crumb" id="crumb"></div>
       <div class="sp"></div>
-      <div class="top-lv" data-go="progress" role="button" tabindex="0" title="Your progress — level, XP, streak. Click to open."><div class="lv-ring"><svg viewBox="0 0 42 42"><circle cx="21" cy="21" r="18" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="3.5"/><circle id="lv-fg" cx="21" cy="21" r="18" fill="none" stroke="url(#lg)" stroke-width="3.5" stroke-linecap="round" stroke-dasharray="113" stroke-dashoffset="113"/><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7dd3fc"/><stop offset="1" stop-color="#a78bfa"/></linearGradient></defs></svg><span class="n" id="lv-n">1</span></div><div class="lv-meta"><div class="t"><span id="lv-t">Level 1</span><span class="rk" id="rank-name">Observer</span><span class="nx" id="rank-next"></span></div><div class="s"><span id="lv-xp">0 XP</span> · ≋ <span id="streak-n"><b>1</b></span>d streak · <span id="done-n">0</span>/<span id="tot-n">89</span> done</div></div></div>
       <label class="t-search"><span style="color:var(--ink-faint)">⌕</span><input id="t-search" placeholder="Search topics…" aria-label="Search"/><span class="k">⌘K</span></label>
     </div>
     <div id="main"></div>
@@ -9202,7 +9206,7 @@ var Presence=(function(){
   }
   function init(){
     if(!el) build();
-    var tl=$('.top-lv'); if(tl) tl.addEventListener('keydown',function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); tl.click(); } });
+    var tl=$('.lv-card')||$('.top-lv'); if(tl) tl.addEventListener('keydown',function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); tl.click(); } });
   }
   return { init:init, onView:onView };
 })();

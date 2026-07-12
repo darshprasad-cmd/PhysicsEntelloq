@@ -5638,7 +5638,7 @@ var Sandbox=(function(){
     if(drag&&drag.mgrab){ PIE.mouseRelease(); drag=null; if(STILL)draw(); return; }
     if(drag&&drag.i!=null){ B[drag.i].fixed=drag.fix; if(fling.length>1){ var a=fling[0],b=fling[fling.length-1],dt=(b[2]-a[2])/1000||0.016; B[drag.i].vx=(b[0]-a[0])/dt; B[drag.i].vy=(b[1]-a[1])/dt; } }
     else if(drag&&drag.place){ var vx=(px-drag.px)*2.4,vy=(py-drag.py)*2.4,o={kind:drag.place,vx:vx/cam.s,vy:vy/cam.s};
-      if(drag.place==='mass')o.m=8; else if(drag.place==='planet'){o.m=400;o.c='#fbbf24';} else if(drag.place==='charge+'){o.q=70;o.m=12;o.kind='charge';} else if(drag.place==='charge-'){o.q=-70;o.m=12;o.kind='charge';}
+      if(drag.place==='mass')o.m=8; else if(drag.place==='planet'){o.m=400;o.c='#fbbf24';} else if(drag.place==='star'){o.m=1600;o.c='#f8fafc';} else if(drag.place==='charge+'){o.q=70;o.m=12;o.kind='charge';} else if(drag.place==='charge-'){o.q=-70;o.m=12;o.kind='charge';}
       sel=addBody(wx(drag.px),wy(drag.py),o); refreshInspect(); }
     else if(drag&&drag.rope){ var rax=wx(drag.px),ray=wy(drag.py),rbx=wx(px),rby=wy(py),dist=Math.hypot(rbx-rax,rby-ray); if(dist>34){ var seg=Math.max(6,Math.min(28,Math.round(dist/24))),dxx=(rbx-rax)/seg,dyy=(rby-ray)/seg,rgap=Math.hypot(dxx,dyy)||1,rids=[addBody(rax,ray,{m:2,r:5,fixed:true,c:'#fbbf24'})]; for(var rs=1;rs<=seg;rs++){ var rfx=(rs===seg); var ridx=addBody(rax+dxx*rs,ray+dyy*rs,{m:2,r:rfx?5:4,fixed:rfx,c:rfx?'#fbbf24':'#f0abfc'}); chains.push({a:rids[rids.length-1],b:ridx,L:rgap}); rids.push(ridx); } for(var rbi=0;rbi<rids.length-2;rbi++){ bends.push({a:rids[rbi],b:rids[rbi+2],L:Math.hypot(B[rids[rbi+2]].x-B[rids[rbi]].x,B[rids[rbi+2]].y-B[rids[rbi]].y)}); } } }
     else if(pend){ var ix=bodyAt(wx(px),wy(py)); if(ix>=0&&ix!==pend.a){ var a=B[pend.a],b=B[ix],L=Math.hypot(b.x-a.x,b.y-a.y); if(pend.kind==='spring')springs.push({a:pend.a,b:ix,k:16,L0:L}); else rods.push({a:pend.a,b:ix,L:L}); } pend=null; }
@@ -5665,14 +5665,36 @@ var Sandbox=(function(){
   /* PhysicsInteractionEngine — ONE unified input layer. Mouse · touch · hands all become "pointers" that drive
      spring grabs + force fields through the SAME velocity-Verlet engine (never teleporting). Sub-systems:
      Settings(cfg) · CameraManager · HandTrackingManager · GestureRecognizer · GrabSystem · ForceFieldSystem · InteractionRenderer · PhysicsHUD. */
+  /* ===== One-Euro filter (Casiez / Roussel / Vogel) — per-landmark adaptive smoothing =====
+     Slow motion → heavy smoothing (rock-steady); fast motion → the cutoff opens up (near-zero lag).
+     Params: minCutoff 1.2 Hz · beta 0.007 · dCutoff 1.0 Hz · alpha derived from cutoff + frame dt.
+     One filter bank per hand (21 landmarks × x/y); .pt() also returns the filtered velocity
+     (px/s) so the grab cursor can be predicted forward by ~1 frame. */
+  function oneEuroAlpha(cutoff,dt){ var tau=1/(6.283185307*cutoff); return 1/(1+tau/dt); }
+  function oneEuroHand(){
+    var st=new Array(21),k; for(k=0;k<21;k++) st[k]=null;
+    function axis(s,v,dt){ var dRaw=(v-s.p)/dt,aD=oneEuroAlpha(1.0,dt);
+      s.d=s.d+aD*(dRaw-s.d);
+      var cutoff=1.2+0.007*Math.abs(s.d),a=oneEuroAlpha(cutoff,dt);
+      s.p=s.p+a*(v-s.p); }
+    return {
+      last:0,
+      reset:function(arr){ for(var i=0;i<21;i++) st[i]={X:{p:arr[i].x,d:0},Y:{p:arr[i].y,d:0}}; },
+      pt:function(i,x,y,dt){ var s=st[i];
+        if(!s){ s=st[i]={X:{p:x,d:0},Y:{p:y,d:0}}; return {x:x,y:y,vx:0,vy:0}; }
+        axis(s.X,x,dt); axis(s.Y,y,dt);
+        return {x:s.X.p,y:s.Y.p,vx:s.X.d,vy:s.Y.d}; },
+      state:function(){ return st; },
+      down:function(){ for(var i=0;i<21;i++) st[i]=null; this.last=0; } };
+  }
   var PIE=(function(){
     var cfg={ hands:false, webcam:false, glow:true, hud:true, physicalDrag:true, buildMode:true, grabRadius:80, spring:28, force:1, smooth:0.45 };
     var on=false,showCam=false,hands=null,video=null,stream=null,raf=0,loading=false,hud=null;
     var SIDES=['Left','Right'],pts={Left:null,Right:null},miss={Left:99,Right:99},gest={Left:'none',Right:'none'},grab={Left:null,Right:null,Mouse:null},parts=[];
     var COL={Left:'#22d3ee',Right:'#f0f',Mouse:'#fbbf24'},D=4.6,FIELD_R=190,FIELD_STR=2400;
     /* Build mode: an open palm moved up/down chooses an object; a fist drops it in. (When off, palm/fist = force fields.) */
-    var SPAWN=[{label:'● Mass',plain:'a mass',o:{m:8,c:'#cbd5e1'}},{label:'☉ Planet',plain:'a planet',o:{m:400,c:'#fbbf24'}},{label:'⊕ Charge +',plain:'a positive charge',o:{q:70,m:12,kind:'charge',c:'#f87171'}},{label:'⊖ Charge −',plain:'a negative charge',o:{q:-70,m:12,kind:'charge',c:'#7dd3fc'}}];
-    var buildSel=0,prevG={Left:'none',Right:'none'},palmAnchorY={Left:null,Right:null},lastSpawnT=0,lastCycleT=0;
+    var SPAWN=[{label:'● Mass',plain:'a mass',o:{m:8,c:'#cbd5e1'}},{label:'☉ Planet',plain:'a planet',o:{m:400,c:'#fbbf24'}},{label:'⊕ Charge +',plain:'a positive charge',o:{q:70,m:12,kind:'charge',c:'#f87171'}},{label:'⊖ Charge −',plain:'a negative charge',o:{q:-70,m:12,kind:'charge',c:'#7dd3fc'}},{label:'✶ Star',plain:'a heavy star',o:{m:1600,c:'#f8fafc'}}];
+    var buildSel=0,prevG={Left:'none',Right:'none'},palmAnchorY={Left:null,Right:null},lastSpawnT=0,lastCycleT=0,filt={Left:null,Right:null},holdT={Left:0,Right:0},radial={side:null,cx:0,cy:0,hot:-1,t0:0};
     var CONN=[[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[5,9],[9,10],[10,11],[11,12],[9,13],[13,14],[14,15],[15,16],[13,17],[17,18],[18,19],[19,20],[0,17]];
     function injectCSS(){ if(document.getElementById('hand-css'))return; var s=ce('style'); s.id='hand-css'; s.textContent=
       "#sbx-cam{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1);opacity:0;transition:opacity .3s;pointer-events:none;z-index:0}"+
@@ -5695,34 +5717,73 @@ var Sandbox=(function(){
         hands.onResults(onResults); openCam();
       }catch(e){ toast('Hand tracking failed to start',''); off(); } }); }
     function openCam(){ if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){ toast('No camera available',''); off(); return; }
-      navigator.mediaDevices.getUserMedia({video:{width:640,height:480,facingMode:'user'},audio:false}).then(function(st){ if(!on){ st.getTracks().forEach(function(t){t.stop();}); return; } stream=st; video=$('#sbx-cam'); if(!video){off();return;} video.srcObject=st; video.muted=true; video.playsInline=true; var pp=video.play(); if(pp&&pp.catch)pp.catch(function(){}); applyCamVis(); pump(); toast('Hand control on','☞ pinch to grab · palm pushes · fist pulls'); })
+      navigator.mediaDevices.getUserMedia({video:{width:640,height:360,facingMode:'user'},audio:false}).then(function(st){ if(!on){ st.getTracks().forEach(function(t){t.stop();}); return; } stream=st; video=$('#sbx-cam'); if(!video){off();return;} video.srcObject=st; video.muted=true; video.playsInline=true; var pp=video.play(); if(pp&&pp.catch)pp.catch(function(){}); applyCamVis(); pump(); toast('Hand control on','☞ pinch to grab · palm pushes · fist pulls'); })
       .catch(function(){ toast('Camera blocked','allow it to use hand control'); off(); }); }
-    function pump(){ if(!on)return; if(video&&video.readyState>=2&&hands){ hands.send({image:video}).then(function(){ if(on) raf=requestAnimationFrame(pump); }).catch(function(){ if(on) raf=requestAnimationFrame(pump); }); } else raf=requestAnimationFrame(pump); }
-    function off(){ on=false; updateBtn(); try{ if(raf)cancelAnimationFrame(raf); }catch(e){} raf=0; if(stream){ try{stream.getTracks().forEach(function(t){t.stop();});}catch(e){} stream=null; } if(video){ try{video.srcObject=null;}catch(e){} } pts.Left=pts.Right=null; grab.Left=grab.Right=null; prevG.Left=prevG.Right='none'; palmAnchorY.Left=palmAnchorY.Right=null; applyCamVis(); var h=$('#sbx-hud'); if(h)h.style.display='none'; }
+    /* frame pump — send at most every 2nd rAF tick, and never while a send is still in flight */
+    var pumpTick=0,sendBusy=false;
+    function pump(){ if(!on)return; raf=requestAnimationFrame(pump); pumpTick++;
+      if(pumpTick%2||sendBusy)return;
+      if(video&&video.readyState>=2&&hands){ sendBusy=true;
+        hands.send({image:video}).then(function(){ sendBusy=false; }).catch(function(){ sendBusy=false; }); } }
+    function off(){ on=false; updateBtn(); try{ if(raf)cancelAnimationFrame(raf); }catch(e){} raf=0; if(stream){ try{stream.getTracks().forEach(function(t){t.stop();});}catch(e){} stream=null; } if(video){ try{video.srcObject=null;}catch(e){} } pts.Left=pts.Right=null; grab.Left=grab.Right=null; prevG.Left=prevG.Right='none'; palmAnchorY.Left=palmAnchorY.Right=null; filt.Left=filt.Right=null; radialClose(); sendBusy=false; pumpTick=0; applyCamVis(); var h=$('#sbx-hud'); if(h)h.style.display='none'; }
     function dist(a,b){ var dx=a.x-b.x,dy=a.y-b.y; return Math.sqrt(dx*dx+dy*dy); }
-    function onResults(res){ var found={Left:false,Right:false};
+    function onResults(res){ var found={Left:false,Right:false},tNow=performance.now();
       if(res&&res.multiHandLandmarks&&res.multiHandedness){ var rect=canvas.getBoundingClientRect(),Wc=rect.width||1,Hc=rect.height||1;
-        for(var h=0;h<res.multiHandLandmarks.length;h++){ var label=(res.multiHandedness[h]&&res.multiHandedness[h].label)||(h?'Right':'Left'),lm=res.multiHandLandmarks[h],arr=pts[label];
-          if(!arr){ arr=new Array(21); for(var z=0;z<21;z++)arr[z]={x:lm[z].x*Wc,y:lm[z].y*Hc}; }
-          else { var sm=cfg.smooth,im=1-sm; for(var z2=0;z2<21;z2++){ arr[z2].x=arr[z2].x*im+lm[z2].x*Wc*sm; arr[z2].y=arr[z2].y*im+lm[z2].y*Hc*sm; } }
+        for(var h=0;h<res.multiHandLandmarks.length;h++){ var label=(res.multiHandedness[h]&&res.multiHandedness[h].label)||(h?'Right':'Left'),lm=res.multiHandLandmarks[h],arr=pts[label],F=filt[label];
+          if(!F) F=filt[label]=oneEuroHand();
+          var dt=F.last?Math.min(0.1,Math.max(1/120,(tNow-F.last)/1000)):(1/30); F.last=tNow;
+          if(!arr){ arr=new Array(21); for(var z=0;z<21;z++)arr[z]={x:lm[z].x*Wc,y:lm[z].y*Hc}; F.reset(arr); }
+          for(var z2=0;z2<21;z2++){ var oo=F.pt(z2,lm[z2].x*Wc,lm[z2].y*Hc,dt); arr[z2].x=oo.x; arr[z2].y=oo.y;
+            if(z2===4||z2===8){ arr[z2].fx=oo.x+oo.vx*dt; arr[z2].fy=oo.y+oo.vy*dt; } }
           pts[label]=arr; miss[label]=0; found[label]=true; gest[label]=detect(arr,label); handleBuild(label,arr); } }
-      SIDES.forEach(function(s){ if(!found[s]){ miss[s]++; if(miss[s]>10){ pts[s]=null; gest[s]='none'; grab[s]=null; } } }); }
+      SIDES.forEach(function(s){ if(!found[s]){ miss[s]++; if(miss[s]>10){ pts[s]=null; gest[s]='none'; grab[s]=null; if(filt[s])filt[s].down(); radialClose(s); } } }); }
     function detect(p,side){ var scale=dist(p[0],p[9])||1;
       if(dist(p[4],p[8])<scale*0.55){ acquire(side,p); return 'pinch'; }
       grab[side]=null; var ext=0; [[8,6],[12,10],[16,14],[20,18]].forEach(function(f){ if(dist(p[f[0]],p[0])>dist(p[f[1]],p[0])*1.05) ext++; });
       if(ext>=3) return 'palm'; if(ext<=1) return 'fist'; return 'none'; }
-    function pinchWorld(p){ return {x:wx((p[4].x+p[8].x)/2),y:wy((p[4].y+p[8].y)/2)}; }
+    function pinchWorld(p){ var x4=(p[4].fx!=null)?p[4].fx:p[4].x,y4=(p[4].fy!=null)?p[4].fy:p[4].y,x8=(p[8].fx!=null)?p[8].fx:p[8].x,y8=(p[8].fy!=null)?p[8].fy:p[8].y; return {x:wx((x4+x8)/2),y:wy((y4+y8)/2)}; }
     function palmWorld(p){ return {x:wx(p[9].x),y:wy(p[9].y)}; }
     /* fingertip obstacles (world coords) for rope collision — tips are landmarks 4,8,12,16,20 */
     function fingerTips(){ var out=[]; if(!on)return out; SIDES.forEach(function(side){ var p=pts[side]; if(!p)return; [4,8,12,16,20].forEach(function(ti){ out.push({x:wx(p[ti].x),y:wy(p[ti].y),r:16}); }); }); return out; }
     /* cradle anchor targets (world coords) — thumb (4) + pinky (20) tips of each detected hand */
     function anchors(){ var out=[]; if(!on)return out; SIDES.forEach(function(side){ var p=pts[side]; if(!p)return; [4,20].forEach(function(ti){ out.push({x:wx(p[ti].x),y:wy(p[ti].y),side:side,lm:ti}); }); }); return out; }
-    /* GestureRecognizer → object builder: open palm up/down cycles the object, a fist drops it in. */
-    function handleBuild(side,p){ if(!cfg.buildMode){ prevG[side]=gest[side]; return; } var g=gest[side],t=performance.now();
-      if(g==='palm'){ var y=p[9].y; if(palmAnchorY[side]==null) palmAnchorY[side]=y; if(t-lastCycleT>300){ var dy=y-palmAnchorY[side]; if(dy>46){ buildSel=(buildSel+1)%SPAWN.length; palmAnchorY[side]=y; lastCycleT=t; } else if(dy<-46){ buildSel=(buildSel-1+SPAWN.length)%SPAWN.length; palmAnchorY[side]=y; lastCycleT=t; } } }
-      else palmAnchorY[side]=null;
-      if(g==='fist'&&prevG[side]!=='fist'&&t-lastSpawnT>400){ lastSpawnT=t; var w=palmWorld(p),s=SPAWN[buildSel],o={}; for(var k in s.o)o[k]=s.o[k]; sel=addBody(w.x,w.y,o); refreshInspect(); if(window.PeqSbxUX)PeqSbxUX.push('hand-add'); spawn(sx(w.x),sy(w.y),s.o.c||'#fff',16); toast('Added '+s.plain,s.label); }
+    /* GestureRecognizer → radial builder: hold an open palm ≈350ms to open a holo palette around the palm,
+       aim the palm at a sector to arm it, then make a fist to drop that object in (400ms cooldown). */
+    function radialClose(side){ if(side){ holdT[side]=0; if(radial.side===side){ radial.side=null; radial.hot=-1; } } else { holdT.Left=holdT.Right=0; radial.side=null; radial.hot=-1; } }
+    function handleBuild(side,p){ if(!cfg.buildMode){ prevG[side]=gest[side]; radialClose(side); return; } var g=gest[side],t=performance.now();
+      if(g==='palm'){
+        if(radial.side===side){ var axv=p[9].x-radial.cx,ayv=p[9].y-radial.cy,ad=Math.sqrt(axv*axv+ayv*ayv),SECT=Math.PI*2/SPAWN.length;
+          radial.hot=(ad>26)?(Math.floor(((Math.atan2(ayv,axv)+Math.PI*2.5+SECT/2)%(Math.PI*2))/SECT)%SPAWN.length):-1; }
+        else if(!radial.side){ if(!holdT[side]) holdT[side]=t;
+          else if(t-holdT[side]>350){ radial.side=side; radial.cx=p[9].x; radial.cy=p[9].y; radial.hot=-1; radial.t0=t; } } }
+      else if(g==='fist'){
+        if(radial.side===side&&prevG[side]!=='fist'){
+          if(radial.hot>=0&&t-lastSpawnT>400){ lastSpawnT=t; var w={x:wx(radial.cx),y:wy(radial.cy)},s=SPAWN[radial.hot],o={}; for(var k in s.o)o[k]=s.o[k];
+            sel=addBody(w.x,w.y,o); refreshInspect(); if(window.PeqSbxUX)PeqSbxUX.push('hand-add');
+            spawn(radial.cx,radial.cy,s.o.c||'#7dd3fc',16); toast('Added '+s.plain,s.label); }
+          radialClose(side); }
+        holdT[side]=0; }
+      else if(prevG[side]!=='palm'&&prevG[side]!=='fist'){ holdT[side]=0; if(radial.side===side) radialClose(side); }
       prevG[side]=g; }
+    /* InteractionRenderer — canvas-drawn holo radial palette (blue instrument style, no extra rAF loop) */
+    function drawRadial(c,tn,p){ var N=SPAWN.length,SECT=Math.PI*2/N,cx=radial.cx,cy=radial.cy,gr=Math.min(1,(tn-radial.t0)/140),R0=26,R1=50+36*gr;
+      c.save();
+      c.strokeStyle='rgba(125,211,252,.30)'; c.lineWidth=1; c.beginPath(); c.arc(cx,cy,R0-7,0,7); c.stroke();
+      c.fillStyle='rgba(125,211,252,.9)'; c.beginPath(); c.arc(cx,cy,2,0,7); c.fill();
+      for(var i=0;i<N;i++){ var a0=-Math.PI/2+i*SECT-SECT/2+0.06,a1=a0+SECT-0.12,hot=(i===radial.hot);
+        c.beginPath(); c.arc(cx,cy,R1,a0,a1); c.arc(cx,cy,R0,a1,a0,true); c.closePath();
+        c.fillStyle=hot?'rgba(125,211,252,.26)':'rgba(8,12,24,.74)';
+        c.strokeStyle=hot?'#7dd3fc':'rgba(125,211,252,.38)'; c.lineWidth=hot?1.6:1;
+        if(hot&&cfg.glow){ c.shadowColor='#7dd3fc'; c.shadowBlur=13; }
+        c.fill(); c.stroke(); c.shadowBlur=0;
+        var am=-Math.PI/2+i*SECT,mr=(R0+R1)/2,ix2=cx+Math.cos(am)*mr,iy2=cy+Math.sin(am)*mr,lx=cx+Math.cos(am)*(R1+15),ly=cy+Math.sin(am)*(R1+15);
+        c.textAlign='center'; c.textBaseline='middle';
+        c.fillStyle=hot?'#e8edff':'rgba(232,237,255,.72)'; c.font=(hot?'13px':'11px')+' JetBrains Mono'; c.fillText(SPAWN[i].label.charAt(0),ix2,iy2);
+        c.fillStyle=hot?'#7dd3fc':'rgba(125,211,252,.55)'; c.font='8.5px JetBrains Mono'; c.fillText(SPAWN[i].label.slice(2),lx,ly); }
+      if(p){ c.strokeStyle='rgba(125,211,252,.45)'; c.lineWidth=1.1; c.setLineDash([3,4]); c.beginPath(); c.moveTo(cx,cy); c.lineTo(p[9].x,p[9].y); c.stroke(); c.setLineDash([]); }
+      c.fillStyle='rgba(232,237,255,.5)'; c.font='8.5px JetBrains Mono'; c.textAlign='center';
+      c.fillText(radial.hot>=0?'✊ FIST TO DROP':'AIM AT A SECTOR',cx,cy+R1+30);
+      c.textAlign='left'; c.textBaseline='alphabetic'; c.restore(); }
     function acquire(side,p){ if(grab[side]&&B[grab[side].bi])return; var w=pinchWorld(p),bi=bodyAt(w.x,w.y);
       if(bi<0){ var best=-1,bd=1e9; for(var i=0;i<B.length;i++){ var dx=B[i].x-w.x,dy=B[i].y-w.y,d=dx*dx+dy*dy; if(d<bd){bd=d;best=i;} } if(best>=0&&Math.sqrt(bd)<cfg.grabRadius/cam.s) bi=best; }
       if(bi>=0){ grab[side]={bi:bi}; spawn(sx(B[bi].x),sy(B[bi].y),COL[side],10); } }
@@ -5781,8 +5842,11 @@ var Sandbox=(function(){
           c.beginPath(); if(c.roundRect)c.roundRect(x-w2/2,y-h2,w2,h2,9); else c.rect(x-w2/2,y-h2,w2,h2); c.fill(); c.stroke(); c.globalAlpha=1;
           c.fillStyle=col; c.textAlign='center'; c.font='10.5px JetBrains Mono'; c.fillText(txt,x,y-h2+14);
           if(sub){ c.fillStyle='rgba(232,237,255,.55)'; c.font='8.5px JetBrains Mono'; c.fillText(sub,x,y-h2+27); } c.textAlign='left'; };
-        if(cfg.buildMode&&g==='palm'){ pill(p[9].x,p[9].y-26,SPAWN[buildSel].label,'▲▼ move to choose · fist to drop'); }
-        else if(cfg.buildMode&&g==='fist'){ pill(p[9].x,p[9].y-26,'● '+SPAWN[buildSel].label+' dropped',null); }
+        if(cfg.buildMode&&radial.side===side){ drawRadial(c,now,p); }
+        else if(cfg.buildMode&&g==='palm'&&holdT[side]&&!radial.side){ var chg=Math.min(1,(now-holdT[side])/350);
+          c.strokeStyle='rgba(125,211,252,.22)'; c.lineWidth=1.2; c.beginPath(); c.arc(p[9].x,p[9].y,22,0,7); c.stroke();
+          c.strokeStyle='#7dd3fc'; c.lineWidth=2; if(cfg.glow){c.shadowColor='#7dd3fc';c.shadowBlur=9;}
+          c.beginPath(); c.arc(p[9].x,p[9].y,22,-Math.PI/2,-Math.PI/2+chg*6.2832); c.stroke(); c.shadowBlur=0; }
         else { c.fillStyle='rgba(232,237,255,.45)'; c.font='8.5px JetBrains Mono'; c.fillText(side==='Left'?'L':'R',p[0].x+10,p[0].y+3); }
         /* grab: tether from the pinch ring to the body, halo on the body */
         if(g==='pinch'&&grab[side]&&B[grab[side].bi]){ var b=B[grab[side].bi],bx=sx(b.x),by=sy(b.y);
@@ -5802,11 +5866,15 @@ var Sandbox=(function(){
     function toggleCam(){ showCam=!showCam; applyCamVis(); var c=$('#sbx-camtog'); if(c)c.classList.toggle('on',showCam); }
     injectCSS();
     function set(k,v){ cfg[k]=v; if(k==='webcam'){ showCam=v; applyCamVis(); } else if(k==='hands'){ (v&&!on)?start():((!v&&on)?off():0); } }
+    /* headless verification hook — synthetic hands + filter introspection (no camera needed) */
+    try{ window.__peqPie={
+      filterState:function(){ return { filt:filt, pts:pts, gest:gest, radial:radial, holdT:holdT, cfg:cfg }; },
+      injectHand:function(lm,label){ on=true; onResults({multiHandLandmarks:[lm],multiHandedness:[{label:label||'Right'}]}); return pts[label||'Right']; } }; }catch(e){}
     return { apply:apply, draw:draw, toggle:function(){ on?off():start(); }, toggleCam:toggleCam, stop:off, isOn:function(){return on;},
       cfg:cfg, set:set, mouseGrab:mouseGrab, mouseMove:mouseMove, mouseRelease:mouseRelease, fingerTips:fingerTips, anchors:anchors, __inject:function(res){ on=true; onResults(res); } };
   })();
   var Hand=PIE;   // back-compat alias for the existing accel / draw / stop / button hooks
-  var TOOLS=[['select','✥','Move / fling / pan'],['mass','●','Mass'],['planet','☉','Planet'],['charge+','⊕','Positive charge'],['charge-','⊖','Negative charge'],['spring','∿','Spring link'],['rod','▬','Rigid rod'],['rope','⌇','Rope / string — drag out'],['pin','†','Pin / unpin'],['delete','✕','Delete']];
+  var TOOLS=[['select','✥','Move / fling / pan'],['mass','●','Mass'],['planet','☉','Planet'],['star','✶','Heavy star'],['charge+','⊕','Positive charge'],['charge-','⊖','Negative charge'],['spring','∿','Spring link'],['rod','▬','Rigid rod'],['rope','⌇','Rope / string — drag out'],['pin','†','Pin / unpin'],['delete','✕','Delete']];
   var PLIST=[['solar','Solar system'],['binary','Binary stars'],['figure8','3-body figure-8'],['springs','Spring chain'],['dpendulum','Double pendulum'],['cradle',"Newton's cradle"],['atwood','Atwood machine'],['wavestring','Wave string'],['hangrope','Hanging rope'],['catcradle','∾ Cat’s cradle'],['gas','Gas in a box'],['dipole','Charges & field'],['cyclotron','⊗ Cyclotron'],['velselect','Velocity selector'],['massspec','Mass spectrometer'],['cycloid','Charge in gravity+B'],['magorbit','Magnetized orbit'],['exbdrift','E×B drift'],['counter','Counterfactual G'],['clear','Clear']];
   function mount(container){ host=container; running=true;
     container.innerHTML='<div class="sbx">'+
@@ -5832,7 +5900,7 @@ var Sandbox=(function(){
       '<div class="sbx-foot"><div class="sbx-presets">'+PLIST.map(function(p){ return '<button class="sbx-pchip" data-preset="'+p[0]+'">'+p[1]+'</button>'; }).join('')+'</div>'+
         '<div class="sbx-transport"><button class="sbx-play" id="sbx-play">‖</button><button class="mini-b" id="sbx-step">⇥ step</button><button class="mini-b" id="sbx-undo" title="Undo (Ctrl+Z)" disabled>↶</button><button class="mini-b" id="sbx-redo" title="Redo (Ctrl+Shift+Z or Ctrl+Y)" disabled>↷</button><button class="mini-b" id="sbx-shot" title="Save a PNG snapshot of the canvas">📷</button><button class="mini-b" id="sbx-camreset" title="Reset the camera view">⌖</button><button class="mini-b" id="sbx-replay" title="Replay the last ~10 seconds at half speed">⟲ replay</button><button class="mini-b" id="sbx-hand" title="Control the physics with your hands (camera)">☞ Hands</button><button class="mini-b" id="sbx-camtog" style="display:none" title="Show the webcam behind the simulation">▣ Cam</button><button class="mini-b" id="sbx-rail-tg" title="Show / hide the control panel — more room for the stage">⬒ panel</button><button class="mini-b" id="sbx-max-tg" title="Focus — hide the app sidebar for the maximum stage">⛶ focus</button><span class="sbx-spd">speed <input class="sl" id="sbx-speed" type="range" min="0.25" max="3" step="0.25" value="1" style="width:90px"></span></div></div>'+
       '</div>';
-    canvas=$('#sbx-c'); ctx=canvas.getContext('2d'); cam.x=0;cam.y=0; // center set on first fit
+    canvas=$('#sbx-c'); ctx=canvas.getContext('2d',{desynchronized:true})||canvas.getContext('2d'); cam.x=0;cam.y=0; // center set on first fit
     try{ window.__peqSbx={pie:PIE,load:loadPreset,step:step,draw:draw,anchorLoad:anchorLoad,handLoads:handLoads,state:function(){return {cradleOn:cradleOn,cradleNodes:cradleNodes,B:B,chains:chains,cradleLive:cradleLive,loadTot:cradleLoadTot,loadPeak:cradleLoadPeak};}}; }catch(e){}
     fitc(); cam.x=W()/2; cam.y=H()/2;
     loadPreset('solar'); syncForceUI();
@@ -5892,7 +5960,7 @@ var Sandbox=(function(){
   function st(label,id,c){ return '<div class="sbx-st"><div class="l">'+label+'</div><div class="v" id="'+id+'"'+(c?' style="color:'+c+'"':'')+'>—</div></div>'; }
   function syncForceUI(){ var m={useG:P.useG,g:P.g>0,useC:P.useC,walls:P.walls}; Object.keys(m).forEach(function(k){ var c=$('#sbx-f-'+k); if(c)c.checked=m[k]; }); var v={showTrails:showTrails,showVec:showVec,showGrid:showGrid,showField:showField}; Object.keys(v).forEach(function(k){ var c=$('#sbx-v-'+k); if(c)c.checked=v[k]; });
     [['Bz',P.Bz],['Ey',P.Ey],['Ex',P.Ex],['G',P.G],['kc',P.kc],['ropeStiff',P.ropeStiff]].forEach(function(p){ var c=$('#sbx-cs-'+p[0]); if(c){ c.value=p[1]; set('sbx-cv-'+p[0],Math.round(p[1]*100)/100); } }); }
-  function tip(){ var t=$('#sbx-tip'); if(!t)return; var m={select:'Drag a body to move it — release to fling. Drag empty space to pan, scroll to zoom.',mass:'Click to drop a mass. Drag before releasing to give it velocity.',planet:'Drag out a planet with an initial velocity to set up an orbit.','charge+':'Place a positive charge.','charge-':'Place a negative charge.',spring:'Press on one body and release on another to connect a spring.',rod:'Press on one body and release on another to link a rigid rod.',rope:'Drag across empty space to lay a rope/string (both ends pinned). Pluck it with gravity OFF for travelling waves, or turn gravity ON for a hanging catenary.',pin:'Click a body to pin/unpin it in place.','delete':'Click a body to remove it.'}; t.textContent=m[tool]||''; }
+  function tip(){ var t=$('#sbx-tip'); if(!t)return; var m={select:'Drag a body to move it — release to fling. Drag empty space to pan, scroll to zoom.',mass:'Click to drop a mass. Drag before releasing to give it velocity.',planet:'Drag out a planet with an initial velocity to set up an orbit.',star:'Click to drop a heavy star — a deep gravity well. Drag before releasing for velocity.','charge+':'Place a positive charge.','charge-':'Place a negative charge.',spring:'Press on one body and release on another to connect a spring.',rod:'Press on one body and release on another to link a rigid rod.',rope:'Drag across empty space to lay a rope/string (both ends pinned). Pluck it with gravity OFF for travelling waves, or turn gravity ON for a hanging catenary.',pin:'Click a body to pin/unpin it in place.','delete':'Click a body to remove it.'}; t.textContent=m[tool]||''; }
   /* replay: a rolling ~10 s tape of positions + rope segments, played back at half speed */
   var rec={frames:[],cap:300,skip:0}, replay={on:false,t:0,was:true};
   function drawReplayFrame(){ fitc(); var Wd=canvas._W,Hd=canvas._H;

@@ -1109,7 +1109,10 @@ input[type=range].sl{width:130px}
 .sl-wrap{gap:10px}
 
 /* — sandbox: spacious inspector COLUMN beside the stage (was a cramped horizontal strip) — */
-.sbx{gap:16px;padding:16px;grid-template-columns:58px minmax(0,1fr) 348px;grid-template-rows:minmax(0,1fr) auto}
+.sbx{gap:10px;padding:10px;grid-template-columns:58px minmax(0,1fr) 304px;grid-template-rows:minmax(0,1fr) auto}
+@media(min-width:1001px){.sbx.rail-off{grid-template-columns:58px minmax(0,1fr) 0}.sbx.rail-off .sbx-side{display:none}}
+body.sbx-max .app{grid-template-columns:1fr}
+body.sbx-max .side{display:none}
 .sbx-tools{grid-row:1;grid-column:1;gap:9px;padding:9px 7px}
 .sbx-tool{width:44px;height:44px;font-size:18px;border-radius:12px}
 .sbx-stage{grid-row:1;grid-column:2}
@@ -5386,7 +5389,7 @@ var Sandbox=(function(){
         '<div class="sbx-card sbx-adv-card"><div class="sbx-h">Interaction · mouse + hands</div>'+pieck('physicalDrag','Physical drag (spring)',true)+pieck('hands','Hand tracking (camera)',false)+pieck('webcam','Show webcam',false)+pieck('hud','Physics HUD',true)+pieck('glow','Glow effects',true)+pieck('buildMode','● Hands build objects (else force fields)',true)+piesl('grabRadius','Grab radius',30,160,5,80)+piesl('spring','Spring strength',8,80,2,28)+piesl('force','Force multiplier',0.2,3,0.1,1)+piesl('smooth','Hand responsiveness',0.15,0.85,0.05,0.45)+'</div>'+
       '</div>'+
       '<div class="sbx-foot"><div class="sbx-presets">'+PLIST.map(function(p){ return '<button class="sbx-pchip" data-preset="'+p[0]+'">'+p[1]+'</button>'; }).join('')+'</div>'+
-        '<div class="sbx-transport"><button class="sbx-play" id="sbx-play">‖</button><button class="mini-b" id="sbx-step">⇥ step</button><button class="mini-b" id="sbx-replay" title="Replay the last ~10 seconds at half speed">⟲ replay</button><button class="mini-b" id="sbx-hand" title="Control the physics with your hands (camera)">☞ Hands</button><button class="mini-b" id="sbx-camtog" style="display:none" title="Show the webcam behind the simulation">▣ Cam</button><span class="sbx-spd">speed <input class="sl" id="sbx-speed" type="range" min="0.25" max="3" step="0.25" value="1" style="width:90px"></span></div></div>'+
+        '<div class="sbx-transport"><button class="sbx-play" id="sbx-play">‖</button><button class="mini-b" id="sbx-step">⇥ step</button><button class="mini-b" id="sbx-replay" title="Replay the last ~10 seconds at half speed">⟲ replay</button><button class="mini-b" id="sbx-hand" title="Control the physics with your hands (camera)">☞ Hands</button><button class="mini-b" id="sbx-camtog" style="display:none" title="Show the webcam behind the simulation">▣ Cam</button><button class="mini-b" id="sbx-rail-tg" title="Show / hide the control panel — more room for the stage">⬒ panel</button><button class="mini-b" id="sbx-max-tg" title="Focus — hide the app sidebar for the maximum stage">⛶ focus</button><span class="sbx-spd">speed <input class="sl" id="sbx-speed" type="range" min="0.25" max="3" step="0.25" value="1" style="width:90px"></span></div></div>'+
       '</div>';
     canvas=$('#sbx-c'); ctx=canvas.getContext('2d'); cam.x=0;cam.y=0; // center set on first fit
     try{ window.__peqSbx={pie:PIE,load:loadPreset,step:step,draw:draw,anchorLoad:anchorLoad,handLoads:handLoads,state:function(){return {cradleOn:cradleOn,cradleNodes:cradleNodes,B:B,chains:chains,cradleLive:cradleLive,loadTot:cradleLoadTot,loadPeak:cradleLoadPeak};}}; }catch(e){}
@@ -5394,6 +5397,12 @@ var Sandbox=(function(){
     loadPreset('solar'); syncForceUI();
     $$('.sbx-tool',container).forEach(function(b){ b.addEventListener('click',function(){ tool=b.dataset.tool; $$('.sbx-tool',container).forEach(function(x){x.classList.toggle('on',x===b);}); tip(); }); });
     $$('.sbx-pchip',container).forEach(function(b){ b.addEventListener('click',function(){ loadPreset(b.dataset.preset); syncForceUI(); refreshInspect(); if(STILL)draw(); }); });
+    (function(){ var vw={rail:true,max:false}; try{ var s=JSON.parse(localStorage.getItem('peq_sbx_view')||'{}'); if(s.rail===false)vw.rail=false; if(s.max)vw.max=true; }catch(e){}
+      var grid=container.querySelector('.sbx');
+      function ap(){ if(grid) grid.classList.toggle('rail-off',!vw.rail); document.body.classList.toggle('sbx-max',!!vw.max); try{ localStorage.setItem('peq_sbx_view',JSON.stringify(vw)); }catch(e){} try{ fitc(); if(STILL) draw(); }catch(e){} }
+      var rt=$('#sbx-rail-tg'); if(rt) rt.addEventListener('click',function(){ vw.rail=!vw.rail; ap(); toast(vw.rail?'Control panel back':'Stage maximized','⬒'); });
+      var mt=$('#sbx-max-tg'); if(mt) mt.addEventListener('click',function(){ vw.max=!vw.max; ap(); toast(vw.max?'Focus — sidebar hidden':'Sidebar restored','⛶'); });
+      ap(); })();
     ['useG','g','useC','walls'].forEach(function(k){ var c=$('#sbx-f-'+k); if(c)c.addEventListener('change',function(){ if(k==='g')P.g=this.checked?240:0; else P[k]=this.checked; }); });
     [['Bz','Bz'],['Ey','Ey'],['Ex','Ex'],['G','G'],['kc','kc'],['ropeStiff','ropeStiff']].forEach(function(p){ var c=$('#sbx-cs-'+p[0]); if(c)c.addEventListener('input',function(){ P[p[1]]=+this.value; set('sbx-cv-'+p[0],Math.round(this.value*100)/100); if(STILL)draw(); }); });
     ['physicalDrag','hands','webcam','hud','glow','buildMode'].forEach(function(k){ var c=$('#sbx-pie-'+k); if(c)c.addEventListener('change',function(){ PIE.set(k,this.checked); }); });
@@ -6185,7 +6194,7 @@ function go(v,id){ stopSim();
   if(curView==='sandbox'&&v!=='sandbox') Sandbox.stop();
   if(curView==='deep'&&v!=='deep') Deep.stop();
   if(curView==='practice'&&v!=='practice'&&typeof exam!=='undefined'&&exam){ clearInterval(exam.timer); exam=null; }
-  curView=v; nav(v); $('#main-scroll').scrollTop=0; $('#main-scroll').classList.toggle('sbx-active', v==='sandbox');
+  curView=v; nav(v); $('#main-scroll').scrollTop=0; $('#main-scroll').classList.toggle('sbx-active', v==='sandbox'); if(v!=='sandbox') document.body.classList.remove('sbx-max');
   var dk=v==='domain'?id:(v==='lesson'?(topicById(id)&&topicById(id).domain):null);
   applyTheme(dk, v==='lesson'||v==='domain', v==='universe'?.7:undefined);
   try{ var _pdk=dk; if(v==='deep'){ var _dt=Deep.get(id); _pdk=_dt&&_dt.domain; } if(typeof Tutor!=='undefined'&&Tutor.persona) Tutor.persona(Personas.forContext(v,_pdk)); }catch(e){}

@@ -367,6 +367,9 @@ input[type=range].sl::-moz-range-thumb{width:14px;height:14px;border:0;border-ra
 .kg-mc i{width:6px;height:6px;border-radius:50%;display:inline-block}
 .kg-mc .st{font-size:9px}
 .kg-mini-u{font-family:var(--mono);font-size:9.5px;color:var(--ink-faint);margin-top:9px;letter-spacing:.04em}
+.ti-rd{font-family:var(--mono);font-size:8.5px;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:20px;border:1px solid;white-space:nowrap;align-self:center}
+.ti-rd.ok{color:var(--emerald);border-color:rgba(52,211,153,.4)}
+.ti-rd.hold{color:var(--amber);border-color:rgba(251,191,36,.32)}
 
 /* unit header + difficulty */
 .unit-head{display:flex;align-items:center;gap:20px;margin:6px 0 22px}
@@ -6220,9 +6223,10 @@ function topicRowsHtml(k,nextId){
   var rows=ts.map(function(t,i){ return {t:t,i:i}; }).filter(function(o){ return domFilter==='all'||o.t.lvl==+domFilter; });
   if(!rows.length) return '<div style="padding:30px;text-align:center;color:var(--ink-faint)">No '+esc(LVL[domFilter]?LVL[domFilter].n:'')+' lessons in this unit.</div>';
   return rows.map(function(o){ var t=o.t,sim=SIM_FOR[t.id],lv=LVL[t.lvl],isNext=t.id===nextId;
+    var rdPill=''; if(!Me.isDone(t.id)&&typeof Graph!=='undefined'&&Graph.readiness){ try{ var _rd=Graph.readiness(t.id); if(_rd.total>0){ if(_rd.ready){ rdPill='<span class="ti-rd ok" title="Foundations complete — ready to learn">ready</span>'; } else { var _m=topicById(_rd.missing[0]); rdPill='<span class="ti-rd hold" title="Best learned after '+esc(_m?_m.name:'')+(_rd.missing.length>1?' +'+(_rd.missing.length-1)+' more':'')+'">\u2191 '+esc(_m?_m.name.split(/[\s(]/)[0]:'')+'</span>'; } } }catch(e){} }
     return '<div class="titem'+(Me.isDone(t.id)?' done':'')+(isNext?' next':'')+'" data-link="lesson:'+t.id+'"><div class="num">'+(Me.isDone(t.id)?'✓':(o.i+1))+'</div>'+
       '<div class="ti"><div class="nm">'+esc(t.name)+(isNext?'<span class="up-next">up next</span>':'')+'</div><div class="de">'+esc(t.summary.slice(0,84))+'…</div></div>'+
-      '<div class="rt"><span class="lvl-badge" style="color:'+lv.c+';border-color:'+lv.c+'55">'+lv.n+'</span>'+(sim?'<span class="sim-b">interactive</span>':'')+'<span class="arr">›</span></div></div>'; }).join('');
+      '<div class="rt">'+rdPill+'<span class="lvl-badge" style="color:'+lv.c+';border-color:'+lv.c+'55">'+lv.n+'</span>'+(sim?'<span class="sim-b">interactive</span>':'')+'<span class="arr">›</span></div></div>'; }).join('');
 }
 function viewDomain(k){
   var dm=DMAP[k]; if(!dm){ go('learn'); return; }

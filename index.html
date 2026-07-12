@@ -5826,7 +5826,7 @@ var HPIE=(function(){
   /* ---- StateEstimation + MotionAnalysis ---- */
   var H2={Left:null,Right:null};
   function hs(side){ return H2[side]||(H2[side]={px:0,py:0,vx:0,vy:0,ax:0,ay:0,t:0,seen:0,conf:0,
-    ring:[],ri:0,energy:0,smooth:1,rhythm:0,circ:0,tips:{}}); }
+    ring:[],ri:0,energy:0,smooth:1,rhythm:0,circ:0,tips:{},open:0,pinch:0,grip:0,cx:0,cy:0,scale:1,radius:0,sig:'—'}); }
   function observe(side,arr,tNow){
     var s=hs(side),p=arr[9]||arr[0]; if(!p) return;
     var dt=s.t?Math.min(.1,Math.max(1/120,(tNow-s.t)/1000)):(1/30);
@@ -5849,6 +5849,16 @@ var HPIE=(function(){
       var pr=s.tips[ti]||tp,tvx=(tp.x-pr.x)/dt,tvy=(tp.y-pr.y)/dt,spd=Math.hypot(tvx,tvy);
       if(spd>30) inject(tp.x,tp.y,tvx*.05,tvy*.05,Math.min(1.4,spd*gain*.01));
       s.tips[ti]={x:tp.x,y:tp.y}; });
+    /* rich HandState — openness, pinch/grip strength; the AURA means presence always shapes the field */
+    var w0=arr[0],w9=arr[9];
+    if(w0&&w9){ var sc2=Math.hypot(w9.x-w0.x,w9.y-w0.y)||1,pcx2=(w0.x+w9.x)/2,pcy2=(w0.y+w9.y)/2,opn=0,nt=0;
+      [8,12,16,20].forEach(function(ti2){ if(arr[ti2]){ opn+=Math.hypot(arr[ti2].x-pcx2,arr[ti2].y-pcy2)/sc2; nt++; } });
+      opn=nt?Math.max(0,Math.min(1,(opn/nt-0.9)/1.1)):0;
+      var pn=(arr[4]&&arr[8])?Math.max(0,Math.min(1,1-Math.hypot(arr[4].x-arr[8].x,arr[4].y-arr[8].y)/(sc2*1.15))):0;
+      s.open=opn; s.pinch=pn; s.grip=1-opn; s.cx=pcx2; s.cy=pcy2; s.scale=sc2; s.radius=sc2*(1+opn*1.4);
+      inject(pcx2,pcy2,s.vx*.02,s.vy*.02,.05+.12*opn);
+      s.sig=(s.energy<130)?'still':(s.smooth>.62&&s.energy>550)?'confident':(s.smooth>.68)?'careful':(s.rhythm>.55)?'playful':(s.circ>.5)?'orbital':(s.energy>900&&s.smooth<.32)?'violent':'exploratory';
+    }
     if(Math.hypot(s.ax,s.ay)>26000) emit('HighEnergyImpact',{side:side,a:Math.hypot(s.ax,s.ay)});
   }
   /* dead-reckoning through tracking loss — rigid advance, exponential decay, never snaps */
@@ -5859,6 +5869,45 @@ var HPIE=(function(){
     var dx=s.vx*dt,dy=s.vy*dt;
     for(var i=0;i<21;i++){ if(arr[i]){ arr[i].x+=dx; arr[i].y+=dy; } }
     s.px+=dx; s.py+=dy;
+  }
+
+  /* ---- BimanualRuntime — two hands are a coordinated system, not two cursors ---- */
+  var BI={d:0,ang:0,hold:0,mode:'none',sync:0};
+  function angD(a,b){ var d=a-b; while(d>3.14159)d-=6.28318; while(d<-3.14159)d+=6.28318; return d; }
+  function bimanualStep(c){
+    var L=H2.Left,R=H2.Right,dtF=Math.min(.05,Math.max(.008,ft/1000));
+    if(!L||!R||L.conf<.45||R.conf<.45||!L.seen||!R.seen){ BI.mode='none'; BI.hold*=.9; BI.d=0; BI.ang=0; return; }
+    var dx=R.cx-L.cx,dy=R.cy-L.cy,d=Math.hypot(dx,dy)||1,mx=(L.cx+R.cx)/2,my=(L.cy+R.cy)/2;
+    var rate=BI.d?(d-BI.d)/dtF:0; BI.d=d;
+    var ang=Math.atan2(dy,dx),w=(BI.ang||BI.ang===0&&BI.d)?angD(ang,BI.ang)/dtF:0; BI.ang=ang;
+    var vL=Math.hypot(L.vx,L.vy),vR=Math.hypot(R.vx,R.vy),sp=vL+vR;
+    BI.sync=(vL>60&&vR>60)?(L.vx*R.vx+L.vy*R.vy)/((vL*vR)||1):0;
+    BI.mode='present';
+    /* HOLD — both palms open, near-still, comfortable span → an energy sphere charges at the midpoint */
+    if(L.open>.5&&R.open>.5&&d>110&&d<480&&sp<260&&Math.abs(rate)<150){
+      BI.hold=Math.min(1,BI.hold+dtF*.9); BI.mode='hold';
+      inject(mx,my,0,0,.4+1.6*BI.hold);
+      var e=sample(mx,my).e,i,tn=performance.now();
+      for(i=0;i<3;i++){ var rr=d*.16*(i+1)*(0.92+.08*Math.sin(tn/300+i));
+        c.strokeStyle='rgba(125,211,252,'+Math.min(.5,e*.1*(3-i)/3+BI.hold*.12)+')'; c.lineWidth=1.2;
+        c.beginPath(); c.arc(mx,my,rr,0,7); c.stroke(); }
+      /* interference — two coherent palm emitters → path-difference fringes along the axis */
+      var k=6.283/34,n=Math.max(6,(d/24)|0),j;
+      for(j=1;j<n;j++){ var f=j/n,px=L.cx+dx*f,py=L.cy+dy*f;
+        var d1=Math.hypot(px-L.cx,py-L.cy),d2=Math.hypot(px-R.cx,py-R.cy);
+        var I2=Math.pow(Math.cos((d1-d2)*k/2),2);
+        c.globalAlpha=Math.min(.5,BI.hold*.55*I2); c.fillStyle='#bfe3ff';
+        c.beginPath(); c.arc(px,py,1.6+2.6*I2,0,7); c.fill(); }
+      c.globalAlpha=1;
+    } else { BI.hold*=.92; }
+    /* ROTATE — coherent angular motion of the two-hand axis → vorticity ring; particles orbit */
+    if(Math.abs(w)>1.1&&sp>240){ BI.mode='rotate'; var m2=8,q2;
+      for(q2=0;q2<m2;q2++){ var a2=q2/m2*6.283,rx=mx+Math.cos(a2)*d*.38,ry=my+Math.sin(a2)*d*.38;
+        inject(rx,ry,-Math.sin(a2)*w*6,Math.cos(a2)*w*6,.16); } }
+    /* STRETCH / COMPRESS — the field flows with the changing span */
+    if(rate>430){ BI.mode='stretch'; inject(L.cx,L.cy,-dx/d*5,-dy/d*5,.5); inject(R.cx,R.cy,dx/d*5,dy/d*5,.5); emit('Stretch',{d:d,rate:rate}); }
+    else if(rate<-430){ BI.mode='compress'; inject(mx,my,0,0,1.1); emit('Compress',{d:d,rate:rate}); }
+    if(BI.sync>.86&&sp>300) emit('SynchronizationAchieved',{sync:BI.sync});
   }
 
   /* ---- ParticleSim — particles EMERGE from field energy, ride the flow ---- */
@@ -5951,6 +6000,7 @@ var HPIE=(function(){
       'L conf '+(L?L.conf.toFixed(2):'—')+' · R conf '+(R2?R2.conf.toFixed(2):'—'),
       'energy '+((R2||L)?((R2||L).energy|0):0)+' · smooth '+((R2||L)?((R2||L).smooth).toFixed(2):'—'),
       'rhythm '+((R2||L)?((R2||L).rhythm).toFixed(2):'—')+' · circular '+((R2||L)?((R2||L).circ).toFixed(2):'—'),
+      'sig '+(((R2||L)&&(R2||L).sig)||'—')+' · bi '+BI.mode+(BI.hold>.05?(' '+(BI.hold*100|0)+'%'):''),
       'audio '+(AC?(muted?'muted':'live'):'off')+' · D hud · M mute'];
     c.font='10px JetBrains Mono'; var w=214,h2=rows.length*15+14;
     c.fillStyle='rgba(4,7,14,.82)'; c.fillRect(10,10,w,h2);
@@ -5963,6 +6013,8 @@ var HPIE=(function(){
   var lastTotE=0;
   function frame(c,Wd,Hd,now){
     vw=Wd||1; vh=Hd||1; frameN++;
+    if(H2.Left&&H2.Left.t&&now-H2.Left.t>140) H2.Left.conf*=.93;   /* stale observations lose confidence — ghost hands fade, energy dissipates */
+    if(H2.Right&&H2.Right.t&&now-H2.Right.t>140) H2.Right.conf*=.93;
     quality(now);
     lastTotE=fieldStep();
     /* temporal memory — space remembers (very faint residual structure) */
@@ -5977,12 +6029,14 @@ var HPIE=(function(){
         c.beginPath(); c.arc((x3+.5)/GW*vw,(y3+.5)/GH*vh,3+e*5,0,7); c.fill(); } }
     c.globalAlpha=1;
     particleStep(c);
+    try{ bimanualStep(c); }catch(e){}
     audioFrame(lastTotE);
     if(debug) drawDebug(c);
   }
 
   var api={ observe:observe, predictInto:predictInto, frame:frame, ribbon:ribbon,
     field:{inject:inject,sample:sample}, on:on2, emit:emit,
+    hand:function(side){ return H2[side]||null; }, bi:function(){ return BI; },
     style:function(side){ var s=H2[side||'Right']||H2.Left; return s?{energy:s.energy,smooth:s.smooth,rhythm:s.rhythm,circ:s.circ,conf:s.conf}:null; },
     audioStart:audioStart, audioStop:audioStop,
     state:function(){ return {E:lastTotE,parts:PARTS.length,q:Q,fps:fps,debug:debug,muted:muted,
@@ -5999,7 +6053,7 @@ var PIE=(function(){
     var COL={Left:'#22d3ee',Right:'#f0f',Mouse:'#fbbf24'},D=4.6,FIELD_R=190,FIELD_STR=2400;
     /* Build mode: an open palm moved up/down chooses an object; a fist drops it in. (When off, palm/fist = force fields.) */
     var SPAWN=[{label:'● Mass',plain:'a mass',o:{m:8,c:'#cbd5e1'}},{label:'☉ Planet',plain:'a planet',o:{m:400,c:'#fbbf24'}},{label:'⊕ Charge +',plain:'a positive charge',o:{q:70,m:12,kind:'charge',c:'#f87171'}},{label:'⊖ Charge −',plain:'a negative charge',o:{q:-70,m:12,kind:'charge',c:'#7dd3fc'}},{label:'✶ Star',plain:'a heavy star',o:{m:1600,c:'#f8fafc'}}];
-    var buildSel=0,prevG={Left:'none',Right:'none'},palmAnchorY={Left:null,Right:null},lastSpawnT=0,lastCycleT=0,filt={Left:null,Right:null},holdT={Left:0,Right:0},radial={side:null,cx:0,cy:0,hot:-1,t0:0};
+    var buildSel=0,prevG={Left:'none',Right:'none'},palmAnchorY={Left:null,Right:null},lastSpawnT=0,lastCycleT=0,filt={Left:null,Right:null},holdT={Left:0,Right:0},radial={side:null,cx:0,cy:0,hot:-1,t0:0},intent={Left:null,Right:null},prevPd={Left:0,Right:0};
     var CONN=[[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[5,9],[9,10],[10,11],[11,12],[9,13],[13,14],[14,15],[15,16],[13,17],[17,18],[18,19],[19,20],[0,17]];
     function injectCSS(){ if(document.getElementById('hand-css'))return; var s=ce('style'); s.id='hand-css'; s.textContent=
       "#sbx-cam{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1);opacity:0;transition:opacity .3s;pointer-events:none;z-index:0}"+
@@ -6042,8 +6096,13 @@ var PIE=(function(){
             if(z2===4||z2===8){ arr[z2].fx=oo.x+oo.vx*dt; arr[z2].fy=oo.y+oo.vy*dt; } }
           pts[label]=arr; miss[label]=0; found[label]=true; try{ HPIE.observe(label,arr,tNow); }catch(e){} gest[label]=detect(arr,label); handleBuild(label,arr); } }
       SIDES.forEach(function(s){ if(!found[s]){ miss[s]++; if(miss[s]>10){ pts[s]=null; gest[s]='none'; grab[s]=null; if(filt[s])filt[s].down(); radialClose(s); } else if(pts[s]){ try{ HPIE.predictInto(s,pts[s],tNow); }catch(e){} } } }); }
-    function detect(p,side){ var scale=dist(p[0],p[9])||1;
-      if(dist(p[4],p[8])<scale*0.55){ acquire(side,p); return 'pinch'; }
+    function detect(p,side){ var scale=dist(p[0],p[9])||1,pd=dist(p[4],p[8])/scale;
+      if(pd<0.55){ acquire(side,p); intent[side]=null; prevPd[side]=pd; return 'pinch'; }
+      var closing=(pd<1.05)&&(pd-(prevPd[side]||pd)<-0.012); prevPd[side]=pd;
+      if(closing){ var ix=(p[4].x+p[8].x)/2+((p[8].fx!=null)?(p[8].fx-p[8].x)*5:0),iy=(p[4].y+p[8].y)/2+((p[8].fy!=null)?(p[8].fy-p[8].y)*5:0);
+        var ib2=bodyAt(wx(ix),wy(iy)); if(ib2<0){ var pw2=pinchWorld(p); ib2=bodyAt(pw2.x,pw2.y); }
+        if(ib2>=0) intent[side]={bi:ib2,t:performance.now()}; }
+      else if(intent[side]&&performance.now()-intent[side].t>450) intent[side]=null;
       grab[side]=null; var ext=0; [[8,6],[12,10],[16,14],[20,18]].forEach(function(f){ if(dist(p[f[0]],p[0])>dist(p[f[1]],p[0])*1.05) ext++; });
       if(ext>=3) return 'palm'; if(ext<=1) return 'fist'; return 'none'; }
     function pinchWorld(p){ var x4=(p[4].fx!=null)?p[4].fx:p[4].x,y4=(p[4].fy!=null)?p[4].fy:p[4].y,x8=(p[8].fx!=null)?p[8].fx:p[8].x,y8=(p[8].fy!=null)?p[8].fy:p[8].y; return {x:wx((x4+x8)/2),y:wy((y4+y8)/2)}; }
@@ -6090,6 +6149,7 @@ var PIE=(function(){
       c.fillText(radial.hot>=0?'✊ FIST TO DROP':'AIM AT A SECTOR',cx,cy+R1+30);
       c.textAlign='left'; c.textBaseline='alphabetic'; c.restore(); }
     function acquire(side,p){ if(grab[side]&&B[grab[side].bi])return; var w=pinchWorld(p),bi=bodyAt(w.x,w.y);
+      if(bi<0&&intent[side]&&B[intent[side].bi]) bi=intent[side].bi;
       if(bi<0){ var best=-1,bd=1e9; for(var i=0;i<B.length;i++){ var dx=B[i].x-w.x,dy=B[i].y-w.y,d=dx*dx+dy*dy; if(d<bd){bd=d;best=i;} } if(best>=0&&Math.sqrt(bd)<cfg.grabRadius/cam.s) bi=best; }
       if(bi>=0){ grab[side]={bi:bi}; spawn(sx(B[bi].x),sy(B[bi].y),COL[side],10); } }
     /* GrabSystem — a spring constraint pulls a body toward a pointer target (no snap → inertia + damping + momentum kept on release). */
@@ -6099,6 +6159,8 @@ var PIE=(function(){
       if(!on)return; SIDES.forEach(function(side){ var p=pts[side]; if(!p)return; var g=gest[side];
         if(g==='pinch'){ var gr=grab[side]; if(gr&&B[gr.bi]){ var w=pinchWorld(p); springTo(gr.bi,w.x,w.y,fx,fy); } }
         else if((g==='palm'||g==='fist')&&!cfg.buildMode){ var c=palmWorld(p),sgn=(g==='palm')?1:-1,STR=FIELD_STR*cfg.force; for(var i=0;i<B.length;i++){ var b2=B[i]; if(b2.fixed)continue; var dx=b2.x-c.x,dy=b2.y-c.y,r=Math.sqrt(dx*dx+dy*dy)+1e-3; if(r<FIELD_R){ var fall=1-r/FIELD_R,Fm=sgn*STR*fall*fall/r; fx[i]+=Fm*dx; fy[i]+=Fm*dy; } } }
+        else if(intent[side]&&B[intent[side].bi]){ var it=B[intent[side].bi],wp=pinchWorld(p);
+          if(!it.fixed){ fx[intent[side].bi]+=(wp.x-it.x)*2.4; fy[intent[side].bi]+=(wp.y-it.y)*2.4; } }
       }); }
     /* unified mouse / touch pointer → GrabSystem */
     function mouseGrab(wxx,wyy,bi){ if(!cfg.physicalDrag||bi<0||!B[bi])return false; grab.Mouse={bi:bi,wx:wxx,wy:wyy}; spawn(sx(B[bi].x),sy(B[bi].y),COL.Mouse,8); return true; }
@@ -6107,7 +6169,7 @@ var PIE=(function(){
     function spawn(x,y,c,n){ for(var i=0;i<n;i++){ var a=Math.random()*6.28,sp=1+Math.random()*3; parts.push({x:x,y:y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,life:1,c:c}); } if(parts.length>240)parts.splice(0,parts.length-240); }
     /* InteractionRenderer v2 — quiet, precise, premium: one thin skeleton pass, six landmarks,
        a breathing field, a sagging-to-taut tether. The hand should feel like an instrument. */
-    function draw(c,Wd,Hd){ if(!on)return; var now=performance.now(); try{ HPIE.frame(c,Wd,Hd,now); }catch(e){}
+    function draw(c,Wd,Hd){ var now=performance.now(); try{ HPIE.frame(c,Wd,Hd,now); }catch(e){} if(!on)return;
       for(var i=parts.length-1;i>=0;i--){ var pa=parts[i]; pa.x+=pa.vx; pa.y+=pa.vy; pa.vy+=0.04; pa.life-=0.04; if(pa.life<=0){parts.splice(i,1);continue;} c.globalAlpha=pa.life*0.55; c.fillStyle=pa.c; c.beginPath(); c.arc(pa.x,pa.y,pa.life*2.2,0,7); c.fill(); } c.globalAlpha=1;
       function tether(x1,y1,x2,y2,col2,ten){
         try{ HPIE.ribbon(c,x1,y1,x2,y2,col2,ten,now); return; }catch(e){}
@@ -6130,6 +6192,9 @@ var PIE=(function(){
           c.fillStyle='rgba(232,237,255,.9)'; c.beginPath(); c.arc(p[li].x,p[li].y,rr,0,7); c.fill();
           c.strokeStyle=col; c.globalAlpha=.55; c.lineWidth=1; c.beginPath(); c.arc(p[li].x,p[li].y,rr+2.2,0,7); c.stroke(); c.globalAlpha=1; });
         if(typeof cradleOn!=='undefined'&&cradleOn){ [4,20].forEach(function(ti){ var ax=p[ti].x,ay=p[ti].y; c.strokeStyle='#fbbf24'; c.globalAlpha=.92; c.lineWidth=1.7; if(cfg.glow){c.shadowColor='#fbbf24';c.shadowBlur=11;} c.beginPath(); c.arc(ax,ay,6.5+0.9*Math.sin(now/220+ti),0,7); c.stroke(); c.shadowBlur=0; c.globalAlpha=1; }); }
+        if(intent[side]&&B[intent[side].bi]&&g!=='pinch'){ var itb=B[intent[side].bi],itx=sx(itb.x),ity=sy(itb.y);
+          c.strokeStyle=col; c.globalAlpha=.45+.3*Math.sin(now/130); c.lineWidth=1.6; c.setLineDash([4,4]);
+          c.beginPath(); c.arc(itx,ity,(itb.r*cam.s)+8,0,7); c.stroke(); c.setLineDash([]); c.globalAlpha=1; }
         var pcx=(p[4].x+p[8].x)/2,pcy=(p[4].y+p[8].y)/2;
         if(g==='pinch'){ c.strokeStyle=col; c.lineWidth=1.6; if(cfg.glow){c.shadowColor=col;c.shadowBlur=8;}
           c.beginPath(); c.arc(pcx,pcy,7+1.4*Math.sin(now/160),0,7); c.stroke(); c.shadowBlur=0; }

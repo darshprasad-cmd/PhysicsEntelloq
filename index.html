@@ -5776,7 +5776,223 @@ var Sandbox=(function(){
       state:function(){ return st; },
       down:function(){ for(var i=0;i<21;i++) st[i]=null; this.last=0; } };
   }
-  var PIE=(function(){
+  /* ===== HPIE — HUMAN PHYSICS INTERACTION ENGINE (Generation 2) =====
+   MediaPipe is only the sensor; everything here is state estimation and
+   simulation. Independent runtimes, event-coupled, all visuals derived
+   from measured quantities:
+   · StateEstimation  — per-hand velocity/acceleration; dead-reckoning
+     prediction carries hands through tracking loss (no snapping).
+   · FieldSim         — the stage is an energy field; fingertips are
+     emitters; flow advects, diffuses, decays. Everything samples it.
+   · TemporalMemory   — a second, slow field: space remembers where
+     energy has lived; residual structure influences what you see.
+   · MotionAnalysis   — energy / smoothness / rhythm / circularity
+     estimated continuously; they MODULATE the simulation.
+   · ParticleSim      — particles only ever emerge from field energy
+     and ride the field flow. Nothing spawns arbitrarily.
+   · RibbonSim        — grab tethers are living plasma: tension waves,
+     traveling energy pulses, field-driven turbulence, dynamic width.
+   · AudioRuntime     — procedural WebAudio; harmonics follow field
+     energy + ribbon tension. M mutes.
+   · AdaptiveQuality  — frame-time EMA walks quality 2→0 preserving
+     interaction fidelity first.
+   · DebugRuntime     — press D in the sandbox for live engine vitals.
+   Reusable surface: window.HPIE {observe, predictInto, frame, ribbon,
+   field:{inject,sample}, style, on, emit, audioStart, audioStop}.   */
+var HPIE=(function(){
+  /* ---- EventRuntime ---- */
+  var subs={};
+  function on2(ev,fn){ (subs[ev]||(subs[ev]=[])).push(fn); }
+  function emit(ev,d){ var l=subs[ev]; if(l) for(var i=0;i<l.length;i++){ try{ l[i](d); }catch(e){} } }
+
+  /* ---- FieldSim + TemporalMemory (coarse grids, CSS-px space) ---- */
+  var GW=56,GH=32,FE=new Float32Array(GW*GH),FX=new Float32Array(GW*GH),FY=new Float32Array(GW*GH),MEM=new Float32Array(GW*GH);
+  var vw=1,vh=1,frameN=0;
+  function gi(cx,cy){ return cy*GW+cx; }
+  function inject(x,y,vx2,vy2,amt){ var cx=Math.max(0,Math.min(GW-1,(x/vw*GW)|0)),cy=Math.max(0,Math.min(GH-1,(y/vh*GH)|0)),k=gi(cx,cy);
+    FE[k]=Math.min(4,FE[k]+amt); FX[k]+=(vx2-FX[k])*.3; FY[k]+=(vy2-FY[k])*.3; }
+  function sample(x,y){ var cx=Math.max(0,Math.min(GW-1,(x/vw*GW)|0)),cy=Math.max(0,Math.min(GH-1,(y/vh*GH)|0)),k=gi(cx,cy);
+    return {e:FE[k],fx:FX[k],fy:FY[k],m:MEM[k]}; }
+  function fieldStep(){
+    var i,totE=0;
+    if(frameN%(Q<2?3:2)===0){                       /* cheap diffusion, cadence by quality */
+      for(var y=1;y<GH-1;y++) for(var x2=1;x2<GW-1;x2++){ var k=gi(x2,y);
+        FE[k]=FE[k]*.88+(FE[k-1]+FE[k+1]+FE[k-GW]+FE[k+GW])*.03; } }
+    for(i=0;i<FE.length;i++){ MEM[i]=Math.min(2.5,MEM[i]+FE[i]*.012); MEM[i]*=.9985;
+      FE[i]*=.97; FX[i]*=.94; FY[i]*=.94; totE+=FE[i]; }
+    return totE;
+  }
+
+  /* ---- StateEstimation + MotionAnalysis ---- */
+  var H2={Left:null,Right:null};
+  function hs(side){ return H2[side]||(H2[side]={px:0,py:0,vx:0,vy:0,ax:0,ay:0,t:0,seen:0,conf:0,
+    ring:[],ri:0,energy:0,smooth:1,rhythm:0,circ:0,tips:{}}); }
+  function observe(side,arr,tNow){
+    var s=hs(side),p=arr[9]||arr[0]; if(!p) return;
+    var dt=s.t?Math.min(.1,Math.max(1/120,(tNow-s.t)/1000)):(1/30);
+    var nvx=(p.x-s.px)/dt,nvy=(p.y-s.py)/dt;
+    if(s.seen){ s.ax=(nvx-s.vx)/dt; s.ay=(nvy-s.vy)/dt; }
+    s.vx=s.seen?(s.vx*.55+nvx*.45):0; s.vy=s.seen?(s.vy*.55+nvy*.45):0;
+    s.px=p.x; s.py=p.y; s.t=tNow; s.seen++; s.conf=1;
+    /* ring buffer of palm velocity → motion characteristics */
+    var R=s.ring; R[s.ri%48]={vx:s.vx,vy:s.vy,ax:s.ax,ay:s.ay}; s.ri++;
+    if(s.ri%6===0&&R.length>11){
+      var e=0,j=0,cr=0,zc=0,lastSign=0,i2,n=R.length;
+      for(i2=0;i2<n;i2++){ var r=R[i2],sp=Math.hypot(r.vx,r.vy);
+        e+=sp; j+=Math.hypot(r.ax,r.ay); cr+=r.vx*r.ay-r.vy*r.ax;
+        var sg=r.vx>20?1:(r.vx<-20?-1:0); if(sg&&lastSign&&sg!==lastSign) zc++; if(sg) lastSign=sg; }
+      s.energy=e/n; s.smooth=1/(1+j/n/9000); s.rhythm=Math.min(1,zc/6); s.circ=Math.min(1,Math.abs(cr/n)/240000);
+    }
+    /* fingertips are emitters — energy in ∝ measured tip speed (motion energy modulates gain) */
+    var gain=(.010+.028*Math.min(1,s.energy/900))*(Q===0?.6:1);
+    [4,8,12,16,20].forEach(function(ti){ var tp=arr[ti]; if(!tp) return;
+      var pr=s.tips[ti]||tp,tvx=(tp.x-pr.x)/dt,tvy=(tp.y-pr.y)/dt,spd=Math.hypot(tvx,tvy);
+      if(spd>30) inject(tp.x,tp.y,tvx*.05,tvy*.05,Math.min(1.4,spd*gain*.01));
+      s.tips[ti]={x:tp.x,y:tp.y}; });
+    if(Math.hypot(s.ax,s.ay)>26000) emit('HighEnergyImpact',{side:side,a:Math.hypot(s.ax,s.ay)});
+  }
+  /* dead-reckoning through tracking loss — rigid advance, exponential decay, never snaps */
+  function predictInto(side,arr,tNow){
+    var s=H2[side]; if(!s||!s.seen) return;
+    var dt=Math.min(.05,Math.max(1/120,(tNow-s.t)/1000)); s.t=tNow;
+    s.conf*=.86; s.vx*=.9; s.vy*=.9;
+    var dx=s.vx*dt,dy=s.vy*dt;
+    for(var i=0;i<21;i++){ if(arr[i]){ arr[i].x+=dx; arr[i].y+=dy; } }
+    s.px+=dx; s.py+=dy;
+  }
+
+  /* ---- ParticleSim — particles EMERGE from field energy, ride the flow ---- */
+  var PARTS=[],PCAP=[36,80,140];
+  function particleStep(c){
+    var cap=PCAP[Q],i;
+    for(i=0;i<12;i++){ if(PARTS.length>=cap) break;
+      var cx=(Math.random()*GW)|0,cy=(Math.random()*GH)|0,k=gi(cx,cy);
+      if(FE[k]>.5){ PARTS.push({x:(cx+.5)/GW*vw,y:(cy+.5)/GH*vh,vx:FX[k]*22,vy:FY[k]*22,life:1,e:Math.min(1,FE[k]*.5)});
+        FE[k]*=.9; } }                                     /* energy conservation: birth costs the field */
+    for(i=PARTS.length-1;i>=0;i--){ var pp=PARTS[i],sm=sample(pp.x,pp.y);
+      pp.vx+=sm.fx*4; pp.vy+=sm.fy*4; pp.vx*=.965; pp.vy*=.965;
+      pp.x+=pp.vx*.16; pp.y+=pp.vy*.16; pp.life-=.012+.01*(1-sm.e);
+      if(pp.life<=0||pp.x<-9||pp.x>vw+9||pp.y<-9||pp.y>vh+9){ PARTS.splice(i,1); continue; }
+      var al=pp.life*pp.e*.7; if(al<.01) continue;
+      c.globalAlpha=al; c.fillStyle='#9fdcff';
+      c.beginPath(); c.arc(pp.x,pp.y,.8+1.8*pp.e*pp.life,0,7); c.fill(); }
+    c.globalAlpha=1;
+  }
+
+  /* ---- RibbonSim — a living tether: tension waves, pulses, field turbulence ---- */
+  function ribbon(c,x1,y1,x2,y2,col,ten,now){
+    var segs=(Q===2?22:(Q===1?14:9)),L=Math.hypot(x2-x1,y2-y1)||1;
+    var sag=26*(1-ten),nx=-(y2-y1)/L,ny=(x2-x1)/L,i;
+    c.strokeStyle=col; c.globalAlpha=.32+.5*ten; c.lineWidth=1.1+ten*2.4;
+    if(Q>0){ c.shadowColor=col; c.shadowBlur=7+9*ten; }
+    c.beginPath();
+    var wob=(1-ten)*4+2,frq=2+4*ten;                        /* frequency rises with tension */
+    for(i=0;i<=segs;i++){ var f=i/segs,bx=x1+(x2-x1)*f,by=y1+(y2-y1)*f+Math.sin(f*3.14159)*sag;
+      var sm=sample(bx,by);                                  /* field turbulence bends the ribbon */
+      var w=Math.sin(f*3.14159*frq+now/110)*wob*(.4+sm.e)+sm.fx*nx*3+sm.fy*ny*3;
+      bx+=nx*w; by+=ny*w;
+      i?c.lineTo(bx,by):c.moveTo(bx,by); }
+    c.stroke(); c.shadowBlur=0;
+    /* traveling energy pulses — transport along the tether, speed ∝ tension */
+    var np=Q===0?1:2;
+    for(i=0;i<np;i++){ var ph=((now/900*(0.6+ten*1.6))+i/np)%1,fx2=x1+(x2-x1)*ph,fy2=y1+(y2-y1)*ph+Math.sin(ph*3.14159)*sag;
+      c.globalAlpha=.5+.4*ten; c.fillStyle='#eaf6ff';
+      c.beginPath(); c.arc(fx2,fy2,1.6+2.2*ten,0,7); c.fill(); }
+    c.globalAlpha=1;
+    c.strokeStyle=col; c.lineWidth=1.2; c.globalAlpha=.7; c.beginPath(); c.arc(x1,y1,5.5,0,7); c.stroke(); c.globalAlpha=1;
+    audioTension=Math.max(audioTension,ten);
+  }
+
+  /* ---- AudioRuntime — procedural, subtle, follows the energy model ---- */
+  var AC=null,oscA=null,oscB=null,gainN=null,filtN=null,muted=false,audioTension=0;
+  try{ muted=localStorage.getItem('peq_hpie_mute')==='1'; }catch(e){}
+  function audioStart(){ if(AC||muted) return;
+    try{ AC=new (window.AudioContext||window.webkitAudioContext)();
+      gainN=AC.createGain(); gainN.gain.value=0;
+      filtN=AC.createBiquadFilter(); filtN.type='lowpass'; filtN.frequency.value=520;
+      oscA=AC.createOscillator(); oscA.type='sine'; oscA.frequency.value=68;
+      oscB=AC.createOscillator(); oscB.type='triangle'; oscB.frequency.value=137;
+      oscA.connect(filtN); oscB.connect(filtN); filtN.connect(gainN); gainN.connect(AC.destination);
+      oscA.start(); oscB.start();
+    }catch(e){ AC=null; } }
+  function audioStop(){ try{ if(gainN) gainN.gain.setTargetAtTime(0,AC.currentTime,.1);
+    if(AC){ var a=AC; setTimeout(function(){ try{ a.close(); }catch(e){} },400); }
+  }catch(e){} AC=null; oscA=null; oscB=null; gainN=null; }
+  function audioFrame(totE){ if(!AC||!gainN) return;
+    var target=Math.min(.045,totE*.0012+audioTension*.02);
+    try{ gainN.gain.setTargetAtTime(muted?0:target,AC.currentTime,.18);
+      filtN.frequency.setTargetAtTime(320+totE*30+audioTension*900,AC.currentTime,.2);
+      oscB.frequency.setTargetAtTime(137+audioTension*70,AC.currentTime,.25);
+    }catch(e){} audioTension*=.9; }
+
+  /* ---- AdaptiveQuality + Profiler ---- */
+  var Q=2,ft=16,lastT=0,fps=60,debug=false;
+  function quality(now){
+    if(lastT){ var d=now-lastT; ft=ft*.92+d*.08; fps=1000/Math.max(1,ft); }
+    lastT=now;
+    if(ft>26&&Q>0){ Q--; emit('QualityDown',Q); ft=16; }
+    else if(ft<13&&Q<2){ Q++; emit('QualityUp',Q); ft=16; }
+  }
+
+  /* ---- DebugRuntime — press D in the sandbox ---- */
+  document.addEventListener('keydown',function(e){
+    var t=e.target,tn=(t&&t.tagName)?t.tagName.toUpperCase():'';
+    if(tn==='INPUT'||tn==='TEXTAREA'||(t&&t.isContentEditable)) return;
+    if(typeof curView!=='undefined'&&curView!=='sandbox') return;
+    var k=(e.key||'').toLowerCase();
+    if(k==='d'){ debug=!debug; }
+    else if(k==='m'){ muted=!muted; try{ localStorage.setItem('peq_hpie_mute',muted?'1':'0'); }catch(x){}
+      if(typeof toast==='function') toast(muted?'Engine audio muted':'Engine audio on','M'); }
+  });
+  function drawDebug(c){
+    var L=H2.Left,R2=H2.Right,rows=[
+      'HPIE GEN-2 · Q'+Q+' · '+fps.toFixed(0)+'fps · '+ft.toFixed(1)+'ms',
+      'field E '+lastTotE.toFixed(1)+' · particles '+PARTS.length,
+      'L conf '+(L?L.conf.toFixed(2):'—')+' · R conf '+(R2?R2.conf.toFixed(2):'—'),
+      'energy '+((R2||L)?((R2||L).energy|0):0)+' · smooth '+((R2||L)?((R2||L).smooth).toFixed(2):'—'),
+      'rhythm '+((R2||L)?((R2||L).rhythm).toFixed(2):'—')+' · circular '+((R2||L)?((R2||L).circ).toFixed(2):'—'),
+      'audio '+(AC?(muted?'muted':'live'):'off')+' · D hud · M mute'];
+    c.font='10px JetBrains Mono'; var w=214,h2=rows.length*15+14;
+    c.fillStyle='rgba(4,7,14,.82)'; c.fillRect(10,10,w,h2);
+    c.strokeStyle='rgba(125,211,252,.45)'; c.strokeRect(10,10,w,h2);
+    c.fillStyle='#9fdcff';
+    for(var i=0;i<rows.length;i++) c.fillText(rows[i],20,29+i*15);
+  }
+
+  /* ---- frame — one engine tick, rendered beneath the hand overlay ---- */
+  var lastTotE=0;
+  function frame(c,Wd,Hd,now){
+    vw=Wd||1; vh=Hd||1; frameN++;
+    quality(now);
+    lastTotE=fieldStep();
+    /* temporal memory — space remembers (very faint residual structure) */
+    if(Q>0){ var x2,y2;
+      for(y2=0;y2<GH;y2+=2) for(x2=0;x2<GW;x2+=2){ var m=MEM[gi(x2,y2)];
+        if(m>.12){ c.globalAlpha=Math.min(.05,m*.03); c.fillStyle='#4cb8f5';
+          c.fillRect(x2/GW*vw,y2/GH*vh,vw/GW*2,vh/GH*2); } } }
+    /* live field glow — energy is the only thing that glows */
+    var x3,y3;
+    for(y3=0;y3<GH;y3++) for(x3=0;x3<GW;x3++){ var e=FE[gi(x3,y3)];
+      if(e>.22){ c.globalAlpha=Math.min(.16,e*.09); c.fillStyle='#7dd3fc';
+        c.beginPath(); c.arc((x3+.5)/GW*vw,(y3+.5)/GH*vh,3+e*5,0,7); c.fill(); } }
+    c.globalAlpha=1;
+    particleStep(c);
+    audioFrame(lastTotE);
+    if(debug) drawDebug(c);
+  }
+
+  var api={ observe:observe, predictInto:predictInto, frame:frame, ribbon:ribbon,
+    field:{inject:inject,sample:sample}, on:on2, emit:emit,
+    style:function(side){ var s=H2[side||'Right']||H2.Left; return s?{energy:s.energy,smooth:s.smooth,rhythm:s.rhythm,circ:s.circ,conf:s.conf}:null; },
+    audioStart:audioStart, audioStop:audioStop,
+    state:function(){ return {E:lastTotE,parts:PARTS.length,q:Q,fps:fps,debug:debug,muted:muted,
+      L:H2.Left?{conf:H2.Left.conf,vx:H2.Left.vx,vy:H2.Left.vy}:null,
+      R:H2.Right?{conf:H2.Right.conf,vx:H2.Right.vx,vy:H2.Right.vy}:null}; } };
+  window.__peqHpie=api; window.HPIE=api;
+  return api;
+})();
+
+var PIE=(function(){
     var cfg={ hands:false, webcam:false, glow:true, hud:true, physicalDrag:true, buildMode:true, grabRadius:80, spring:28, force:1, smooth:0.45 };
     var on=false,showCam=false,hands=null,video=null,stream=null,raf=0,loading=false,hud=null;
     var SIDES=['Left','Right'],pts={Left:null,Right:null},miss={Left:99,Right:99},gest={Left:'none',Right:'none'},grab={Left:null,Right:null,Mouse:null},parts=[];
@@ -5806,7 +6022,7 @@ var Sandbox=(function(){
         hands.onResults(onResults); openCam();
       }catch(e){ toast('Hand tracking failed to start',''); off(); } }); }
     function openCam(){ if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){ toast('No camera available',''); off(); return; }
-      navigator.mediaDevices.getUserMedia({video:{width:640,height:360,facingMode:'user'},audio:false}).then(function(st){ if(!on){ st.getTracks().forEach(function(t){t.stop();}); return; } stream=st; video=$('#sbx-cam'); if(!video){off();return;} video.srcObject=st; video.muted=true; video.playsInline=true; var pp=video.play(); if(pp&&pp.catch)pp.catch(function(){}); applyCamVis(); pump(); toast('Hand control on','☞ pinch to grab · palm pushes · fist pulls'); })
+      navigator.mediaDevices.getUserMedia({video:{width:640,height:360,facingMode:'user'},audio:false}).then(function(st){ if(!on){ st.getTracks().forEach(function(t){t.stop();}); return; } stream=st; video=$('#sbx-cam'); if(!video){off();return;} video.srcObject=st; video.muted=true; video.playsInline=true; var pp=video.play(); if(pp&&pp.catch)pp.catch(function(){}); applyCamVis(); pump(); try{ HPIE.audioStart(); }catch(e){} toast('Hand control on','☞ pinch to grab · palm pushes · fist pulls · D hud · M mute'); })
       .catch(function(){ toast('Camera blocked','allow it to use hand control'); off(); }); }
     /* frame pump — send at most every 2nd rAF tick, and never while a send is still in flight */
     var pumpTick=0,sendBusy=false;
@@ -5814,7 +6030,7 @@ var Sandbox=(function(){
       if(pumpTick%2||sendBusy)return;
       if(video&&video.readyState>=2&&hands){ sendBusy=true;
         hands.send({image:video}).then(function(){ sendBusy=false; }).catch(function(){ sendBusy=false; }); } }
-    function off(){ on=false; updateBtn(); try{ if(raf)cancelAnimationFrame(raf); }catch(e){} raf=0; if(stream){ try{stream.getTracks().forEach(function(t){t.stop();});}catch(e){} stream=null; } if(video){ try{video.srcObject=null;}catch(e){} } pts.Left=pts.Right=null; grab.Left=grab.Right=null; prevG.Left=prevG.Right='none'; palmAnchorY.Left=palmAnchorY.Right=null; filt.Left=filt.Right=null; radialClose(); sendBusy=false; pumpTick=0; applyCamVis(); var h=$('#sbx-hud'); if(h)h.style.display='none'; }
+    function off(){ on=false; updateBtn(); try{ if(raf)cancelAnimationFrame(raf); }catch(e){} raf=0; if(stream){ try{stream.getTracks().forEach(function(t){t.stop();});}catch(e){} stream=null; } if(video){ try{video.srcObject=null;}catch(e){} } pts.Left=pts.Right=null; grab.Left=grab.Right=null; prevG.Left=prevG.Right='none'; palmAnchorY.Left=palmAnchorY.Right=null; filt.Left=filt.Right=null; radialClose(); sendBusy=false; pumpTick=0; try{ HPIE.audioStop(); }catch(e){} applyCamVis(); var h=$('#sbx-hud'); if(h)h.style.display='none'; }
     function dist(a,b){ var dx=a.x-b.x,dy=a.y-b.y; return Math.sqrt(dx*dx+dy*dy); }
     function onResults(res){ var found={Left:false,Right:false},tNow=performance.now();
       if(res&&res.multiHandLandmarks&&res.multiHandedness){ var rect=canvas.getBoundingClientRect(),Wc=rect.width||1,Hc=rect.height||1;
@@ -5824,8 +6040,8 @@ var Sandbox=(function(){
           if(!arr){ arr=new Array(21); for(var z=0;z<21;z++)arr[z]={x:lm[z].x*Wc,y:lm[z].y*Hc}; F.reset(arr); }
           for(var z2=0;z2<21;z2++){ var oo=F.pt(z2,lm[z2].x*Wc,lm[z2].y*Hc,dt); arr[z2].x=oo.x; arr[z2].y=oo.y;
             if(z2===4||z2===8){ arr[z2].fx=oo.x+oo.vx*dt; arr[z2].fy=oo.y+oo.vy*dt; } }
-          pts[label]=arr; miss[label]=0; found[label]=true; gest[label]=detect(arr,label); handleBuild(label,arr); } }
-      SIDES.forEach(function(s){ if(!found[s]){ miss[s]++; if(miss[s]>10){ pts[s]=null; gest[s]='none'; grab[s]=null; if(filt[s])filt[s].down(); radialClose(s); } } }); }
+          pts[label]=arr; miss[label]=0; found[label]=true; try{ HPIE.observe(label,arr,tNow); }catch(e){} gest[label]=detect(arr,label); handleBuild(label,arr); } }
+      SIDES.forEach(function(s){ if(!found[s]){ miss[s]++; if(miss[s]>10){ pts[s]=null; gest[s]='none'; grab[s]=null; if(filt[s])filt[s].down(); radialClose(s); } else if(pts[s]){ try{ HPIE.predictInto(s,pts[s],tNow); }catch(e){} } } }); }
     function detect(p,side){ var scale=dist(p[0],p[9])||1;
       if(dist(p[4],p[8])<scale*0.55){ acquire(side,p); return 'pinch'; }
       grab[side]=null; var ext=0; [[8,6],[12,10],[16,14],[20,18]].forEach(function(f){ if(dist(p[f[0]],p[0])>dist(p[f[1]],p[0])*1.05) ext++; });
@@ -5891,14 +6107,13 @@ var Sandbox=(function(){
     function spawn(x,y,c,n){ for(var i=0;i<n;i++){ var a=Math.random()*6.28,sp=1+Math.random()*3; parts.push({x:x,y:y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,life:1,c:c}); } if(parts.length>240)parts.splice(0,parts.length-240); }
     /* InteractionRenderer v2 — quiet, precise, premium: one thin skeleton pass, six landmarks,
        a breathing field, a sagging-to-taut tether. The hand should feel like an instrument. */
-    function draw(c,Wd,Hd){ if(!on)return; var now=performance.now();
+    function draw(c,Wd,Hd){ if(!on)return; var now=performance.now(); try{ HPIE.frame(c,Wd,Hd,now); }catch(e){}
       for(var i=parts.length-1;i>=0;i--){ var pa=parts[i]; pa.x+=pa.vx; pa.y+=pa.vy; pa.vy+=0.04; pa.life-=0.04; if(pa.life<=0){parts.splice(i,1);continue;} c.globalAlpha=pa.life*0.55; c.fillStyle=pa.c; c.beginPath(); c.arc(pa.x,pa.y,pa.life*2.2,0,7); c.fill(); } c.globalAlpha=1;
-      function tether(x1,y1,x2,y2,col2,ten){ var mx2=(x1+x2)/2,my2=(y1+y2)/2+20*(1-ten);
+      function tether(x1,y1,x2,y2,col2,ten){
+        try{ HPIE.ribbon(c,x1,y1,x2,y2,col2,ten,now); return; }catch(e){}
+        var mx2=(x1+x2)/2,my2=(y1+y2)/2+20*(1-ten);
         c.strokeStyle=col2; c.globalAlpha=0.35+0.45*ten; c.lineWidth=1.4+ten*1.6;
-        if(cfg.glow){ c.shadowColor=col2; c.shadowBlur=9; }
-        c.beginPath(); c.moveTo(x1,y1); c.quadraticCurveTo(mx2,my2,x2,y2); c.stroke();
-        c.shadowBlur=0; c.globalAlpha=1;
-        c.strokeStyle=col2; c.lineWidth=1.2; c.beginPath(); c.arc(x1,y1,5.5,0,7); c.stroke(); }
+        c.beginPath(); c.moveTo(x1,y1); c.quadraticCurveTo(mx2,my2,x2,y2); c.stroke(); c.globalAlpha=1; }
       if(grab.Mouse&&B[grab.Mouse.bi]){ var gm=B[grab.Mouse.bi],mgx=sx(grab.Mouse.wx),mgy=sy(grab.Mouse.wy),mbx=sx(gm.x),mby=sy(gm.y);
         tether(mgx,mgy,mbx,mby,COL.Mouse,Math.min(1,Math.hypot(mbx-mgx,mby-mgy)/220)); }
       SIDES.forEach(function(side){ var p=pts[side]; if(!p)return; var col=COL[side],g=gest[side];

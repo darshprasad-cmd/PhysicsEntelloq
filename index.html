@@ -19,6 +19,7 @@
   --bg:#06080f; --bg-1:#0a0e1a; --bg-2:#0e1424; --card:#0c1120; --card-2:#10172a;
   --line:rgba(255,255,255,.08); --line-2:rgba(255,255,255,.05);
   --ink:#eaf0fb; --ink-dim:#a3b1cc; --ink-faint:#6a7892; --ink-ghost:#43506b;
+  --bg-app:#06080f; --bg-panel:#0c1120; --bg-raise:#10172a;
   --blue:#7dd3fc; --blue-2:#4cb8f5; --violet:#a78bfa; --emerald:#34d399; --amber:#fbbf24; --magenta:#f472b6; --red:#f87171; --cyan:#22d3ee; --orange:#fb923c; --indigo:#818cf8;
   --display:"Space Grotesk","Inter",system-ui,sans-serif;
   --title:"Bricolage Grotesque","Space Grotesk","Inter",system-ui,sans-serif;
@@ -1248,7 +1249,202 @@ body.rd-focus .topbar{display:none}
 body.rd-focus #rd-prog{left:0}
 @media(max-width:720px){#rd-prog{left:0}}
 @media(prefers-reduced-motion:reduce){#rd-prog{transition:none}.rd-b{transition:none}}
+/* ============================================================
+   THEME ENGINE — LIGHT THEME (html[data-theme="light"])
+   · Semantic tokens re-derived: ink flips to dark-on-light
+     (#1a2233 body ≈13:1, dim ≈8:1, faint ≈5.3:1 — WCAG AA),
+     lines flip to dark alphas, accents darken for on-white text.
+   · New surface tokens --bg-app / --bg-panel / --bg-raise
+     (dark values added to :root by integration edit).
+   · CANVAS STAGES STAY DARK: sims / universe / sandbox / lens /
+     lab / research stages are dark-designed drawing surfaces —
+     they keep their dark backgrounds (like a video player) and
+     get the DARK tokens re-pinned locally so HUD text inside
+     them stays light-on-dark. Nothing dark-mode is edited here;
+     every rule below is a scoped light override.
+   ============================================================ */
+html[data-theme="light"]{
+  color-scheme:light;
+  --bg:#f4f6fb; --bg-1:#eef1f8; --bg-2:#e7ebf4; --card:#ffffff; --card-2:#f7f9fd;
+  --line:rgba(16,24,40,.13); --line-2:rgba(16,24,40,.08);
+  --ink:#1a2233; --ink-dim:#3f4b63; --ink-faint:#5d6a85; --ink-ghost:#8a94ab; /* ghost = decorative micro-labels only */
+  --blue:#0369a1; --blue-2:#0284c7; --violet:#6d28d9; --emerald:#047857;
+  --amber:#b45309; --magenta:#be185d; --red:#dc2626; --cyan:#0e7490;
+  --orange:#c2410c; --indigo:#4f46e5;
+  --bg-app:#f4f6fb; --bg-panel:#ffffff; --bg-raise:#eef1f8;
+}
+/* --- app chrome --- */
+html[data-theme="light"] body{background:var(--bg-app)}
+html[data-theme="light"] #bg,
+html[data-theme="light"] .spotlight{display:none} /* cosmos canvas + cursor glow are dark-designed */
+html[data-theme="light"] .side{background:rgba(255,255,255,.75)}
+html[data-theme="light"] .topbar{background:rgba(244,246,251,.8)}
+html[data-theme="light"] .mtab{background:rgba(255,255,255,.92)}
+html[data-theme="light"] .nav-i:hover,
+html[data-theme="light"] .side-dom:hover{background:rgba(16,24,40,.05)}
+html[data-theme="light"] .side-dom .sd-bot{background:rgba(16,24,40,.04)}
+html[data-theme="light"] .side-dom .sd-bot:hover{background:rgba(16,24,40,.1)}
+html[data-theme="light"] .side-act{background:var(--bg-panel)}
+html[data-theme="light"] .main::-webkit-scrollbar-thumb,
+html[data-theme="light"] .side-scroll::-webkit-scrollbar-thumb,
+html[data-theme="light"] .tu-thread::-webkit-scrollbar-thumb{background:rgba(16,24,40,.22)}
+html[data-theme="light"] .audio-btn{background:rgba(255,255,255,.85)}
+html[data-theme="light"] .rank-row .rk{background:linear-gradient(100deg,#0369a1,#6d28d9);-webkit-background-clip:text;background-clip:text}
+/* --- raised panels (immersion-layer glass -> light panel) --- */
+html[data-theme="light"] .cont,
+html[data-theme="light"] .rec,
+html[data-theme="light"] .dom,
+html[data-theme="light"] .titem,
+html[data-theme="light"] .pr-card,
+html[data-theme="light"] .lab-card,
+html[data-theme="light"] .demo-mini,
+html[data-theme="light"] .dash,
+html[data-theme="light"] .side-card,
+html[data-theme="light"] .eqviz,
+html[data-theme="light"] .rs-card{background:rgba(255,255,255,.86);backdrop-filter:blur(10px) saturate(105%)}
+html[data-theme="light"] .cont{background:linear-gradient(110deg,#ffffff,#f2f5fb)}
+html[data-theme="light"] .titem.next{background:linear-gradient(100deg,rgba(2,132,199,.07),#fff)}
+html[data-theme="light"] .pr-card{box-shadow:0 24px 64px -32px rgba(15,23,42,.18)}
+html[data-theme="light"] .prog-row .track,
+html[data-theme="light"] .dom .track,
+html[data-theme="light"] .rv-ret .bar,
+html[data-theme="light"] .pg-xpbar,
+html[data-theme="light"] .pg-bar{background:rgba(16,24,40,.09)}
+html[data-theme="light"] .btn-ghost,
+html[data-theme="light"] .t-search,
+html[data-theme="light"] .mz-cb{background:rgba(16,24,40,.03)}
+html[data-theme="light"] .kg-conn,
+html[data-theme="light"] .rv-row{background:rgba(16,24,40,.025)}
+html[data-theme="light"] .kg-row:hover{background:rgba(16,24,40,.04)}
+html[data-theme="light"] .ev-out{background:rgba(16,24,40,.04)}
+/* --- palette / cmdk / toast / tutor --- */
+html[data-theme="light"] #pal{background:rgba(15,23,42,.32)}
+html[data-theme="light"] .pal-box{background:var(--bg-panel);border-color:rgba(2,132,199,.3);box-shadow:0 40px 120px -30px rgba(15,23,42,.35)}
+html[data-theme="light"] .pal-row.sel{background:rgba(2,132,199,.12);color:var(--ink)}
+html[data-theme="light"] #cmdk{background:rgba(15,23,42,.3)}
+html[data-theme="light"] .cp-panel{background:rgba(255,255,255,.98);box-shadow:0 30px 80px -20px rgba(15,23,42,.35)}
+html[data-theme="light"] .cp-row.on{background:rgba(2,132,199,.1)}
+html[data-theme="light"] #toast{background:rgba(255,255,255,.96);border-color:rgba(2,132,199,.35);box-shadow:0 12px 40px -12px rgba(15,23,42,.3)}
+html[data-theme="light"] #tutor{background:linear-gradient(180deg,#fbfcfe,#f1f4fa)}
+html[data-theme="light"] #tutor-scrim{background:rgba(15,23,42,.28)}
+html[data-theme="light"] .tu-roster{background:rgba(16,24,40,.03)}
+html[data-theme="light"] .tu-pchip{background:rgba(16,24,40,.04)}
+html[data-theme="light"] .tu-pchip.on{background:rgba(16,24,40,.06);color:var(--ink)}
+html[data-theme="light"] .tu-in input{background:rgba(16,24,40,.04)}
+/* --- hardcoded #fff / light-tint inks -> ink token --- */
+html[data-theme="light"] .nav-i.on,
+html[data-theme="light"] .btn-ghost:hover,
+html[data-theme="light"] .mini-b:hover,
+html[data-theme="light"] .tu-head .x:hover,
+html[data-theme="light"] .tu-sugg button:hover,
+html[data-theme="light"] .tu-mic:hover,
+html[data-theme="light"] .mz-cb:hover,
+html[data-theme="light"] .lvl-chip:hover,
+html[data-theme="light"] .lvl-chip.on,
+html[data-theme="light"] .sv-exb:hover,
+html[data-theme="light"] .cc-step.on,
+html[data-theme="light"] .dv-art .hook,
+html[data-theme="light"] .sv-prob,
+html[data-theme="light"] .mr-eq .hl,
+html[data-theme="light"] .mr-val .v,
+html[data-theme="light"] .inv-sh .t,
+html[data-theme="light"] .inv-bd b,
+html[data-theme="light"] .inv-opt.correct{color:var(--ink)}
+html[data-theme="light"] .lesson .intuition,
+html[data-theme="light"] .pt{color:#243049}
+html[data-theme="light"] .sv-av{color:#065f46}
+html[data-theme="light"] .kg-verdict.ok{color:#065f46;background:rgba(5,150,105,.08)}
+html[data-theme="light"] .kg-verdict.hold{color:#92400e;background:rgba(180,83,9,.07)}
+html[data-theme="light"] .kg-mini.ok{color:#065f46}
+html[data-theme="light"] .kg-mini.hold{color:#92400e}
+html[data-theme="light"] .rv-nudge{color:#7c4a03;background:rgba(180,83,9,.06)}
+html[data-theme="light"] .rv-calm{color:#0f5132;background:rgba(5,150,105,.06)}
+html[data-theme="light"] .cc-mis{color:#7c4a03;background:rgba(180,83,9,.06)}
+html[data-theme="light"] .rz-chip.wrong{color:#b91c1c}
+html[data-theme="light"] .rz-strat.right{color:#065f46}
+html[data-theme="light"] .rz-strat.wrong{color:#991b1b}
+html[data-theme="light"] .dl-chip.on,
+html[data-theme="light"] .pr-opt:hover:not(.locked) .k{color:#075985}
+html[data-theme="light"] .mr-eq{color:#4c1d95}
+/* --- 6-Lens (runtime-injected CSS assumes dark; these win on specificity) --- */
+html[data-theme="light"] .lens{background:var(--bg-panel);border-color:var(--line)}
+html[data-theme="light"] .lens-h{border-bottom-color:var(--line-2)}
+html[data-theme="light"] .lens-tab{background:rgba(16,24,40,.03);border-color:var(--line-2);color:var(--ink-dim)}
+html[data-theme="light"] .lens-tab .lk{color:var(--ink)}
+html[data-theme="light"] .lens-tab .ld{color:var(--ink-faint)}
+html[data-theme="light"] .lens-panel{color:var(--ink-dim);border-top-color:var(--line-2)}
+html[data-theme="light"] .lens-panel b{color:var(--ink)}
+html[data-theme="light"] .lx-txt,
+html[data-theme="light"] .lx-q,
+html[data-theme="light"] .lx-step .d,
+html[data-theme="light"] .lx-card .b2,
+html[data-theme="light"] .lx-symd,
+html[data-theme="light"] .lx-slider{color:var(--ink-dim)}
+html[data-theme="light"] .lx-opt{background:rgba(16,24,40,.03);border-color:var(--line);color:var(--ink-dim)}
+html[data-theme="light"] .lx-step,
+html[data-theme="light"] .lx-card{background:rgba(16,24,40,.025);border-color:var(--line)}
+html[data-theme="light"] .lx-step .f{color:#4c1d95}
+html[data-theme="light"] .lx-sym{color:#5b21b6;border-color:rgba(109,40,217,.4)}
+html[data-theme="light"] .lx-stat{background:rgba(16,24,40,.04);border-color:var(--line)}
+html[data-theme="light"] .lx-stat .l3{color:var(--ink-faint)}
+html[data-theme="light"] .lx-stat .v3{color:var(--ink)}
+html[data-theme="light"] .lx-verdict.good{color:#065f46}
+html[data-theme="light"] .lx-verdict.bad{color:#7c4a03}
+html[data-theme="light"] .lx-more{border-color:var(--line)}
+/* --- Progress view (runtime-injected pg-css) --- */
+html[data-theme="light"] .pg-rank,
+html[data-theme="light"] .pg-dom{background:rgba(16,24,40,.025);border-color:var(--line)}
+html[data-theme="light"] .pg-dom:hover{border-color:rgba(16,24,40,.25)}
+html[data-theme="light"] .pg-rn,
+html[data-theme="light"] .pg-dn{color:var(--ink)}
+html[data-theme="light"] .pg-rdot{background:rgba(16,24,40,.18)}
+html[data-theme="light"] .pg-sec-h{color:var(--blue)}
+/* ============================================================
+   DARK ISLANDS — canvas stages stay dark in light mode.
+   Their JS draws light strokes on a dark ground; repainting them
+   light would erase the physics. We keep their dark backgrounds
+   untouched and RE-PIN the dark-theme tokens locally so any HTML
+   HUD/labels inside them stay light-on-dark and readable.
+   (.th-cv / .nb-cv / .lab-card .thumb / .cont .vis are pure
+   canvases with hardcoded dark backgrounds — nothing to re-pin.)
+   ============================================================ */
+html[data-theme="light"] .uni,
+html[data-theme="light"] .l-sim,
+html[data-theme="light"] .lf-shell,
+html[data-theme="light"] .lx-stage,
+html[data-theme="light"] .sbx-stage,
+html[data-theme="light"] .cmp-cell,
+html[data-theme="light"] .rs-app,
+html[data-theme="light"] .eqviz .ev-graph{
+  --ink:#eaf0fb; --ink-dim:#a3b1cc; --ink-faint:#6a7892; --ink-ghost:#43506b;
+  --line:rgba(255,255,255,.08); --line-2:rgba(255,255,255,.05);
+  --blue:#7dd3fc; --blue-2:#4cb8f5; --violet:#a78bfa; --emerald:#34d399;
+  --amber:#fbbf24; --magenta:#f472b6; --red:#f87171; --cyan:#22d3ee;
+  --orange:#fb923c; --indigo:#818cf8;
+  color-scheme:dark;
+}
+/* the whole sandbox is a lab bench — one coherent dark island (rail+tools+foot included) */
+html[data-theme="light"] .sbx{
+  --ink:#eaf0fb; --ink-dim:#a3b1cc; --ink-faint:#6a7892; --ink-ghost:#43506b;
+  --line:rgba(255,255,255,.08); --line-2:rgba(255,255,255,.05);
+  --blue:#7dd3fc; --blue-2:#4cb8f5; --violet:#a78bfa; --emerald:#34d399;
+  --amber:#fbbf24; --magenta:#f472b6; --red:#f87171; --cyan:#22d3ee;
+  --orange:#fb923c; --indigo:#818cf8;
+  color-scheme:dark;
+  background:radial-gradient(140% 120% at 50% 0%,#0a1020,#04060c);border-radius:16px;
+}
+/* the immersion layer made .l-sim translucent glass — pin it solid dark */
+html[data-theme="light"] .l-sim{background:#04060e;backdrop-filter:none}
+/* the eqviz graph quadrant has no bg of its own — give the island a floor */
+html[data-theme="light"] .eqviz .ev-graph{background:radial-gradient(120% 130% at 50% 0%,#0a1020,#04060c)}
 </style>
+<script>/* THEME bootstrap — set html[data-theme] before first paint (no dark->light flash) */
+(function(){ var m='dark'; try{ m=localStorage.getItem('peq_theme')||'dark'; }catch(e){}
+  if(m!=='dark'&&m!=='light'&&m!=='system') m='dark';
+  var t=m; if(m==='system'){ t='dark'; try{ if(matchMedia('(prefers-color-scheme: light)').matches) t='light'; }catch(e){} }
+  document.documentElement.setAttribute('data-theme',t);
+})();</script>
+
 </head>
 <body>
 <canvas id="bg" aria-hidden="true"></canvas>
@@ -1265,6 +1461,7 @@ body.rd-focus #rd-prog{left:0}
     </div>
     <div class="side-scroll">
       <div class="nav-i" id="nav-cmdk"><span class="ic">⌕</span> Search<span class="kbd-hint">Ctrl K</span></div>
+      <div class="nav-i" id="nav-theme" role="button" tabindex="0" aria-label="Theme: dark" title="Theme — cycles dark / light / system"><span class="ic" id="nav-theme-ic">◐</span> Theme<span class="kbd-hint" id="nav-theme-hint">dark</span></div>
       <div class="nav-i" data-go="home"><span class="ic">⌂</span> Home</div>
       <div class="nav-i" data-go="universe"><span class="ic">✦</span> Universe</div>
       <div class="nav-i" data-go="learn"><span class="ic">◳</span> Learn</div>
@@ -8899,8 +9096,40 @@ var ReadPref=(function(){
 })();
 window.ReadPref=ReadPref;
 try{ ReadPref.init(); }catch(e){}
+/* ===== THEME ENGINE — dark / light / system =====
+   Persisted as peq_theme. The <head> bootstrap sets html[data-theme]
+   before first paint; this module owns persistence, the
+   prefers-color-scheme listener (system mode) and the sidebar toggle. */
+var Theme=(function(){
+  var KEY='peq_theme', MODES=['dark','light','system'], ICONS={dark:'◐',light:'○',system:'◑'};
+  var mq=null; try{ mq=matchMedia('(prefers-color-scheme: light)'); }catch(e){}
+  function stored(){ var m='dark'; try{ m=localStorage.getItem(KEY)||'dark'; }catch(e){} return MODES.indexOf(m)>=0?m:'dark'; }
+  function resolve(m){ return m==='system' ? ((mq&&mq.matches)?'light':'dark') : m; }
+  function apply(m){
+    var t=resolve(m);
+    document.documentElement.setAttribute('data-theme',t);
+    var mt=document.querySelector('meta[name="theme-color"]');
+    if(mt) mt.setAttribute('content', t==='light'?'#f4f6fb':'#06080f');
+    var ic=$('#nav-theme-ic'); if(ic) ic.textContent=ICONS[m]||ICONS.dark;
+    var h=$('#nav-theme-hint'); if(h) h.textContent=m;
+    var b=$('#nav-theme'); if(b) b.setAttribute('aria-label','Theme: '+m+(m==='system'?' — now '+t:''));
+  }
+  function set(m){ if(MODES.indexOf(m)<0) m='dark'; try{ localStorage.setItem(KEY,m); }catch(e){} apply(m); }
+  function cycle(){ var m=MODES[(MODES.indexOf(stored())+1)%MODES.length]; set(m); toast('Theme: '+m+(m==='system'?' (follows device)':'')); }
+  function init(){
+    apply(stored());
+    if(mq){ var on=function(){ if(stored()==='system') apply('system'); };
+      if(mq.addEventListener) mq.addEventListener('change',on); else if(mq.addListener) mq.addListener(on); }
+    var b=$('#nav-theme');
+    if(b&&!b.__peqWired){ b.__peqWired=1;
+      b.addEventListener('click',cycle);
+      b.addEventListener('keydown',function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); cycle(); } });
+    }
+  }
+  return { init:init, set:set, cycle:cycle, mode:stored };
+})();
 /* ===== INIT ===== */
-Me.streakInit(); renderSide(); buildSide(); Tutor.init();
+Me.streakInit(); renderSide(); buildSide(); Tutor.init(); Theme.init();
 go('home');
 try{ var _pp=JSON.parse(localStorage.getItem('peq_profile')||'null'); if(_pp&&_pp.lens) window.__lensDefault=_pp.lens; }catch(e){}
 if(Landing.pending()){ Landing.show(function(){ Onboard.maybe(); }); } else { Onboard.maybe(); }

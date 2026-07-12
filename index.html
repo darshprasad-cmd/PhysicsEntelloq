@@ -6053,7 +6053,7 @@ var PIE=(function(){
     var COL={Left:'#22d3ee',Right:'#f0f',Mouse:'#fbbf24'},D=4.6,FIELD_R=190,FIELD_STR=2400;
     /* Build mode: an open palm moved up/down chooses an object; a fist drops it in. (When off, palm/fist = force fields.) */
     var SPAWN=[{label:'● Mass',plain:'a mass',o:{m:8,c:'#cbd5e1'}},{label:'☉ Planet',plain:'a planet',o:{m:400,c:'#fbbf24'}},{label:'⊕ Charge +',plain:'a positive charge',o:{q:70,m:12,kind:'charge',c:'#f87171'}},{label:'⊖ Charge −',plain:'a negative charge',o:{q:-70,m:12,kind:'charge',c:'#7dd3fc'}},{label:'✶ Star',plain:'a heavy star',o:{m:1600,c:'#f8fafc'}}];
-    var buildSel=0,prevG={Left:'none',Right:'none'},palmAnchorY={Left:null,Right:null},lastSpawnT=0,lastCycleT=0,filt={Left:null,Right:null},holdT={Left:0,Right:0},radial={side:null,cx:0,cy:0,hot:-1,t0:0},intent={Left:null,Right:null},prevPd={Left:0,Right:0};
+    var buildSel=0,prevG={Left:'none',Right:'none'},palmAnchorY={Left:null,Right:null},lastSpawnT=0,lastCycleT=0,filt={Left:null,Right:null},holdT={Left:0,Right:0},radial={side:null,cx:0,cy:0,hot:-1,t0:0},intent={Left:null,Right:null},prevPd={Left:0,Right:0},pinchMiss={Left:0,Right:0};
     var CONN=[[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[5,9],[9,10],[10,11],[11,12],[9,13],[13,14],[14,15],[15,16],[13,17],[17,18],[18,19],[19,20],[0,17]];
     function injectCSS(){ if(document.getElementById('hand-css'))return; var s=ce('style'); s.id='hand-css'; s.textContent=
       "#sbx-cam{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1);opacity:0;transition:opacity .3s;pointer-events:none;z-index:0}"+
@@ -6081,7 +6081,8 @@ var PIE=(function(){
     /* frame pump — send at most every 2nd rAF tick, and never while a send is still in flight */
     var pumpTick=0,sendBusy=false;
     function pump(){ if(!on)return; raf=requestAnimationFrame(pump); pumpTick++;
-      if(pumpTick%2||sendBusy)return;
+      var idle=false; try{ var hL2=HPIE.hand('Left'),hR2=HPIE.hand('Right'); idle=((hL2&&hL2.seen)||(hR2&&hR2.seen))&&(!hL2||!hL2.seen||hL2.energy<40)&&(!hR2||!hR2.seen||hR2.energy<40); }catch(e){}
+      if(pumpTick%(idle?4:2)||sendBusy)return;
       if(video&&video.readyState>=2&&hands){ sendBusy=true;
         hands.send({image:video}).then(function(){ sendBusy=false; }).catch(function(){ sendBusy=false; }); } }
     function off(){ on=false; updateBtn(); try{ if(raf)cancelAnimationFrame(raf); }catch(e){} raf=0; if(stream){ try{stream.getTracks().forEach(function(t){t.stop();});}catch(e){} stream=null; } if(video){ try{video.srcObject=null;}catch(e){} } pts.Left=pts.Right=null; grab.Left=grab.Right=null; prevG.Left=prevG.Right='none'; palmAnchorY.Left=palmAnchorY.Right=null; filt.Left=filt.Right=null; radialClose(); sendBusy=false; pumpTick=0; try{ HPIE.audioStop(); }catch(e){} applyCamVis(); var h=$('#sbx-hud'); if(h)h.style.display='none'; }
@@ -6092,12 +6093,19 @@ var PIE=(function(){
           if(!F) F=filt[label]=oneEuroHand();
           var dt=F.last?Math.min(0.1,Math.max(1/120,(tNow-F.last)/1000)):(1/30); F.last=tNow;
           if(!arr){ arr=new Array(21); for(var z=0;z<21;z++)arr[z]={x:lm[z].x*Wc,y:lm[z].y*Hc}; F.reset(arr); }
-          for(var z2=0;z2<21;z2++){ var oo=F.pt(z2,lm[z2].x*Wc,lm[z2].y*Hc,dt); arr[z2].x=oo.x; arr[z2].y=oo.y;
+          for(var z2=0;z2<21;z2++){ var oo=F.pt(z2,lm[z2].x*Wc,lm[z2].y*Hc,dt);
+            var tx3=oo.x+oo.vx*0.025,ty3=oo.y+oo.vy*0.025;              /* 25ms lead — the rubber band disappears */
+            var mvx=tx3-arr[z2].x,mvy=ty3-arr[z2].y,mg2=Math.hypot(mvx,mvy);
+            if(mg2>70){ mvx*=70/mg2; mvy*=70/mg2; }                     /* velocity limit — MediaPipe teleports clamped */
+            arr[z2].x+=mvx; arr[z2].y+=mvy;
             if(z2===4||z2===8){ arr[z2].fx=oo.x+oo.vx*dt; arr[z2].fy=oo.y+oo.vy*dt; } }
           pts[label]=arr; miss[label]=0; found[label]=true; try{ HPIE.observe(label,arr,tNow); }catch(e){} gest[label]=detect(arr,label); handleBuild(label,arr); } }
       SIDES.forEach(function(s){ if(!found[s]){ miss[s]++; if(miss[s]>10){ pts[s]=null; gest[s]='none'; grab[s]=null; if(filt[s])filt[s].down(); radialClose(s); } else if(pts[s]){ try{ HPIE.predictInto(s,pts[s],tNow); }catch(e){} } } }); }
     function detect(p,side){ var scale=dist(p[0],p[9])||1,pd=dist(p[4],p[8])/scale;
-      if(pd<0.55){ acquire(side,p); intent[side]=null; prevPd[side]=pd; return 'pinch'; }
+      var wasP=(gest[side]==='pinch'),TH=wasP?0.62:0.50;   /* hysteresis: releasing is harder than grabbing */
+      if(pd<TH){ pinchMiss[side]=0; acquire(side,p); intent[side]=null; prevPd[side]=pd; return 'pinch'; }
+      if(wasP&&pd<1.2&&(pinchMiss[side]=(pinchMiss[side]||0)+1)<6){ prevPd[side]=pd; return 'pinch'; }   /* ~150ms occlusion grace */
+      pinchMiss[side]=0;
       var closing=(pd<1.05)&&(pd-(prevPd[side]||pd)<-0.012); prevPd[side]=pd;
       if(closing){ var ix=(p[4].x+p[8].x)/2+((p[8].fx!=null)?(p[8].fx-p[8].x)*5:0),iy=(p[4].y+p[8].y)/2+((p[8].fy!=null)?(p[8].fy-p[8].y)*5:0);
         var ib2=bodyAt(wx(ix),wy(iy)); if(ib2<0){ var pw2=pinchWorld(p); ib2=bodyAt(pw2.x,pw2.y); }
@@ -6151,13 +6159,17 @@ var PIE=(function(){
     function acquire(side,p){ if(grab[side]&&B[grab[side].bi])return; var w=pinchWorld(p),bi=bodyAt(w.x,w.y);
       if(bi<0&&intent[side]&&B[intent[side].bi]) bi=intent[side].bi;
       if(bi<0){ var best=-1,bd=1e9; for(var i=0;i<B.length;i++){ var dx=B[i].x-w.x,dy=B[i].y-w.y,d=dx*dx+dy*dy; if(d<bd){bd=d;best=i;} } if(best>=0&&Math.sqrt(bd)<cfg.grabRadius/cam.s) bi=best; }
-      if(bi>=0){ grab[side]={bi:bi}; spawn(sx(B[bi].x),sy(B[bi].y),COL[side],10); } }
+      if(bi>=0){ grab[side]={bi:bi,ox:B[bi].x-w.x,oy:B[bi].y-w.y}; spawn(sx(B[bi].x),sy(B[bi].y),COL[side],10); } }
     /* GrabSystem — a spring constraint pulls a body toward a pointer target (no snap → inertia + damping + momentum kept on release). */
     function springTo(bi,tx,ty,fx,fy){ var b=B[bi]; if(!b||b.fixed)return; fx[bi]+=cfg.spring*(tx-b.x)-D*b.vx; fy[bi]+=cfg.spring*(ty-b.y)-D*b.vy; }
     function apply(fx,fy){
       if(grab.Mouse&&B[grab.Mouse.bi]) springTo(grab.Mouse.bi,grab.Mouse.wx,grab.Mouse.wy,fx,fy);   // mouse/touch drag = the SAME physical spring, always available
       if(!on)return; SIDES.forEach(function(side){ var p=pts[side]; if(!p)return; var g=gest[side];
-        if(g==='pinch'){ var gr=grab[side]; if(gr&&B[gr.bi]){ var w=pinchWorld(p); springTo(gr.bi,w.x,w.y,fx,fy); } }
+        if(g==='pinch'){ var gr=grab[side]; if(gr&&B[gr.bi]){ var w=pinchWorld(p);
+          var tx2=w.x+(gr.ox||0),ty2=w.y+(gr.oy||0);
+          if(gr.lx!=null&&Math.hypot(tx2-gr.lx,ty2-gr.ly)*cam.s<1.6){ tx2=gr.lx; ty2=gr.ly; }   /* dead-zone: micro-tremor ignored */
+          gr.lx=tx2; gr.ly=ty2;
+          springTo(gr.bi,tx2,ty2,fx,fy); } }
         else if((g==='palm'||g==='fist')&&!cfg.buildMode){ var c=palmWorld(p),sgn=(g==='palm')?1:-1,STR=FIELD_STR*cfg.force; for(var i=0;i<B.length;i++){ var b2=B[i]; if(b2.fixed)continue; var dx=b2.x-c.x,dy=b2.y-c.y,r=Math.sqrt(dx*dx+dy*dy)+1e-3; if(r<FIELD_R){ var fall=1-r/FIELD_R,Fm=sgn*STR*fall*fall/r; fx[i]+=Fm*dx; fy[i]+=Fm*dy; } } }
         else if(intent[side]&&B[intent[side].bi]){ var it=B[intent[side].bi],wp=pinchWorld(p);
           if(!it.fixed){ fx[intent[side].bi]+=(wp.x-it.x)*2.4; fy[intent[side].bi]+=(wp.y-it.y)*2.4; } }
@@ -6179,17 +6191,18 @@ var PIE=(function(){
       if(grab.Mouse&&B[grab.Mouse.bi]){ var gm=B[grab.Mouse.bi],mgx=sx(grab.Mouse.wx),mgy=sy(grab.Mouse.wy),mbx=sx(gm.x),mby=sy(gm.y);
         tether(mgx,mgy,mbx,mby,COL.Mouse,Math.min(1,Math.hypot(mbx-mgx,mby-mgy)/220)); }
       SIDES.forEach(function(side){ var p=pts[side]; if(!p)return; var col=COL[side],g=gest[side];
+        var cf=1; try{ var hh2=HPIE.hand(side); if(hh2&&hh2.conf<1) cf=Math.max(.15,hh2.conf); }catch(e){}
         /* palm membrane — quiet presence, not decoration */
-        c.globalAlpha=0.05; c.fillStyle=col; c.beginPath();
+        c.globalAlpha=0.05*cf; c.fillStyle=col; c.beginPath();
         [0,5,9,13,17].forEach(function(li,k2){ k2?c.lineTo(p[li].x,p[li].y):c.moveTo(p[li].x,p[li].y); });
         c.closePath(); c.fill(); c.globalAlpha=1;
         /* skeleton — ONE thin pass, round caps, no per-bone glow */
-        c.strokeStyle=col; c.globalAlpha=0.30; c.lineWidth=1.4; c.lineCap='round';
+        c.strokeStyle=col; c.globalAlpha=0.30*cf; c.lineWidth=1.4; c.lineCap='round';
         c.beginPath(); CONN.forEach(function(e){ c.moveTo(p[e[0]].x,p[e[0]].y); c.lineTo(p[e[1]].x,p[e[1]].y); }); c.stroke();
         c.lineCap='butt'; c.globalAlpha=1;
         /* six landmarks only: wrist + fingertips, thumb/index emphasized */
         [0,4,8,12,16,20].forEach(function(li){ var rr=(li===4||li===8)?3.6:2.4;
-          c.fillStyle='rgba(232,237,255,.9)'; c.beginPath(); c.arc(p[li].x,p[li].y,rr,0,7); c.fill();
+          c.fillStyle='rgba(232,237,255,'+(0.9*cf).toFixed(2)+')'; c.beginPath(); c.arc(p[li].x,p[li].y,rr,0,7); c.fill();
           c.strokeStyle=col; c.globalAlpha=.55; c.lineWidth=1; c.beginPath(); c.arc(p[li].x,p[li].y,rr+2.2,0,7); c.stroke(); c.globalAlpha=1; });
         if(typeof cradleOn!=='undefined'&&cradleOn){ [4,20].forEach(function(ti){ var ax=p[ti].x,ay=p[ti].y; c.strokeStyle='#fbbf24'; c.globalAlpha=.92; c.lineWidth=1.7; if(cfg.glow){c.shadowColor='#fbbf24';c.shadowBlur=11;} c.beginPath(); c.arc(ax,ay,6.5+0.9*Math.sin(now/220+ti),0,7); c.stroke(); c.shadowBlur=0; c.globalAlpha=1; }); }
         if(intent[side]&&B[intent[side].bi]&&g!=='pinch'){ var itb=B[intent[side].bi],itx=sx(itb.x),ity=sy(itb.y);

@@ -374,6 +374,23 @@ input[type=range].sl::-moz-range-thumb{width:14px;height:14px;border:0;border-ra
 .mz-q{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);margin-right:2px}
 .mz-cb{font-size:12.5px;padding:7px 14px;border-radius:10px;border:1px solid var(--line);background:rgba(255,255,255,.02);color:var(--ink-dim);cursor:pointer;transition:border-color .16s var(--ease),color .16s var(--ease),transform .16s var(--ease)}
 .mz-cb:hover{border-color:var(--mc);color:#fff;transform:translateY(-1px)}
+.rv-nudge{display:flex;align-items:center;gap:11px;margin:4px 0 26px;padding:13px 17px;border:1px solid rgba(251,191,36,.28);border-radius:13px;background:rgba(251,191,36,.05);color:#f3e4bd;font-size:13.5px;cursor:pointer;transition:border-color .2s var(--ease),transform .2s var(--ease)}
+.rv-nudge:hover{border-color:rgba(251,191,36,.55);transform:translateY(-1px)}
+.rv-nudge .ic{color:var(--amber);font-size:16px}
+.rv-nudge .go{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--amber);white-space:nowrap}
+.rv-calm{display:flex;gap:14px;align-items:flex-start;margin-top:18px;padding:20px 22px;border:1px solid rgba(52,211,153,.25);border-radius:15px;background:rgba(52,211,153,.05);color:#d7f5e9;font-size:14.5px;line-height:1.65;max-width:620px}
+.rv-calm .ic{color:var(--emerald);font-size:19px;line-height:1.3}
+.rv-list{margin-top:20px;display:flex;flex-direction:column;gap:9px;max-width:760px}
+.rv-row{display:flex;align-items:center;gap:13px;padding:13px 16px;border:1px solid var(--line);border-radius:13px;background:rgba(255,255,255,.015)}
+.rv-row .dot{width:9px;height:9px;border-radius:50%;flex:0 0 auto}
+.rv-mid{flex:1;min-width:0}
+.rv-mid .nm{font-size:14px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rv-why{font-family:var(--mono);font-size:10px;letter-spacing:.05em;margin-top:3px}
+.rv-ret{display:flex;align-items:center;gap:7px;flex:0 0 auto}
+.rv-ret .bar{width:54px;height:5px;border-radius:4px;background:rgba(255,255,255,.07);overflow:hidden}
+.rv-ret .bar i{display:block;height:100%;border-radius:4px}
+.rv-ret span{font-family:var(--mono);font-size:10px;color:var(--ink-faint);min-width:30px}
+@media(max-width:640px){.rv-ret{display:none}.rv-row{flex-wrap:wrap}}
 
 /* unit header + difficulty */
 .unit-head{display:flex;align-items:center;gap:20px;margin:6px 0 22px}
@@ -6048,6 +6065,7 @@ function go(v,id){ stopSim();
   else if(v==='domain') viewDomain(id);
   else if(v==='lesson') viewLesson(id);
   else if(v==='practice') viewPractice();
+  else if(v==='review') viewReview();
   else if(v==='research') viewResearch();
   else if(v==='progress') viewProgress();
   else if(v==='lab') viewLab();
@@ -6216,6 +6234,7 @@ function viewHome(){
   var contDone=last&&Me.isDone(last.id);
   var contTopic=contDone?Me.recommend(1)[0]:cont;
   var recs=Me.recommend(4);
+  var rvN=0; try{ rvN=(typeof Mastery!=='undefined')?Mastery.queue().length:0; }catch(e){}
   var html='<div class="wrap fade">'+
     '<div class="eyebrow">Physics Entelloq</div>'+
     '<h1 class="h-hello">'+greet+'.</h1>'+
@@ -6225,6 +6244,7 @@ function viewHome(){
       '<h2>'+esc(contTopic.name)+'</h2><p>'+esc(contTopic.summary.slice(0,120))+'…</p>'+
       '<button class="btn btn-pri" data-link="lesson:'+contTopic.id+'">'+(last&&!contDone?'Resume lesson':'Begin lesson')+' →</button>'+
     '</div></div></div>'+
+    (rvN?'<div class="rv-nudge" data-go="review"><span class="ic">◔</span><span><b>'+rvN+' concept'+(rvN===1?'':'s')+'</b> '+(rvN===1?'is':'are')+' fading from memory — a few minutes brings '+(rvN===1?'it':'them')+' back.</span><span class="go">Review →</span></div>':'')+
     '<div class="sec-h"><h3>Explore the platform</h3></div>'+
     '<div class="home-feats">'+
       '<div class="home-feat" data-feat="journeys" style="--fc:#5eead4"><div class="hf-ic">❖</div><div class="hf-t">Learning Journeys</div><div class="hf-s">One guided path per idea — study, visualise, experiment, challenge, extend, all connected.</div></div>'+
@@ -6252,6 +6272,33 @@ function viewHome(){
 }
 function recCard(t){ var dm=DMAP[t.domain]; return '<div class="rec'+(Me.isDone(t.id)?' done':'')+'" data-link="lesson:'+t.id+'"><div class="dot" style="background:'+dm.c+'22;color:'+dm.c+'">'+dm.n.charAt(0)+'</div><div><div class="nm">'+esc(t.name)+'</div><div class="dm">'+esc(dm.n)+'</div></div><span class="chk">✓</span></div>'; }
 
+
+/* ===== REVIEW — surfaces only what is genuinely fading (Feature B pt.2) ===== */
+function viewReview(){ stopSim(); setCrumb([{t:'Review'}]);
+  var q=(typeof Mastery!=='undefined')?Mastery.queue():[];
+  var WHY={'recall fading':['◔','#fbbf24','memory of this is decaying — a quick pass locks it back in'],
+           'you were unsure':['?','#a78bfa','you marked this shaky when you learned it'],
+           'shaky prerequisite':['↑','#f87171','a foundation under something you\'re learning now']};
+  var html='<div class="wrap fade"><div class="eyebrow">Memory</div><h1 class="h-hello" style="font-size:30px">Review</h1>';
+  if(!q.length){
+    html+='<div class="rv-calm"><span class="ic">✓</span><div><b>Nothing is fading.</b><br>'+(Mastery.tracked()?('All '+Mastery.tracked()+' rated concept'+(Mastery.tracked()===1?'':'s')+' are holding — the schedule will call you back exactly when a memory starts to slip.'):'Finish a lesson and rate how solid it felt — from then on this page knows when your memory of it needs refreshing.')+'</div></div>'+
+      '<div style="margin-top:20px"><button class="btn btn-pri btn-sm" data-go="learn">Keep learning →</button></div></div>';
+    main.innerHTML=html; return;
+  }
+  html+='<div class="h-sub" style="display:block!important">'+q.length+' concept'+(q.length===1?'':'s')+' worth a look — each one tells you why.</div><div class="rv-list">'+
+    q.slice(0,12).map(function(it){ var t=topicById(it.id); if(!t) return ''; var dm=DMAP[t.domain]||{c:'#7dd3fc',n:t.domain};
+      var w=WHY[it.why]||WHY['recall fading'];
+      var rt=(it.ret!=null)?Math.round(it.ret*100):null;
+      return '<div class="rv-row" data-id="'+t.id+'"><span class="dot" style="background:'+dm.c+'"></span>'+
+        '<div class="rv-mid"><div class="nm">'+esc(t.name)+'</div><div class="rv-why" style="color:'+w[1]+'" title="'+esc(w[2])+'">'+w[0]+' '+esc(it.why)+'</div></div>'+
+        (rt!=null?'<div class="rv-ret" title="estimated recall right now"><div class="bar"><i style="width:'+rt+'%;background:'+(rt<40?'#f87171':rt<70?'#fbbf24':'#34d399')+'"></i></div><span>'+rt+'%</span></div>':'')+
+        '<button class="btn btn-ghost btn-sm rv-know" data-id="'+t.id+'" title="reschedules it further out">Still know it</button>'+
+        '<button class="btn btn-pri btn-sm rv-open" data-id="'+t.id+'">Revisit →</button></div>'; }).join('')+
+    '</div>'+(q.length>12?'<div class="kg-more">+'+(q.length-12)+' more queued — they\'ll surface as these clear</div>':'')+'</div>';
+  main.innerHTML=html;
+  $$('.rv-open').forEach(function(b){ b.addEventListener('click',function(){ go('lesson',b.dataset.id); }); });
+  $$('.rv-know').forEach(function(b){ b.addEventListener('click',function(){ var r=Mastery.rec(b.dataset.id); Mastery.record(b.dataset.id,4,r?r.conf:1); Me.award(4,'Memory refreshed'); viewReview(); }); });
+}
 function viewLearn(){
   setCrumb([{t:'Learn'}]);
   var html='<div class="wrap fade"><div class="eyebrow">Curriculum</div><h1 class="h-hello" style="font-size:30px">Learn Physics</h1><div class="h-sub">Ten fields, 69 lessons. Start anywhere — each lesson stands on its own.</div><div class="dom-grid">'+

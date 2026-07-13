@@ -5996,6 +5996,7 @@ var HPIE=(function(){
     if(typeof curView!=='undefined'&&curView!=='sandbox') return;
     var k=(e.key||'').toLowerCase();
     if(k==='d'){ debug=!debug; }
+    else if(k==='g'){ try{ var pie2=window.__peqSbx&&__peqSbx.pie; if(pie2&&pie2.cfg){ pie2.cfg.altGrab=!pie2.cfg.altGrab; if(typeof toast==='function') toast(pie2.cfg.altGrab?'Fist-grab ON — no pinch needed':'Fist-grab off','G'); } }catch(x){} }
     else if(k==='m'){ muted=!muted; try{ localStorage.setItem('peq_hpie_mute',muted?'1':'0'); }catch(x){}
       if(typeof toast==='function') toast(muted?'Engine audio muted':'Engine audio on','M'); }
   });
@@ -6118,7 +6119,7 @@ var PIE=(function(){
         if(ib2>=0) intent[side]={bi:ib2,t:performance.now()}; }
       else if(intent[side]&&performance.now()-intent[side].t>450) intent[side]=null;
       grab[side]=null; var ext=0; [[8,6],[12,10],[16,14],[20,18]].forEach(function(f){ if(dist(p[f[0]],p[0])>dist(p[f[1]],p[0])*1.05) ext++; });
-      if(ext>=3) return 'palm'; if(ext<=1) return 'fist'; return 'none'; }
+      if(ext>=3) return 'palm'; if(ext<=1){ if(cfg.altGrab){ acquire(side,p); return 'pinch'; } return 'fist'; } return 'none'; }
     function pinchWorld(p){ var x4=(p[4].fx!=null)?p[4].fx:p[4].x,y4=(p[4].fy!=null)?p[4].fy:p[4].y,x8=(p[8].fx!=null)?p[8].fx:p[8].x,y8=(p[8].fy!=null)?p[8].fy:p[8].y; return {x:wx((x4+x8)/2),y:wy((y4+y8)/2)}; }
     function palmWorld(p){ return {x:wx(p[9].x),y:wy(p[9].y)}; }
     /* fingertip obstacles (world coords) for rope collision — tips are landmarks 4,8,12,16,20 */

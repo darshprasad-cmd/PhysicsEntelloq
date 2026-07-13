@@ -1253,21 +1253,21 @@ body.rd-focus #rd-prog{left:0}
    ============================================================ */
 html[data-theme="light"]{
   color-scheme:light;
-  --bg:#f4f6fb; --bg-1:#eef1f8; --bg-2:#e7ebf4; --card:#ffffff; --card-2:#f7f9fd;
+  --bg:#dceafa; --bg-1:#d1e3f7; --bg-2:#c6dcf4; --card:#ecf4fd; --card-2:#e0edfa;
   --line:rgba(16,24,40,.13); --line-2:rgba(16,24,40,.08);
   --ink:#1a2233; --ink-dim:#3f4b63; --ink-faint:#5d6a85; --ink-ghost:#8a94ab; /* ghost = decorative micro-labels only */
   --blue:#0369a1; --blue-2:#0284c7; --violet:#6d28d9; --emerald:#047857;
   --amber:#b45309; --magenta:#be185d; --red:#dc2626; --cyan:#0e7490;
   --orange:#c2410c; --indigo:#4f46e5;
-  --bg-app:#f4f6fb; --bg-panel:#ffffff; --bg-raise:#eef1f8;
+  --bg-app:#dceafa; --bg-panel:#ecf4fd; --bg-raise:#d1e3f7;
 }
 /* --- app chrome --- */
 html[data-theme="light"] body{background:var(--bg-app)}
 html[data-theme="light"] #bg,
 html[data-theme="light"] .spotlight{display:none} /* cosmos canvas + cursor glow are dark-designed */
-html[data-theme="light"] .side{background:rgba(255,255,255,.75)}
-html[data-theme="light"] .topbar{background:rgba(244,246,251,.8)}
-html[data-theme="light"] .mtab{background:rgba(255,255,255,.92)}
+html[data-theme="light"] .side{background:rgba(236,244,253,.8)}
+html[data-theme="light"] .topbar{background:rgba(220,234,250,.85)}
+html[data-theme="light"] .mtab{background:rgba(236,244,253,.94)}
 html[data-theme="light"] .nav-i:hover,
 html[data-theme="light"] .side-dom:hover{background:rgba(16,24,40,.05)}
 html[data-theme="light"] .side-dom .sd-bot{background:rgba(16,24,40,.04)}
@@ -1633,6 +1633,18 @@ html[data-theme="light"] .lvl-chip.on{background:rgba(3,105,161,.1);border-color
 /* hand + focus controls: prominent, never buried */
 #sbx-hand,#sbx-rail-tg,#sbx-max-tg{color:var(--blue)!important;border-color:rgba(125,211,252,.5)!important;box-shadow:0 0 16px -7px rgba(125,211,252,.7);font-weight:600}
 #sbx-hand:hover,#sbx-rail-tg:hover,#sbx-max-tg:hover{box-shadow:0 0 20px -5px rgba(125,211,252,.9)}
+/* — practice cards enhanced + light-blue lab cards (Pass 69) — */
+.pr-pick{position:relative;overflow:hidden;border-top:2px solid transparent}
+.pr-pick:hover{border-color:var(--dc);transform:translateY(-3px);box-shadow:0 14px 34px -20px var(--dc)}
+.pr-pick .dot{width:44px;height:44px;border-radius:12px;font-size:18px;font-weight:700;display:grid;place-items:center;flex:none;box-shadow:0 0 18px -8px var(--dc)}
+.pr-bar{height:4px;border-radius:99px;background:rgba(125,211,252,.12);margin-top:9px;overflow:hidden}
+.pr-bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--dc),var(--blue));transition:width .5s var(--ease)}
+html[data-theme="light"] .pr-bar{background:rgba(16,24,40,.08)}
+/* lab surfaces in light mode: soft blue, never plain white */
+html[data-theme="light"] .xg-card,html[data-theme="light"] .lab-card,html[data-theme="light"] .lab-blue .rs-card{background:linear-gradient(165deg,#eef6fd,#f8fbff)!important;border-color:rgba(3,105,161,.16)!important}
+html[data-theme="light"] .xg-card:hover,html[data-theme="light"] .lab-card:hover,html[data-theme="light"] .lab-blue .rs-card:hover{border-color:rgba(3,105,161,.4)!important;box-shadow:0 14px 34px -22px rgba(3,105,161,.45)!important}
+html[data-theme="light"] .xg-card .thumb,html[data-theme="light"] .lab-card .thumb{box-shadow:inset 0 0 0 1px rgba(3,105,161,.2)}
+@media(prefers-reduced-motion:reduce){.pr-pick:hover{transform:none}.pr-bar i{transition:none}}
 </style>
 <script>/* THEME bootstrap — set html[data-theme] before first paint (no dark->light flash) */
 (function(){ var m='dark'; try{ m=localStorage.getItem('peq_theme')||'dark'; }catch(e){}
@@ -7904,7 +7916,7 @@ function viewPractice(){
   var html='<div class="wrap fade"><div class="eyebrow">Practice</div><h1 class="h-hello" style="font-size:30px">Prove it to yourself</h1><div class="h-sub">'+(prMode==='exam'?'Five questions, five minutes, one score — exam pressure, zero stakes. Pick a field to start the clock.':'Endless AI-generated questions tuned to your level, with an instant explanation after every answer — the wrong ones teach the most.')+'</div>'+
     modeChips+diffChips+
     '<div class="xp-dom" style="--xc:#7dd3fc55;color:#7dd3fc;margin-top:28px">Pick a field<span class="bar"></span><span class="ct">'+DOMAINS.length+' domains</span></div><div class="rec-grid">'+
-    DOMAINS.map(function(dm){ var done=Me.domDone(dm.k),tot=topicsOf(dm.k).length; return '<button class="rec pr-pick" data-k="'+dm.k+'"><div class="dot" style="background:'+dm.c+'22;color:'+dm.c+'">'+dm.n.charAt(0)+'</div><div style="text-align:left;min-width:0"><div class="nm">'+esc(dm.n)+'</div><div class="dm">'+done+'/'+tot+' concepts mastered'+(prMode==='exam'?' · timed 5Q':'')+'</div></div></button>'; }).join('')+
+    DOMAINS.map(function(dm){ var done=Me.domDone(dm.k),tot=topicsOf(dm.k).length; var pc=tot?Math.round(done/tot*100):0; return '<button class="rec pr-pick" data-k="'+dm.k+'" style="--dc:'+dm.c+'"><div class="dot" style="background:'+dm.c+'22;color:'+dm.c+'">'+dm.n.charAt(0)+'</div><div style="text-align:left;min-width:0;flex:1"><div class="nm">'+esc(dm.n)+'</div><div class="dm">'+done+'/'+tot+' concepts mastered'+(prMode==='exam'?' · timed 5Q':'')+'</div><div class="pr-bar"><i style="width:'+pc+'%"></i></div></div></button>'; }).join('')+
     '</div><div id="pr-area" style="margin-top:28px"></div></div>';
   main.innerHTML=html;
   $$('.pr-diff [data-m]').forEach(function(c){ c.addEventListener('click',function(){ prMode=c.dataset.m; viewPractice(); }); });

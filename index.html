@@ -6638,6 +6638,13 @@ var PIE=(function(){
     /* InteractionRenderer v2 — quiet, precise, premium: one thin skeleton pass, six landmarks,
        a breathing field, a sagging-to-taut tether. The hand should feel like an instrument. */
     function draw(c,Wd,Hd){ var now=performance.now(); try{ HPIE.frame(c,Wd,Hd,now); }catch(e){} if(!on)return;
+      var nH=(pts.Left?1:0)+(pts.Right?1:0);
+      if(nH){ c.save(); c.font='10px JetBrains Mono'; var hlbl=(nH===2)?'2 HANDS · BIMANUAL READY':'1 HAND';
+        var htw=c.measureText(hlbl).width;
+        c.fillStyle='rgba(4,7,14,.72)'; c.fillRect(10,10,htw+44,22);
+        c.strokeStyle='rgba(125,211,252,.4)'; c.lineWidth=1; c.strokeRect(10,10,htw+44,22);
+        ['Left','Right'].forEach(function(hs2,hi3){ c.globalAlpha=pts[hs2]?1:.22; c.fillStyle=COL[hs2]; c.beginPath(); c.arc(22+hi3*13,21,4,0,7); c.fill(); });
+        c.globalAlpha=1; c.fillStyle='#bfe3ff'; c.fillText(hlbl,46,25); c.restore(); }
       for(var i=parts.length-1;i>=0;i--){ var pa=parts[i]; pa.x+=pa.vx; pa.y+=pa.vy; pa.vy+=0.04; pa.life-=0.04; if(pa.life<=0){parts.splice(i,1);continue;} c.globalAlpha=pa.life*0.55; c.fillStyle=pa.c; c.beginPath(); c.arc(pa.x,pa.y,pa.life*2.2,0,7); c.fill(); } c.globalAlpha=1;
       function tether(x1,y1,x2,y2,col2,ten){
         try{ HPIE.ribbon(c,x1,y1,x2,y2,col2,ten,now); return; }catch(e){}

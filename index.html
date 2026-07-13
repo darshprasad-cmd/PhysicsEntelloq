@@ -1674,6 +1674,7 @@ html[data-theme="light"] .cc-flow span,html[data-theme="light"] .lm-tag,html[dat
 .st-row{display:flex;align-items:center;justify-content:space-between;gap:16px;font-size:13.5px;color:var(--ink-dim)}
 #tu-key{display:none!important}
 .uni-ctrls button{width:auto;min-width:44px;padding:0 10px;font-family:var(--mono);font-size:10px;letter-spacing:.05em}
+.side-tog,#side-domains{display:none!important}
 </style>
 <script>/* THEME bootstrap — set html[data-theme] before first paint (no dark->light flash) */
 (function(){ var m='dark'; try{ m=localStorage.getItem('peq_theme')||'dark'; }catch(e){}
@@ -1698,7 +1699,7 @@ html[data-theme="light"] .cc-flow span,html[data-theme="light"] .lm-tag,html[dat
     </div>
     <div class="side-scroll">
       <div class="nav-i" id="nav-cmdk"><span class="ic">⌕</span> Search<span class="kbd-hint">Ctrl K</span></div>
-      <div class="nav-i" data-go="settings"><span class="ic">⚙</span> Settings</div>
+      
       <div class="nav-i" data-go="home"><span class="ic">⌂</span> Home</div>
       <div class="nav-i" data-go="universe"><span class="ic">✦</span> Universe</div>
       <div class="nav-i" data-go="learn"><span class="ic">◳</span> Learn</div>
@@ -1721,6 +1722,7 @@ html[data-theme="light"] .cc-flow span,html[data-theme="light"] .lm-tag,html[dat
       </div>
     </div>
     
+    <div class="nav-i" data-go="settings" style="margin-top:6px"><span class="ic">⚙</span> Settings</div>
     <div class="side-card lv-card" data-go="progress" role="button" tabindex="0" title="Open your progress">
       <div class="lv-row">
         <div class="lv-ring"><svg viewBox="0 0 42 42"><circle cx="21" cy="21" r="18" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="3.5"/><circle id="lv-fg" cx="21" cy="21" r="18" fill="none" stroke="url(#lg)" stroke-width="3.5" stroke-linecap="round" stroke-dasharray="113" stroke-dashoffset="113"/><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7dd3fc"/><stop offset="1" stop-color="#a78bfa"/></linearGradient></defs></svg><span class="n" id="lv-n">1</span></div>
@@ -6466,24 +6468,21 @@ var HPIE=(function(){
   }
 
   /* ---- frame — one engine tick, rendered beneath the hand overlay ---- */
-  var lastTotE=0;
+  var lastTotE=0,foff=null,fctx=null,fimg=null;
   function frame(c,Wd,Hd,now){
     vw=Wd||1; vh=Hd||1; frameN++;
     if(H2.Left&&H2.Left.t&&now-H2.Left.t>140) H2.Left.conf*=.93;   /* stale observations lose confidence — ghost hands fade, energy dissipates */
     if(H2.Right&&H2.Right.t&&now-H2.Right.t>140) H2.Right.conf*=.93;
     quality(now);
     lastTotE=fieldStep();
-    /* temporal memory — space remembers (very faint residual structure) */
-    if(Q>0){ var x2,y2;
-      for(y2=0;y2<GH;y2+=2) for(x2=0;x2<GW;x2+=2){ var m=MEM[gi(x2,y2)];
-        if(m>.12){ c.globalAlpha=Math.min(.05,m*.03); c.fillStyle='#4cb8f5';
-          c.fillRect(x2/GW*vw,y2/GH*vh,vw/GW*2,vh/GH*2); } } }
-    /* live field glow — energy is the only thing that glows */
-    var x3,y3;
-    for(y3=0;y3<GH;y3++) for(x3=0;x3<GW;x3++){ var e=FE[gi(x3,y3)];
-      if(e>.22){ c.globalAlpha=Math.min(.16,e*.09); c.fillStyle='#7dd3fc';
-        c.beginPath(); c.arc((x3+.5)/GW*vw,(y3+.5)/GH*vh,3+e*5,0,7); c.fill(); } }
-    c.globalAlpha=1;
+    /* field + memory in ONE ImageData composite — two-hand sweeps stay 60fps */
+    if(!fimg){ foff=document.createElement('canvas'); foff.width=GW; foff.height=GH; fctx=foff.getContext('2d'); fimg=fctx.createImageData(GW,GH); }
+    var fpx=fimg.data,fi;
+    for(fi=0;fi<FE.length;fi++){ var fe=FE[fi],fm=(Q>0)?MEM[fi]:0;
+      var fa=(fe>.2?Math.min(50,fe*32):0)+(fm>.12?Math.min(14,fm*10):0);
+      var fk=fi*4; fpx[fk]=125; fpx[fk+1]=211; fpx[fk+2]=252; fpx[fk+3]=fa; }
+    fctx.putImageData(fimg,0,0);
+    c.imageSmoothingEnabled=true; c.drawImage(foff,0,0,vw,vh);
     particleStep(c);
     try{ bimanualStep(c); }catch(e){}
     audioFrame(lastTotE);

@@ -6668,7 +6668,7 @@ var PIE=(function(){
       var rt=$('#sbx-rail-tg'); if(rt) rt.addEventListener('click',function(){ vw.rail=!vw.rail; ap(); toast(vw.rail?'Control panel back':'Stage maximized','⬒'); });
       var mt=$('#sbx-max-tg'); if(mt) mt.addEventListener('click',function(){ vw.max=!vw.max; ap(); toast(vw.max?'Focus — sidebar hidden':'Sidebar restored','⛶'); });
       ap(); })();
-    ['useG','g','useC','walls'].forEach(function(k){ var c=$('#sbx-f-'+k); if(c)c.addEventListener('change',function(){ if(k==='g')P.g=this.checked?240:0; else P[k]=this.checked; }); });
+    ['useG','g','useC','walls'].forEach(function(k){ var c=$('#sbx-f-'+k); if(c)c.addEventListener('change',function(){ if(k==='g'){ if(this.checked){ P.g=(P._gLast&&P._gLast>0)?P._gLast:240; } else { if(P.g>0)P._gLast=P.g; P.g=0; } } else P[k]=this.checked; }); });
     [['Bz','Bz'],['Ey','Ey'],['Ex','Ex'],['G','G'],['kc','kc'],['ropeStiff','ropeStiff']].forEach(function(p){ var c=$('#sbx-cs-'+p[0]); if(c)c.addEventListener('input',function(){ P[p[1]]=+this.value; set('sbx-cv-'+p[0],Math.round(this.value*100)/100); if(STILL)draw(); }); });
     ['physicalDrag','hands','webcam','hud','glow','buildMode'].forEach(function(k){ var c=$('#sbx-pie-'+k); if(c)c.addEventListener('change',function(){ PIE.set(k,this.checked); }); });
     ['grabRadius','spring','force','smooth'].forEach(function(k){ var c=$('#sbx-pie-'+k); if(c)c.addEventListener('input',function(){ var v=+this.value; PIE.set(k,v); var b=$('#sbx-piv-'+k); if(b)b.textContent=v; }); });

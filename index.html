@@ -4874,6 +4874,91 @@ var Theory=(function(){
         spawn(); nChips(); animate(step,draw,{sub:1,warm:150});
       } },
 
+    /* ============ STABLE FLUIDS — real Navier–Stokes (Stam 2003) ============ */
+    { id:'stable-fluids', name:'Stable Fluids — Navier–Stokes Live', tag:'semi-Lagrangian advection · pressure projection', icon:'≋', c:'#7dd3fc',
+      blurb:"Joe Stam's unconditionally stable solver — the algorithm behind every movie smoke plume. Velocity is advected along its own flow, then a pressure solve projects the field back to divergence-free (incompressible) every frame; vorticity confinement re-injects the small swirls numerics smear away. Drag to stir dye into the flow, or switch on the wind tunnel and watch a Kármán vortex street peel off the obstacle. The divergence readout is the proof: after projection it sits at ~0.",
+      init:function(stage,side){
+        stage.innerHTML='<div class="th-cwrap"><canvas class="th-cv" id="sf-c" style="height:420px;cursor:crosshair;touch-action:none"></canvas><div class="th-hint">drag to inject dye + velocity · wind tunnel shows vortex shedding</div></div>';
+        var NX=88,NY=56,SZ=NX*NY;
+        function A(){ return new Float32Array(SZ); }
+        var u=A(),v=A(),u0=A(),v0=A(),dye=A(),dye0=A(),p=A(),div=A(),curl=A();
+        var vort=2.2,wind=false,resid=0,dt=1/60;
+        function I(x,y){ return y*NX+x; }
+        function bnd(f){ var x,y;
+          for(x=0;x<NX;x++){ f[I(x,0)]=f[I(x,1)]; f[I(x,NY-1)]=f[I(x,NY-2)]; }
+          for(y=0;y<NY;y++){ f[I(0,y)]=f[I(1,y)]; f[I(NX-1,y)]=f[I(NX-2,y)]; } }
+        function advect(d,d0,uu,vv){ var x,y;
+          for(y=1;y<NY-1;y++)for(x=1;x<NX-1;x++){ var k=I(x,y);
+            var bx=x-dt*NX*uu[k],by=y-dt*NX*vv[k];
+            if(bx<.5)bx=.5; if(bx>NX-1.5)bx=NX-1.5; if(by<.5)by=.5; if(by>NY-1.5)by=NY-1.5;
+            var x0=bx|0,y0=by|0,fx=bx-x0,fy=by-y0;
+            d[k]=(d0[I(x0,y0)]*(1-fx)+d0[I(x0+1,y0)]*fx)*(1-fy)+(d0[I(x0,y0+1)]*(1-fx)+d0[I(x0+1,y0+1)]*fx)*fy; }
+          bnd(d); }
+        function project(){ var x,y,it;
+          for(y=1;y<NY-1;y++)for(x=1;x<NX-1;x++){ var k=I(x,y);
+            div[k]=-.5*(u[k+1]-u[k-1]+v[k+NX]-v[k-NX])/NX; p[k]=0; }
+          bnd(div);
+          for(it=0;it<22;it++){ for(y=1;y<NY-1;y++)for(x=1;x<NX-1;x++){ var k2=I(x,y);
+              p[k2]=(div[k2]+p[k2-1]+p[k2+1]+p[k2-NX]+p[k2+NX])*.25; } bnd(p); }
+          resid=0;
+          for(y=1;y<NY-1;y++)for(x=1;x<NX-1;x++){ var k3=I(x,y);
+            u[k3]-=.5*NX*(p[k3+1]-p[k3-1]); v[k3]-=.5*NX*(p[k3+NX]-p[k3-NX]); }
+          for(y=1;y<NY-1;y++)for(x=1;x<NX-1;x++){ var k4=I(x,y);
+            resid+=Math.abs(-.5*(u[k4+1]-u[k4-1]+v[k4+NX]-v[k4-NX])/NX); }
+          bnd(u); bnd(v); }
+        function confine(){ var x,y;
+          for(y=1;y<NY-1;y++)for(x=1;x<NX-1;x++){ var k=I(x,y);
+            curl[k]=(v[k+1]-v[k-1]-u[k+NX]+u[k-NX])*.5; }
+          for(y=2;y<NY-2;y++)for(x=2;x<NX-2;x++){ var k5=I(x,y);
+            var gx=Math.abs(curl[k5+1])-Math.abs(curl[k5-1]),gy=Math.abs(curl[k5+NX])-Math.abs(curl[k5-NX]);
+            var m=Math.sqrt(gx*gx+gy*gy)+1e-5;
+            u[k5]+=dt*vort*(gy/m)*curl[k5]; v[k5]-=dt*vort*(gx/m)*curl[k5]; } }
+        function step(){ var x,y,k;
+          if(wind){ for(y=NY*0.3|0;y<NY*0.7;y++){ u[I(1,y|0)]=1.4; dye[I(1,(y|0))]+= (((y|0)%6)<3)?.5:0; }
+            var ox=NX*0.28|0,oy=NY*0.5|0,r2=5;
+            for(y=-r2;y<=r2;y++)for(x=-r2;x<=r2;x++){ if(x*x+y*y<=r2*r2){ k=I(ox+x,oy+y); u[k]=0; v[k]=0; } } }
+          confine();
+          u0.set(u); v0.set(v);
+          advect(u,u0,u0,v0); advect(v,v0,u0,v0);
+          project();
+          dye0.set(dye); advect(dye,dye0,u,v);
+          for(k=0;k<SZ;k++){ dye[k]*=.995; u[k]*=.999; v[k]*=.999; }
+        }
+        var cv=$('#sf-c',stage),ctx=cv.getContext('2d'),img=null,px=null,last=null;
+        cv.addEventListener('pointerdown',function(e){ try{cv.setPointerCapture(e.pointerId);}catch(x){} last=null; drag(e); });
+        cv.addEventListener('pointermove',function(e){ if(e.buttons) drag(e); });
+        function drag(e){ var r=cv.getBoundingClientRect(),gx=(e.clientX-r.left)/r.width*NX|0,gy=(e.clientY-r.top)/r.height*NY|0;
+          if(gx<1||gx>NX-2||gy<1||gy>NY-2) return;
+          var dxv=last?(gx-last.x):0,dyv=last?(gy-last.y):0; last={x:gx,y:gy};
+          var k=I(gx,gy); u[k]+=dxv*.9; v[k]+=dyv*.9; dye[k]=Math.min(3,dye[k]+1.4);
+          if(gx+1<NX)dye[k+1]=Math.min(3,dye[k+1]+.7); if(gy+1<NY)dye[k+NX]=Math.min(3,dye[k+NX]+.7); }
+        function draw(){ var s=fitC(cv,ctx),W=s.w,H=s.h;
+          step();
+          if(!img||img.width!==NX){ img=ctx.createImageData(NX,NY); px=img.data; }
+          var k,c2;
+          for(k=0;k<SZ;k++){ var dv=dye[k]; c2=k*4;
+            var t2=Math.min(1,dv);
+            px[c2]=8+117*t2*t2; px[c2+1]=12+199*t2; px[c2+2]=22+230*Math.sqrt(t2); px[c2+3]=255; }
+          var off=document.createElement('canvas'); off.width=NX; off.height=NY;
+          off.getContext('2d').putImageData(img,0,0);
+          ctx.imageSmoothingEnabled=true;
+          ctx.drawImage(off,0,0,W,H);
+          if(wind){ ctx.strokeStyle='rgba(125,211,252,.5)'; ctx.beginPath(); ctx.arc(NX*0.28/NX*W, .5*H, 5/NX*W, 0, 7); ctx.stroke(); }
+          var mx=0; for(k=0;k<SZ;k++){ var sp=u[k]*u[k]+v[k]*v[k]; if(sp>mx)mx=sp; }
+          ctx.fillStyle='rgba(163,177,204,.9)'; ctx.font='10px JetBrains Mono';
+          ctx.fillText('div residual '+resid.toExponential(1)+'   max|u| '+Math.sqrt(mx).toFixed(2)+'   vorticity '+vort.toFixed(1),10,H-10);
+        }
+        side.innerHTML='<div style="font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:var(--ink-faint);margin:0 0 8px">FLOW</div>'+
+          '<button class="lvl-chip" id="sf-wind">wind tunnel</button> <button class="lvl-chip" id="sf-clear">clear</button>'+
+          '<div style="font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:var(--ink-faint);margin:14px 0 6px">VORTICITY</div>'+
+          '<input type="range" id="sf-vort" min="0" max="6" step="0.2" value="2.2" style="width:100%">';
+        $('#sf-wind',side).addEventListener('click',function(){ wind=!wind; this.classList.toggle('on',wind); });
+        $('#sf-clear',side).addEventListener('click',function(){ var k; for(k=0;k<SZ;k++){ u[k]=v[k]=dye[k]=0; } });
+        $('#sf-vort',side).addEventListener('input',function(){ vort=+this.value; });
+        var stop=loop(draw);
+        return { stop:stop };
+      } },
+
     /* ============ BOIDS — flocking / swarm intelligence ============ */
     { id:'boids', name:'Boids — Flocking & Swarm Intelligence', tag:'Emergence · Reynolds 1986', icon:'⋀', c:'#22d3ee',
       blurb:"No leader, no plan, and no boid that can see past its neighbours — yet the whole flock moves as one. Craig Reynolds showed in 1986 that three tiny local rules — steer away from crowding (separation), match your neighbours' heading (alignment), and drift toward their centre (cohesion) — are enough to conjure the swirling murmurations of starlings. Move your mouse through the flock to scatter it, and loose a hawk to watch it split and re-form. Emergence: complex order from simple rules.",
@@ -8157,7 +8242,7 @@ function viewLab(){
       ['Foundations — the language of motion','#7dd3fc','States, symmetries and the deepest reformulations of mechanics.',['phase-space','least-action','vector-calculus']],
       ['Chaos & Nonlinearity','#f87171','Where determinism stops meaning predictability.',['double-pendulum','lorenz','bifurcation']],
       ['Computational Physics','#a78bfa','How physics is actually solved when equations have no closed form.',['numerical-methods','integrators']],
-      ['Emergence & Complexity','#34d399','Simple local rules, astonishing global behaviour.',['maxwell-boltzmann','reaction-diffusion','chladni','boids','particle-life','soft-body']],
+      ['Emergence & Complexity','#34d399','Simple local rules, astonishing global behaviour.',['maxwell-boltzmann','reaction-diffusion','stable-fluids','chladni','boids','particle-life','soft-body']],
       ['Quantum & Relativity','#c084fc','The two great revolutions — wavefunctions and spacetime.',['schrodinger','relativity','gr-precession']],
       ['Light & the Cosmos','#fbbf24','From ray optics to the fate of stars and the particle zoo.',['optics-bench','standard-model','stellar-evolution']]
     ];
@@ -10742,7 +10827,7 @@ var LabVig=(function(){
     for(i=0;i<=W;i+=2) p.push([i,H/2-Math.sin(i/W*9-t*1.8)*H*.3]);
     pl(x,p,BL,1.4); }
   };
-  var IDMAP={'phase-space':'orbit','least-action':'action','vector-calculus':'pen','double-pendulum':'chaos','lorenz':'chaos','bifurcation':'chaos','numerical-methods':'race','integrators':'race','maxwell-boltzmann':'spots','reaction-diffusion':'spots'
+  var IDMAP={'phase-space':'orbit','least-action':'action','vector-calculus':'pen','double-pendulum':'chaos','lorenz':'chaos','bifurcation':'chaos','numerical-methods':'race','integrators':'race','maxwell-boltzmann':'spots','reaction-diffusion':'spots','stable-fluids':'wave'
 ,'chladni':'wave','boids':'flock','particle-life':'flock','schrodinger':'quantum','relativity':'orbit','gr-precession':'orbit','optics-bench':'lens','standard-model':'atom','stellar-evolution':'star'};
   function pick(card){
     var id=card.dataset.tid||card.dataset.thjump||'';

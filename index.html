@@ -1570,6 +1570,13 @@ button:focus-visible,[data-go]:focus-visible,[data-link]:focus-visible,a:focus-v
 .sk-c{height:150px;border-radius:13px;border:1px solid var(--line-2);background:linear-gradient(90deg,rgba(125,211,252,.04),rgba(125,211,252,.1),rgba(125,211,252,.04));background-size:200% 100%;animation:skSh 1.1s linear infinite}
 @keyframes skSh{0%{background-position:200% 0}100%{background-position:-200% 0}}
 @media(prefers-reduced-motion:reduce){.sk-b,.sk-c{animation:none}}
+/* No new CSS required — the module reuses the existing Theory-lab design system verbatim:
+   .th-cwrap / .th-cv (dark stage canvases), .th-hint, .th-slider + .sl, .lvl-chip (+ .on),
+   .mini-b, .th-stats + stat(), .th-note, var(--mono) / var(--ink-faint).
+   All module-specific styling is inline, exactly like the reaction-diffusion module. */
+/* No new CSS required — the module reuses the existing Theory-Lab classes:
+   .th-cwrap .th-cv .th-hint .th-slider .sl .mini-b .lvl-chip .th-stats .th-stat .th-note
+   (same set used by the reaction-diffusion / boids / particle-life modules). */
 </style>
 <script>/* THEME bootstrap — set html[data-theme] before first paint (no dark->light flash) */
 (function(){ var m='dark'; try{ m=localStorage.getItem('peq_theme')||'dark'; }catch(e){}
@@ -4630,6 +4637,243 @@ var Theory=(function(){
         $('#rd-clr').addEventListener('click',function(){ clr(); if(STILL)draw(); });
         seed(); animate(step,draw,{sub:1,warm:120});
       } },
+    /* ============ CHLADNI PLATES — standing-wave nodal patterns ============ */
+    { id:'chladni', name:'Chladni Plates — Sound Made Visible', tag:'Chladni figures · standing waves', icon:'▦', c:'#7dd3fc',
+      blurb:"Bow the edge of a sand-dusted plate and the grains leap where it shakes hardest and come to rest where it does not move at all — tracing the nodal lines of a two-dimensional standing wave. Ernst Chladni's 1787 figures were the first pictures of sound. Sweep the drive through the square plate's resonances (n,m), flip between the two degenerate mode combinations, and watch thousands of grains bounce their way onto the exact analytic nodal set — then drag on the plate to stir them and see the pattern heal.",
+      init:function(stage,side){
+        stage.innerHTML='<div class="th-cwrap"><canvas class="th-cv" id="ch-c" style="height:400px;cursor:crosshair"></canvas><canvas class="th-cv" id="ch-r" style="height:46px;margin-top:8px;cursor:ew-resize;touch-action:none"></canvas><div class="th-hint">drag the resonance strip to sweep the drive · drag on the plate to stir the sand</div></div>';
+        function L(t){ return '<div style="font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:var(--ink-faint);margin:10px 0 6px">'+t+'</div>'; }
+        var PI=Math.PI,MODES=[],mi,mj;
+        for(mj=2;mj<=7;mj++)for(mi=1;mi<mj;mi++)MODES.push([mi,mj]);
+        MODES.sort(function(a,b){ return (a[0]*a[0]+a[1]*a[1])-(b[0]*b[0]+b[1]*b[1]); });
+        var MC=MODES.length; /* 21 modes, all eigenvalues n²+m² distinct (5…85) */
+        side.innerHTML=L('DRIVE FREQUENCY')+
+          '<div class="th-slider" style="margin:4px 0 8px"><span>mode <b id="ch-mv" style="font-family:var(--mono);color:#7dd3fc"></b></span><input class="sl" id="ch-f" type="range" min="0" max="'+(MC-1)+'" step="0.01" value="2"></div>'+
+          L('DEGENERATE COMBINATION')+
+          '<div id="ch-cmb" style="display:flex;gap:6px;flex-wrap:wrap"><button class="lvl-chip on" data-s="1">＋ symmetric</button><button class="lvl-chip" data-s="-1">− antisymmetric</button></div>'+
+          L('SAND')+
+          '<div id="ch-nn" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">'+[2000,4000,8000].map(function(k){ return '<button class="lvl-chip'+(k===4000?' on':'')+'" data-n="'+k+'">'+(k/1000)+'k grains</button>'; }).join('')+'</div>'+
+          '<button class="mini-b" id="ch-scat">✦ Re-scatter sand</button>'+
+          '<div class="th-stats" id="ch-st" style="margin-top:12px"></div>'+
+          '<div class="th-note">The mechanism is mechanics, not magic: a bouncing grain is tossed with energy ∝ (local amplitude)², so it random-walks with a hop that vanishes on the <b>nodal lines</b> ψ=0 and, bounce after bounce, drifts down the gradient of amplitude² — where the plate is still, the sand stays. The figure is the zero set of ψ = cos(nπx/L)cos(mπy/L) ± cos(mπx/L)cos(nπy/L): on a square the (n,m) and (m,n) modes are <b>degenerate</b> — same frequency — and it is their superposition that draws the curved figures; the ± chip picks which one. In the − combination ψ(x,y) = −ψ(y,x), so the main diagonal is <i>always</i> a nodal line and the corners are nodes; in ＋ the corners are antinodes. Thin-plate resonances scale as f ∝ n²+m². (Ultra-fine powder does the opposite — acoustic streaming in the air herds it onto the <i>antinodes</i>.)</div>';
+        /* ---- state ---- */
+        var NMAX=8000,N=4000,sgn=1,sIdx=2,cur=null,i0;
+        var PX=new Float32Array(NMAX),PY=new Float32Array(NMAX);
+        for(i0=0;i0<NMAX;i0++){ PX[i0]=Math.random(); PY[i0]=Math.random(); }
+        var BASE=0.0005,K=0.02,LMAX=0.03,DR=0.0012,stir={x:0,y:0,on:false};
+        var MA1=0,MB1=0,MA2=0,MB2=0,W0=1,W1=0,PGO=[0,0,0];
+        function lam(md){ return md[0]*md[0]+md[1]*md[1]; }
+        function modeAt(s){ if(!(s>=0))s=0; if(s>MC-1)s=MC-1; var i=Math.floor(s); if(i>MC-2)i=MC-2; var f=s-i; return {A:MODES[i],B:MODES[i+1],f:f,i:i,lam:(1-f)*lam(MODES[i])+f*lam(MODES[i+1])}; }
+        /* ψ = cos(nπx)cos(mπy) + s·cos(mπx)cos(nπy) on the unit square, blended between the two modes bracketing the drive. pg fills o = [ψ, ∂ψ/∂x, ∂ψ/∂y] (analytic). */
+        function pg(x,y,o){
+          var ca1x=Math.cos(MA1*x),sa1x=Math.sin(MA1*x),cb1x=Math.cos(MB1*x),sb1x=Math.sin(MB1*x),
+              ca1y=Math.cos(MA1*y),sa1y=Math.sin(MA1*y),cb1y=Math.cos(MB1*y),sb1y=Math.sin(MB1*y);
+          var p=W0*(ca1x*cb1y+sgn*cb1x*ca1y),
+              gx=W0*(-MA1*sa1x*cb1y-sgn*MB1*sb1x*ca1y),
+              gy=W0*(-MB1*ca1x*sb1y-sgn*MA1*cb1x*sa1y);
+          if(W1>0){ var ca2x=Math.cos(MA2*x),sa2x=Math.sin(MA2*x),cb2x=Math.cos(MB2*x),sb2x=Math.sin(MB2*x),
+              ca2y=Math.cos(MA2*y),sa2y=Math.sin(MA2*y),cb2y=Math.cos(MB2*y),sb2y=Math.sin(MB2*y);
+            p+=W1*(ca2x*cb2y+sgn*cb2x*ca2y);
+            gx+=W1*(-MA2*sa2x*cb2y-sgn*MB2*sb2x*ca2y);
+            gy+=W1*(-MB2*ca2x*sb2y-sgn*MA2*cb2x*sa2y); }
+          o[0]=p; o[1]=gx; o[2]=gy; }
+        /* ---- grain transport: hop length ∝ amplitude², plus bounce drift −∇(amp²); both bounded, positions reflected, NaN-recovered ---- */
+        function step(){ var i,x,y,p,a,l,th,dx,dy,dm;
+          for(i=0;i<N;i++){ x=PX[i]; y=PY[i];
+            pg(x,y,PGO); p=PGO[0]; a=p*0.5;
+            l=BASE+K*a*a; if(l>LMAX)l=LMAX;
+            dx=-DR*p*PGO[1]*0.5; dy=-DR*p*PGO[2]*0.5;
+            dm=dx*dx+dy*dy; if(dm>0.0004){ dm=0.02/Math.sqrt(dm); dx*=dm; dy*=dm; }
+            th=Math.random()*6.283185307;
+            x+=l*Math.cos(th)+dx; y+=l*Math.sin(th)+dy;
+            if(stir.on){ var qx=x-stir.x,qy=y-stir.y,q2=qx*qx+qy*qy; if(q2<0.0081){ var kk=0.02*(1-Math.sqrt(q2)/0.09),ta=Math.random()*6.283185307; x+=kk*Math.cos(ta); y+=kk*Math.sin(ta); } }
+            if(!isFinite(x)||!isFinite(y)){ x=Math.random(); y=Math.random(); }
+            if(x<0)x=-x; else if(x>1)x=2-x; if(y<0)y=-y; else if(y>1)y=2-y;
+            if(x<0||x>1)x=Math.random(); if(y<0||y>1)y=Math.random();
+            PX[i]=x; PY[i]=y; } }
+        /* ---- amplitude² field, recomputed only when the mode changes ---- */
+        var FG=110,off=document.createElement('canvas'); off.width=FG; off.height=FG;
+        var octx=off.getContext('2d'),img=octx.createImageData(FG,FG),dirty=true;
+        function field(){ var d=img.data,p=0,gy,gx,o=[0,0,0]; for(gy=0;gy<FG;gy++)for(gx=0;gx<FG;gx++){ pg((gx+0.5)/FG,(gy+0.5)/FG,o); var v=o[0]*0.5,w=v*v; if(w>1)w=1;
+            d[p++]=6+40*w; d[p++]=12+90*w; d[p++]=22+150*w; d[p++]=255; } octx.putImageData(img,0,0); dirty=false; }
+        function stx(id,v){ var e=document.getElementById(id); if(e)e.textContent=v; }
+        function uOf(l){ return (l-5)/80; }
+        function strip(){ var c=$('#ch-r'); if(!c)return; var ctx=fit(c),W=c._W,H=c._H,i;
+          ctx.clearRect(0,0,W,H); var x0=12,x1=W-12,base=H-13;
+          ctx.font='9px JetBrains Mono,monospace'; ctx.fillStyle='rgba(159,177,208,.55)'; ctx.fillText('f ∝ n²+m²',x0,10);
+          ctx.strokeStyle='rgba(125,211,252,.22)'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(x0,base); ctx.lineTo(x1,base); ctx.stroke();
+          var ni=cur.f<0.5?cur.i:cur.i+1;
+          for(i=0;i<MC;i++){ var X=x0+uOf(lam(MODES[i]))*(x1-x0),on=(i===ni);
+            ctx.strokeStyle=on?'#7dd3fc':'rgba(125,211,252,.42)'; ctx.lineWidth=on?2:1;
+            ctx.beginPath(); ctx.moveTo(X,base); ctx.lineTo(X,base-(on?13:7)); ctx.stroke(); }
+          var Xc=x0+uOf(cur.lam)*(x1-x0);
+          ctx.strokeStyle='rgba(234,242,255,.85)'; ctx.lineWidth=1.2; ctx.beginPath(); ctx.moveTo(Xc,base); ctx.lineTo(Xc,7); ctx.stroke();
+          ctx.fillStyle='#eaf2ff'; ctx.beginPath(); ctx.moveTo(Xc,base+2); ctx.lineTo(Xc-4,base+9); ctx.lineTo(Xc+4,base+9); ctx.closePath(); ctx.fill();
+          ctx.font='10px JetBrains Mono,monospace'; ctx.fillStyle='#7dd3fc';
+          var lb='('+MODES[ni][0]+','+MODES[ni][1]+')',tw=ctx.measureText(lb).width,lx=Math.max(2,Math.min(W-tw-2,Xc-tw/2));
+          ctx.fillText(lb,lx,base-16); }
+        function draw(){ var c=$('#ch-c'); if(!c)return; var ctx=fit(c),W=c._W,H=c._H,i;
+          if(dirty)field();
+          ctx.imageSmoothingEnabled=true; ctx.clearRect(0,0,W,H); ctx.drawImage(off,0,0,W,H);
+          ctx.fillStyle='rgba(255,236,200,0.9)';
+          for(i=0;i<N;i++) ctx.fillRect(PX[i]*W-0.8,PY[i]*H-0.8,1.6,1.6);
+          /* live verification metric: first-order distance to the analytic nodal set, d = |ψ|/|∇ψ|, sampled */
+          var o=PGO,sum=0,cnt=0,near=0,px=Math.min(W,H),sp=Math.max(1,Math.floor(N/500)),d;
+          for(i=0;i<N;i+=sp){ pg(PX[i],PY[i],o); var gm=Math.sqrt(o[1]*o[1]+o[2]*o[2])+1e-6; d=Math.abs(o[0])/gm; if(d>0.08)d=0.08; d*=px; sum+=d; if(d<3)near++; cnt++; }
+          var st=$('#ch-st'); if(st&&!st.firstChild) st.innerHTML=stat('mode (n,m)','ch-x1','#7dd3fc')+stat('drive f / f(1,2)','ch-x2')+stat('mean node dist','ch-x3','#34d399')+stat('settled <3 px','ch-x4')+stat('grains','ch-x5');
+          var pure=cur.f<0.02||cur.f>0.98,md=cur.f>0.98?cur.B:cur.A;
+          stx('ch-x1',pure?('('+md[0]+','+md[1]+') '+(sgn>0?'＋':'−')):('('+cur.A[0]+','+cur.A[1]+')→('+cur.B[0]+','+cur.B[1]+')'));
+          stx('ch-x2',(cur.lam/5).toFixed(2)+'×');
+          stx('ch-x3',cnt?(sum/cnt).toFixed(1)+' px':'—');
+          stx('ch-x4',cnt?Math.round(near/cnt*100)+'%':'—');
+          stx('ch-x5',N);
+          strip(); }
+        function setMode(s){ if(!isFinite(s))s=0; if(s<0)s=0; if(s>MC-1)s=MC-1; var r=Math.round(s); if(Math.abs(s-r)<0.07)s=r;
+          sIdx=s; cur=modeAt(s); MA1=cur.A[0]*PI; MB1=cur.A[1]*PI; MA2=cur.B[0]*PI; MB2=cur.B[1]*PI; W0=1-cur.f; W1=cur.f; dirty=true;
+          var sl=$('#ch-f'); if(sl&&Math.abs(+sl.value-s)>0.005)sl.value=s;
+          var pure=cur.f<0.02||cur.f>0.98,md=cur.f>0.98?cur.B:cur.A,e=$('#ch-mv');
+          if(e)e.textContent=pure?('('+md[0]+','+md[1]+')'):('('+cur.A[0]+','+cur.A[1]+') '+Math.round((1-cur.f)*100)+'% + ('+cur.B[0]+','+cur.B[1]+') '+Math.round(cur.f*100)+'%'); }
+        function still(){ if(STILL){ for(var i=0;i<260;i++)step(); draw(); } }
+        /* ---- wiring ---- */
+        setMode(sIdx);
+        $('#ch-f').addEventListener('input',function(){ setMode(+this.value); still(); });
+        $$('#ch-cmb .lvl-chip').forEach(function(b){ b.addEventListener('click',function(){ sgn=+b.dataset.s; dirty=true; $$('#ch-cmb .lvl-chip').forEach(function(x){ x.classList.toggle('on',x===b); }); setMode(sIdx); still(); }); });
+        $$('#ch-nn .lvl-chip').forEach(function(b){ b.addEventListener('click',function(){ N=+b.dataset.n; $$('#ch-nn .lvl-chip').forEach(function(x){ x.classList.toggle('on',x===b); }); still(); }); });
+        $('#ch-scat').addEventListener('click',function(){ for(var i=0;i<NMAX;i++){ PX[i]=Math.random(); PY[i]=Math.random(); } still(); });
+        var cv=$('#ch-c');
+        function sPos(e){ var r=cv.getBoundingClientRect(); if(!r.width)return; stir.x=(e.clientX-r.left)/r.width; stir.y=(e.clientY-r.top)/r.height; }
+        cv.addEventListener('pointerdown',function(e){ stir.on=true; try{cv.setPointerCapture(e.pointerId);}catch(x){} sPos(e); });
+        cv.addEventListener('pointermove',function(e){ if(stir.on)sPos(e); });
+        cv.addEventListener('pointerup',function(){ stir.on=false; });
+        cv.addEventListener('pointercancel',function(){ stir.on=false; });
+        var rs=$('#ch-r'),scrub=false;
+        function sFromX(cx){ var r=rs.getBoundingClientRect(); if(!r.width)return sIdx;
+          var u=(cx-r.left-12)/(r.width-24); if(u<0)u=0; if(u>1)u=1; var lt=5+80*u,i;
+          for(i=0;i<MC-1;i++){ var l0=lam(MODES[i]),l1=lam(MODES[i+1]); if(lt<=l1||i===MC-2){ var s=i+(lt-l0)/(l1-l0); if(s<0)s=0; if(s>MC-1)s=MC-1; return s; } }
+          return MC-1; }
+        rs.addEventListener('pointerdown',function(e){ scrub=true; try{rs.setPointerCapture(e.pointerId);}catch(x){} setMode(sFromX(e.clientX)); if(STILL)draw(); });
+        rs.addEventListener('pointermove',function(e){ if(scrub){ setMode(sFromX(e.clientX)); if(STILL)draw(); } });
+        rs.addEventListener('pointerup',function(){ scrub=false; still(); });
+        rs.addEventListener('pointercancel',function(){ scrub=false; });
+        animate(step,draw,{sub:2,warm:600});
+      } },
+
+    /* ============ SOFT BODIES — position-based dynamics ============ */
+    { id:'soft-body', name:'Soft Bodies — Squish, Pressure & Constraints', tag:'Position-based dynamics · Müller 2006', icon:'◍', c:'#7dd3fc',
+      blurb:"Every squishy thing in a modern game — jelly, tyres, organs in a surgery simulator — runs on one idea: forget forces, move the positions. Each blob here is a ring of particles stitched together by distance constraints, plus one pressure constraint that measures the polygon's area every step and pushes the ring outward until the volume is right. Squash a blob flat and it reclaims its area like a water balloon. Grab one and throw it. This is Position-Based Dynamics (Müller et al. 2006) — the solver inside PhysX, Unity cloth and every soft-body engine since.",
+      init:function(stage,side){
+        stage.innerHTML='<div class="th-cwrap"><canvas class="th-cv" id="sb-c" style="height:440px;cursor:grab;touch-action:none"></canvas><div class="th-hint">grab a blob to squash or throw it · watch <b>area error</b> snap back near 0% when you let go</div></div>';
+        function L(t){ return '<div style="font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:var(--ink-faint);margin:10px 0 6px">'+t+'</div>'; }
+        function sl(id,lab,mn,mx,st,v){ return '<div class="th-slider" style="margin:3px 0"><span>'+lab+' = <b id="sb-'+id+'v" style="font-family:var(--mono);color:#7dd3fc"></b></span><input class="sl" id="sb-'+id+'" type="range" min="'+mn+'" max="'+mx+'" step="'+st+'" value="'+v+'"></div>'; }
+        side.innerHTML=L('BLOBS')+'<div id="sb-nch" style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:9px"></div>'+
+          sl('stif','edge stiffness',0.1,1,0.05,0.85)+
+          sl('pres','pressure',0.6,1.5,0.05,1)+
+          sl('grav','gravity',0,2000,50,900)+
+          '<div style="display:flex;gap:6px;margin:9px 0 2px"><button class="mini-b" id="sb-drop">⤓ Drop test</button><button class="mini-b" id="sb-rst">↺ Reset</button></div>'+
+          '<div class="th-stats" id="sb-st" style="margin-top:12px"></div>'+
+          '<div class="th-note">The solver never touches forces. Each frame it <b>predicts</b> positions from velocity + gravity, then runs 8 Gauss–Seidel passes that <b>project</b> every constraint: neighbour distances, one area constraint per blob (C = A − p·A₀, with A from the shoelace formula and its exact gradient), floor, walls and node-vs-edge contacts between blobs. Velocities are recovered as (x<sub>new</sub>−x<sub>old</sub>)/Δt, so contacts are automatically stable. Stiffness uses Müller\'s k\'=1−(1−k)<sup>1/n</sup> so it means the same thing at any iteration count — and because the internal corrections sum to zero, the blobs conserve momentum exactly.</div>';
+        var VW=600,VH=440,WALL=10,FLOOR=VH-12,dt=1/60,ITER=8,DAMP=0.996,FRIC=0.22,VMAX=1900;
+        var kEdge=0.85,kPress=1,grav=900,NB=3,blobs=[],grab=null;
+        var HUES=['#7dd3fc','#38bdf8','#22d3ee','#93c5fd','#0ea5e9'],RADII=[52,38,60,33,45];
+        function polyArea(X,Y){ var a=0,i,n=X.length,j; for(i=0;i<n;i++){ j=(i+1)%n; a+=X[i]*Y[j]-X[j]*Y[i]; } return a*0.5; }
+        function makeBlob(cx,cy,r,ci){ var n=Math.max(12,Math.round(r/2.8)),X=[],Y=[],PX=[],PY=[],vX=[],vY=[],GF=[],GW=[],rest=[],i,a;
+          for(i=0;i<n;i++){ a=i/n*2*Math.PI; X.push(cx+r*Math.cos(a)); Y.push(cy+r*Math.sin(a)); PX.push(X[i]); PY.push(Y[i]); vX.push(0); vY.push(0); GF.push(0); GW.push(0); }
+          for(i=0;i<n;i++){ var j=(i+1)%n; rest.push(Math.hypot(X[j]-X[i],Y[j]-Y[i])); }
+          return {n:n,x:X,y:Y,px:PX,py:PY,vx:vX,vy:vY,gf:GF,gw:GW,rest:rest,A0:polyArea(X,Y),r:r,c:HUES[ci%HUES.length],ccx:cx,ccy:cy,cr:r}; }
+        function spawn(){ blobs=[]; var i; for(i=0;i<NB;i++) blobs.push(makeBlob(80+(VW-160)*((i+0.5)/NB),80+(i%2)*70,RADII[i%RADII.length],i)); grab=null; }
+        function centro(B){ var cx=0,cy=0,i,r2=0; for(i=0;i<B.n;i++){ cx+=B.px[i]; cy+=B.py[i]; } cx/=B.n; cy/=B.n;
+          for(i=0;i<B.n;i++){ var d2=(B.px[i]-cx)*(B.px[i]-cx)+(B.py[i]-cy)*(B.py[i]-cy); if(d2>r2)r2=d2; } B.ccx=cx; B.ccy=cy; B.cr=Math.sqrt(r2); }
+        function inPoly(B,x,y){ var inside=false,i,j; for(i=0,j=B.n-1;i<B.n;j=i++){ var xi=B.px[i],yi=B.py[i],xj=B.px[j],yj=B.py[j];
+          if(((yi>y)!==(yj>y))&&(x<(xj-xi)*(y-yi)/(yj-yi)+xi)) inside=!inside; } return inside; }
+        function pushOut(A,i,B){ var x=A.px[i],y=A.py[i],bd=1e18,bj=0,bt=0,bx=0,by=0,j;
+          for(j=0;j<B.n;j++){ var k=(j+1)%B.n,x1=B.px[j],y1=B.py[j],ex=B.px[k]-x1,ey=B.py[k]-y1,L2=ex*ex+ey*ey||1e-9,tt=((x-x1)*ex+(y-y1)*ey)/L2;
+            if(tt<0)tt=0; else if(tt>1)tt=1; var qx=x1+ex*tt,qy=y1+ey*tt,d2=(x-qx)*(x-qx)+(y-qy)*(y-qy); if(d2<bd){ bd=d2; bj=j; bt=tt; bx=qx; by=qy; } }
+          var dx=bx-x,dy=by-y,k2=(bj+1)%B.n,w1=(1-bt)*0.5,w2=bt*0.5;
+          A.px[i]+=dx*0.5; A.py[i]+=dy*0.5; B.px[bj]-=dx*w1; B.py[bj]-=dy*w1; B.px[k2]-=dx*w2; B.py[k2]-=dy*w2; }
+        function collide(){ var a,b,i; for(a=0;a<blobs.length;a++) centro(blobs[a]);
+          for(a=0;a<blobs.length;a++) for(b=0;b<blobs.length;b++){ if(a===b)continue; var A=blobs[a],B=blobs[b];
+            if(Math.hypot(A.ccx-B.ccx,A.ccy-B.ccy)>A.cr+B.cr) continue;
+            if(a<b&&(inPoly(B,A.ccx,A.ccy)||inPoly(A,B.ccx,B.ccy))){ /* deep containment rescue: rigid pushout along centroid axis */
+              var ax=A.ccx-B.ccx,ay=A.ccy-B.ccy,al=Math.sqrt(ax*ax+ay*ay); if(al<1e-6){ ax=1; ay=0; al=1; } ax/=al; ay/=al;
+              for(i=0;i<A.n;i++){ A.px[i]+=ax*2.5; A.py[i]+=ay*2.5; } for(i=0;i<B.n;i++){ B.px[i]-=ax*2.5; B.py[i]-=ay*2.5; }
+              A.ccx+=ax*2.5; A.ccy+=ay*2.5; B.ccx-=ax*2.5; B.ccy-=ay*2.5; }
+            for(i=0;i<A.n;i++){ var x=A.px[i],y=A.py[i]; if((x-B.ccx)*(x-B.ccx)+(y-B.ccy)*(y-B.ccy)>B.cr*B.cr) continue; if(inPoly(B,x,y)) pushOut(A,i,B); } } }
+        function sane(){ var bi,i,bad; for(bi=0;bi<blobs.length;bi++){ var B=blobs[bi]; bad=false;
+          for(i=0;i<B.n;i++) if(!isFinite(B.x[i])||!isFinite(B.y[i])||Math.abs(B.x[i])>1e5||Math.abs(B.y[i])>1e5){ bad=true; break; }
+          if(bad){ blobs[bi]=makeBlob(VW/2,90,B.r,bi); if(grab&&grab.b===bi) grab=null; } } }
+        function step(){ var bi,i,it;
+          for(bi=0;bi<blobs.length;bi++){ var B=blobs[bi];
+            for(i=0;i<B.n;i++){ B.vy[i]+=grav*dt; B.vx[i]*=DAMP; B.vy[i]*=DAMP;
+              var s=Math.hypot(B.vx[i],B.vy[i]); if(s>VMAX){ B.vx[i]*=VMAX/s; B.vy[i]*=VMAX/s; }
+              B.px[i]=B.x[i]+B.vx[i]*dt; B.py[i]=B.y[i]+B.vy[i]*dt; B.gf[i]=0; B.gw[i]=0; } }
+          var ke=1-Math.pow(1-kEdge,1/ITER),ka=1-Math.pow(1-0.95,1/ITER);
+          for(it=0;it<ITER;it++){
+            for(bi=0;bi<blobs.length;bi++){ var B=blobs[bi],n=B.n;
+              for(i=0;i<n;i++){ var j=(i+1)%n,dx=B.px[j]-B.px[i],dy=B.py[j]-B.py[i],d=Math.sqrt(dx*dx+dy*dy);
+                if(d>1e-9){ var C=(d-B.rest[i])/d*0.5*ke; B.px[i]+=dx*C; B.py[i]+=dy*C; B.px[j]-=dx*C; B.py[j]-=dy*C; } }
+              var A=polyArea(B.px,B.py),CA=A-kPress*B.A0,g2=0,gm=0,gx=[],gy=[];
+              for(i=0;i<n;i++){ var ip=(i+1)%n,im=(i-1+n)%n,gxi=0.5*(B.py[ip]-B.py[im]),gyi=0.5*(B.px[im]-B.px[ip]);
+                gx.push(gxi); gy.push(gyi); var gl=gxi*gxi+gyi*gyi; g2+=gl; if(gl>gm)gm=gl; }
+              gm=Math.sqrt(gm);
+              if(g2>1e-6){ var lam=-CA/g2*ka; var mv=Math.abs(lam)*gm; if(mv>12) lam*=12/mv;
+                for(i=0;i<n;i++){ B.px[i]+=lam*gx[i]; B.py[i]+=lam*gy[i]; } }
+              if(grab&&grab.b===bi){ var gi=grab.i; B.px[gi]+=(grab.tx-B.px[gi])*0.3; B.py[gi]+=(grab.ty-B.py[gi])*0.3; } }
+            collide();
+            for(bi=0;bi<blobs.length;bi++){ var B2=blobs[bi];
+              for(i=0;i<B2.n;i++){ if(B2.py[i]>FLOOR){ B2.py[i]=FLOOR; B2.gf[i]=1; } if(B2.py[i]<WALL) B2.py[i]=WALL;
+                if(B2.px[i]<WALL){ B2.px[i]=WALL; B2.gw[i]=1; } else if(B2.px[i]>VW-WALL){ B2.px[i]=VW-WALL; B2.gw[i]=1; } } } }
+          for(bi=0;bi<blobs.length;bi++){ var B3=blobs[bi];
+            for(i=0;i<B3.n;i++){ B3.vx[i]=(B3.px[i]-B3.x[i])/dt; B3.vy[i]=(B3.py[i]-B3.y[i])/dt;
+              if(B3.gf[i]) B3.vx[i]*=(1-FRIC); if(B3.gw[i]) B3.vy[i]*=(1-FRIC);
+              B3.x[i]=B3.px[i]; B3.y[i]=B3.py[i]; } }
+          sane(); }
+        function draw(){ var c=$('#sb-c'); if(!c)return; var ctx=fit(c),W=c._W,H=c._H,sx=W/VW,sy=H/VH,bi,i;
+          ctx.fillStyle='#04060e'; ctx.fillRect(0,0,W,H);
+          ctx.strokeStyle='rgba(125,211,252,.10)'; ctx.lineWidth=1; ctx.strokeRect(WALL*sx,WALL*sy,(VW-2*WALL)*sx,(FLOOR-WALL)*sy);
+          ctx.strokeStyle='rgba(125,211,252,.32)'; ctx.lineWidth=1.5; ctx.beginPath(); ctx.moveTo(0,FLOOR*sy+1); ctx.lineTo(W,FLOOR*sy+1); ctx.stroke();
+          var errSum=0;
+          for(bi=0;bi<blobs.length;bi++){ var B=blobs[bi],n=B.n;
+            ctx.beginPath(); ctx.moveTo((B.x[0]+B.x[1])/2*sx,(B.y[0]+B.y[1])/2*sy);
+            for(i=1;i<=n;i++){ var p=i%n,q=(i+1)%n; ctx.quadraticCurveTo(B.x[p]*sx,B.y[p]*sy,(B.x[p]+B.x[q])/2*sx,(B.y[p]+B.y[q])/2*sy); }
+            ctx.closePath(); ctx.fillStyle=B.c; ctx.globalAlpha=0.14; ctx.fill(); ctx.globalAlpha=1;
+            ctx.strokeStyle=B.c; ctx.lineWidth=1.8; ctx.stroke();
+            ctx.fillStyle=B.c; ctx.globalAlpha=0.75;
+            for(i=0;i<n;i++){ ctx.beginPath(); ctx.arc(B.x[i]*sx,B.y[i]*sy,1.6,0,7); ctx.fill(); } ctx.globalAlpha=1;
+            var Ab=Math.abs(polyArea(B.x,B.y)),tg=Math.abs(kPress*B.A0)||1e-9; errSum+=Math.abs(Ab-tg)/tg; }
+          if(grab&&blobs[grab.b]){ var GB=blobs[grab.b]; ctx.strokeStyle='rgba(255,255,255,.55)'; ctx.lineWidth=1; ctx.setLineDash([4,4]);
+            ctx.beginPath(); ctx.moveTo(GB.x[grab.i]*sx,GB.y[grab.i]*sy); ctx.lineTo(grab.tx*sx,grab.ty*sy); ctx.stroke(); ctx.setLineDash([]);
+            ctx.beginPath(); ctx.arc(grab.tx*sx,grab.ty*sy,6,0,7); ctx.stroke(); }
+          var st=$('#sb-st'); if(st){ var ke2=0,cnt=0;
+            for(bi=0;bi<blobs.length;bi++){ var B4=blobs[bi]; for(i=0;i<B4.n;i++){ ke2+=0.5*(B4.vx[i]*B4.vx[i]+B4.vy[i]*B4.vy[i]); cnt++; } }
+            st.innerHTML=stat('area error','sb-x1','#7dd3fc')+stat('kinetic energy','sb-x2','#34d399')+stat('blobs · nodes','sb-x3')+stat('solver','sb-x4');
+            $('#sb-x1').textContent=blobs.length?(errSum/blobs.length*100).toFixed(2)+'%':'—';
+            $('#sb-x2').textContent=(ke2/1000).toFixed(1)+' k'; $('#sb-x3').textContent=blobs.length+' · '+cnt; $('#sb-x4').textContent=ITER+' it · 60 Hz'; } }
+        function still(n){ if(STILL){ for(var i=0;i<n;i++)step(); draw(); } }
+        var cv=$('#sb-c');
+        function toV(e){ var r=cv.getBoundingClientRect(); if(!r.width)return null;
+          return {x:Math.max(WALL,Math.min(VW-WALL,(e.clientX-r.left)/r.width*VW)),y:Math.max(WALL,Math.min(FLOOR,(e.clientY-r.top)/r.height*VH))}; }
+        cv.addEventListener('pointerdown',function(e){ var p=toV(e); if(!p)return; try{cv.setPointerCapture(e.pointerId);}catch(x){}
+          var bd=1e18,bb=-1,bn=0,bi,i; for(bi=0;bi<blobs.length;bi++){ var B=blobs[bi];
+            for(i=0;i<B.n;i++){ var d2=(B.x[i]-p.x)*(B.x[i]-p.x)+(B.y[i]-p.y)*(B.y[i]-p.y); if(d2<bd){ bd=d2; bb=bi; bn=i; } } }
+          if(bb>=0&&bd<70*70){ grab={b:bb,i:bn,tx:p.x,ty:p.y}; cv.style.cursor='grabbing'; still(10); } });
+        cv.addEventListener('pointermove',function(e){ if(!grab)return; var p=toV(e); if(!p)return; grab.tx=p.x; grab.ty=p.y; still(4); });
+        function unGrab(){ grab=null; cv.style.cursor='grab'; }
+        cv.addEventListener('pointerup',unGrab); cv.addEventListener('pointercancel',unGrab);
+        function nChips(){ $('#sb-nch').innerHTML=[2,3,4,5].map(function(k){ return '<button class="lvl-chip'+(k===NB?' on':'')+'" data-k="'+k+'">'+k+'</button>'; }).join('');
+          $$('#sb-nch .lvl-chip').forEach(function(b){ b.addEventListener('click',function(){ var k=+b.dataset.k; if(k===NB)return;
+            while(blobs.length>k) blobs.pop();
+            while(blobs.length<k){ var ix=blobs.length,r=RADII[ix%RADII.length]; blobs.push(makeBlob(WALL+r+20+Math.random()*(VW-2*WALL-2*r-40),60+Math.random()*40,r,ix)); }
+            NB=k; if(grab&&grab.b>=blobs.length) grab=null; nChips(); still(90); }); }); }
+        [['stif',function(v){kEdge=v;},2],['pres',function(v){kPress=v;},2],['grav',function(v){grav=v;},0]].forEach(function(p){ var s=$('#sb-'+p[0]);
+          function upd(){ $('#sb-'+p[0]+'v').textContent=(+s.value).toFixed(p[2]); } upd();
+          s.addEventListener('input',function(){ p[1](+this.value); upd(); still(30); }); });
+        $('#sb-drop').addEventListener('click',function(){ var bi,i; grab=null;
+          for(bi=0;bi<blobs.length;bi++){ var B=blobs[bi],cy=0; for(i=0;i<B.n;i++) cy+=B.y[i]; cy/=B.n;
+            var dy=(70+bi*28)-cy; for(i=0;i<B.n;i++){ B.y[i]+=dy; B.vx[i]=0; B.vy[i]=0; } } still(200); });
+        $('#sb-rst').addEventListener('click',function(){ spawn(); still(120); });
+        spawn(); nChips(); animate(step,draw,{sub:1,warm:150});
+      } },
+
     /* ============ BOIDS — flocking / swarm intelligence ============ */
     { id:'boids', name:'Boids — Flocking & Swarm Intelligence', tag:'Emergence · Reynolds 1986', icon:'⋀', c:'#22d3ee',
       blurb:"No leader, no plan, and no boid that can see past its neighbours — yet the whole flock moves as one. Craig Reynolds showed in 1986 that three tiny local rules — steer away from crowding (separation), match your neighbours' heading (alignment), and drift toward their centre (cohesion) — are enough to conjure the swirling murmurations of starlings. Move your mouse through the flock to scatter it, and loose a hawk to watch it split and re-form. Emergence: complex order from simple rules.",
@@ -7913,7 +8157,7 @@ function viewLab(){
       ['Foundations — the language of motion','#7dd3fc','States, symmetries and the deepest reformulations of mechanics.',['phase-space','least-action','vector-calculus']],
       ['Chaos & Nonlinearity','#f87171','Where determinism stops meaning predictability.',['double-pendulum','lorenz','bifurcation']],
       ['Computational Physics','#a78bfa','How physics is actually solved when equations have no closed form.',['numerical-methods','integrators']],
-      ['Emergence & Complexity','#34d399','Simple local rules, astonishing global behaviour.',['maxwell-boltzmann','reaction-diffusion','boids','particle-life']],
+      ['Emergence & Complexity','#34d399','Simple local rules, astonishing global behaviour.',['maxwell-boltzmann','reaction-diffusion','chladni','boids','particle-life','soft-body']],
       ['Quantum & Relativity','#c084fc','The two great revolutions — wavefunctions and spacetime.',['schrodinger','relativity','gr-precession']],
       ['Light & the Cosmos','#fbbf24','From ray optics to the fate of stars and the particle zoo.',['optics-bench','standard-model','stellar-evolution']]
     ];
@@ -10498,7 +10742,8 @@ var LabVig=(function(){
     for(i=0;i<=W;i+=2) p.push([i,H/2-Math.sin(i/W*9-t*1.8)*H*.3]);
     pl(x,p,BL,1.4); }
   };
-  var IDMAP={'phase-space':'orbit','least-action':'action','vector-calculus':'pen','double-pendulum':'chaos','lorenz':'chaos','bifurcation':'chaos','numerical-methods':'race','integrators':'race','maxwell-boltzmann':'spots','reaction-diffusion':'spots','boids':'flock','particle-life':'flock','schrodinger':'quantum','relativity':'orbit','gr-precession':'orbit','optics-bench':'lens','standard-model':'atom','stellar-evolution':'star'};
+  var IDMAP={'phase-space':'orbit','least-action':'action','vector-calculus':'pen','double-pendulum':'chaos','lorenz':'chaos','bifurcation':'chaos','numerical-methods':'race','integrators':'race','maxwell-boltzmann':'spots','reaction-diffusion':'spots'
+,'chladni':'wave','boids':'flock','particle-life':'flock','schrodinger':'quantum','relativity':'orbit','gr-precession':'orbit','optics-bench':'lens','standard-model':'atom','stellar-evolution':'star'};
   function pick(card){
     var id=card.dataset.tid||card.dataset.thjump||'';
     if(IDMAP[id]) return IDMAP[id];

@@ -1548,6 +1548,12 @@ html[data-theme="light"] .gx-stage{background:radial-gradient(120% 130% at 50% 0
 .lab-blue .rs-card:hover::after{left:125%}
 .lab-blue .rs-card:hover{border-color:rgba(125,211,252,.4)}
 @media(prefers-reduced-motion:reduce){.lab-blue .rs-card::after{display:none}}
+/* — offline banner + keyboard focus (Pass 57) — */
+#off-bar{position:fixed;top:0;left:0;right:0;z-index:400;text-align:center;font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;color:var(--blue);background:rgba(8,12,24,.94);border-bottom:1px solid rgba(125,211,252,.35);padding:6px 12px;transform:translateY(-110%);transition:transform .3s var(--ease)}
+#off-bar.on{transform:none}
+html[data-theme="light"] #off-bar{background:rgba(244,246,251,.96)}
+button:focus-visible,[data-go]:focus-visible,[data-link]:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--blue)!important;outline-offset:2px;border-radius:4px}
+@media(prefers-reduced-motion:reduce){#off-bar{transition:none}}
 </style>
 <script>/* THEME bootstrap — set html[data-theme] before first paint (no dark->light flash) */
 (function(){ var m='dark'; try{ m=localStorage.getItem('peq_theme')||'dark'; }catch(e){}
@@ -7087,7 +7093,7 @@ function mountDiscover(host,d){ var data=null, xp=d.xpows[0], yp=d.ypows[0];
 
 /* ===== ROUTER / VIEWS ===== */
 var main=$('#main'), crumb=$('#crumb'), curView='home';
-function nav(v){ $$('.nav-i,[data-go]').forEach(function(n){ n.classList.toggle('on', n.dataset.go===v); }); }
+function nav(v){ $$('.nav-i,[data-go]').forEach(function(n){ var a=n.dataset.go===v; n.classList.toggle('on',a); if(n.dataset.go){ if(a)n.setAttribute('aria-current','page'); else n.removeAttribute('aria-current'); } }); }
 function setCrumb(parts){ crumb.innerHTML=parts.map(function(p,i){ return (i?'<span class="sep">›</span>':'')+(p.go?'<a data-link="'+p.go+(p.id?(':'+p.id):'')+'" style="cursor:pointer">'+esc(p.t)+'</a>':'<span>'+esc(p.t)+'</span>'); }).join(' '); }
 var homeSim=null, labThumbs=[], labMode='labs';
 function stopThumbs(){ labThumbs.forEach(function(h){ if(h){ if(h._ft) clearTimeout(h._ft); if(h._inst&&h._inst.stop) h._inst.stop(); } }); labThumbs=[]; }
@@ -10510,6 +10516,22 @@ var LabVig=(function(){
   return { decorate:decorate, stop:stop };
 })();
 
+/* ===== OFFLINE RUNTIME — sims keep working, AI pauses gracefully ===== */
+var Offline=(function(){
+  var bar=null;
+  function show(on){
+    if(!bar){ bar=ce('div'); bar.id='off-bar'; bar.setAttribute('role','status'); bar.setAttribute('aria-live','polite');
+      bar.innerHTML='\u2301 offline \u2014 simulations still work \u00b7 the AI faculty is paused';
+      document.body.appendChild(bar); }
+    bar.classList.toggle('on', !!on);
+    if(on&&typeof toast==='function') toast('You are offline','sims still run');
+  }
+  addEventListener('offline',function(){ show(true); });
+  addEventListener('online',function(){ show(false); if(typeof toast==='function') toast('Back online','AI restored'); });
+  if(navigator.onLine===false) show(true);
+  window.__peqUx={ offline:function(){ return !!(bar&&bar.classList.contains('on')); }, show:show };
+  return { is:function(){ return navigator.onLine===false; } };
+})();
 /* ===== INIT ===== */
 Me.streakInit(); renderSide(); buildSide(); Tutor.init(); Theme.init(); Presence.init();
 go('home');

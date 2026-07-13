@@ -413,19 +413,7 @@ input[type=range].sl::-moz-range-thumb{width:14px;height:14px;border:0;border-ra
 .cp-foot{display:flex;gap:14px;padding:9px 16px;border-top:1px solid var(--line-2);font-family:var(--mono);font-size:9px;color:var(--ink-ghost)}
 .kbd-hint{margin-left:auto;font-family:var(--mono);font-size:8.5px;color:var(--ink-ghost);border:1px solid var(--line-2);border-radius:5px;padding:1px 5px;letter-spacing:.04em}
 @media(prefers-reduced-motion:reduce){#cmdk.on,.cp-panel{animation:none}}
-.xh-cont{display:flex;align-items:center;gap:12px;margin:0 0 16px;padding:13px 17px;border:1px solid var(--line);border-radius:13px;background:rgba(255,255,255,.02);cursor:pointer;transition:border-color .2s var(--ease),transform .2s var(--ease)}
-.xh-cont:hover{border-color:rgba(125,211,252,.4);transform:translateY(-1px)}
-.xh-cont .tx{font-size:13.5px;color:var(--ink-dim)} .xh-cont .tx b{color:var(--ink)}
-.xh-cont .go{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--blue);white-space:nowrap}
-.xh-bar{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 2px;margin:0 0 6px;background:linear-gradient(var(--bg) 78%,transparent);backdrop-filter:blur(7px)}
-.xh-bar .sp{flex:1}
-.xh-jump{display:inline-flex;align-items:center;gap:7px;font-size:12px;color:var(--ink-dim);background:none;border:1px solid var(--line-2);border-radius:20px;padding:5px 12px;cursor:pointer;transition:border-color .18s var(--ease),color .18s var(--ease)}
-.xh-jump i{width:7px;height:7px;border-radius:50%;background:var(--xc)}
-.xh-jump span{font-family:var(--mono);font-size:9px;color:var(--ink-ghost)}
-.xh-jump:hover{border-color:var(--xc);color:var(--ink)}
-.xh-card .thumb{position:relative}
-.xh-badge{position:absolute;top:8px;left:10px;z-index:2;font-family:var(--mono);font-size:8.5px;letter-spacing:.08em;text-transform:uppercase;background:rgba(4,6,12,.72);border:1px solid var(--line);border-radius:6px;padding:2px 7px;pointer-events:none}
-.xh-rel{font-family:var(--mono);font-size:12.5px;text-align:center;line-height:1.55;opacity:.92;word-break:break-word}
+/* (removed) legacy .xh-* explore-hub styles — superseded by .xg-* (~line 1463); verified unreferenced in JS/HTML */
 
 /* unit header + difficulty */
 .unit-head{display:flex;align-items:center;gap:20px;margin:6px 0 22px}
@@ -1577,6 +1565,58 @@ button:focus-visible,[data-go]:focus-visible,[data-link]:focus-visible,a:focus-v
 /* No new CSS required — the module reuses the existing Theory-Lab classes:
    .th-cwrap .th-cv .th-hint .th-slider .sl .mini-b .lvl-chip .th-stats .th-stat .th-note
    (same set used by the reaction-diffusion / boids / particle-life modules). */
+/* ===== Pass 69 — POLISH & CONSISTENCY (audit-driven refinements) ===== */
+/* T1 · readability floor — meaningful text bumped >=10.5px (decorative micro-badges untouched) */
+.cp-row .sub{font-size:10px}
+.pp-nm{font-size:10.5px}
+.pp-q{font-size:10px}
+.rv-why{font-size:10.5px}
+.gx-hint{font-size:10.5px}
+.gx-err{font-size:11px}
+.uni-legend{font-size:10.5px}
+.up-next{font-size:9px}
+.nb-stbl th,.pp-tbl th,.dl-tbl th{font-size:10px}
+.lx-stage .lx-hint{font-size:10.5px}
+@media(max-width:720px){.mtab button{font-size:10.5px}}
+/* T2 · hover affordances for interactive elements that had none */
+.nb-mchip{transition:border-color .15s,color .15s}
+.nb-mchip:hover{border-color:var(--mc,var(--blue));color:var(--ink-dim)}
+.nb-stbl tbody tr:hover td{background:rgba(125,211,252,.05)}
+.sbx-play{transition:background .15s,box-shadow .15s,transform .15s}
+.sbx-play:hover{background:rgba(125,211,252,.24);box-shadow:0 0 16px -6px rgba(125,211,252,.6)}
+.sbx-play:active{transform:scale(.94)}
+.sbx-ck{transition:color .15s}
+.sbx-ck:hover{color:var(--ink)}
+@media(prefers-reduced-motion:reduce){.sbx-play,.sbx-play:active{transform:none;transition:none}}
+/* T3 · toast is transient feedback — must sit above #cmdk(340) and #off-bar(400); below onboarding */
+#toast{z-index:500}
+/* T4 · light theme — dark-tinted chips/inputs had no light override (dark ink on dark fill) */
+html[data-theme="light"] .rz-chip,
+html[data-theme="light"] .rz-strat,
+html[data-theme="light"] .nb-mchip,
+html[data-theme="light"] .dl-chip,
+html[data-theme="light"] .pp-rxb,
+html[data-theme="light"] .ds-ax,
+html[data-theme="light"] .rd-b,
+html[data-theme="light"] .gx-inp{background:rgba(16,24,40,.04)}
+html[data-theme="light"] .home-feat{background:rgba(16,24,40,.03)}
+html[data-theme="light"] .home-feat:hover{background:rgba(16,24,40,.06)}
+html[data-theme="light"] .jn-num{background:rgba(16,24,40,.06)}
+/* re-assert selected/active tints the flat light fill above would otherwise override */
+html[data-theme="light"] .rz-chip.sel{background:rgba(2,132,199,.12)}
+html[data-theme="light"] .rz-chip.right{background:rgba(4,120,87,.12)}
+html[data-theme="light"] .rz-chip.wrong{background:rgba(220,38,38,.08)}
+html[data-theme="light"] .rz-strat.sel{background:rgba(2,132,199,.1)}
+html[data-theme="light"] .rz-strat.right{background:rgba(4,120,87,.1)}
+html[data-theme="light"] .rz-strat.wrong{background:rgba(220,38,38,.08)}
+html[data-theme="light"] .dl-chip.on{background:rgba(2,132,199,.12);color:#075985}
+html[data-theme="light"] .dl-chip.mdl.on{background:rgba(13,148,136,.13);color:#0f766e}
+html[data-theme="light"] .pp-rxb.on{background:rgba(194,65,12,.1)}
+html[data-theme="light"] .ds-ax.on{background:rgba(4,120,87,.12)}
+html[data-theme="light"] .rd-b.on{background:rgba(2,132,199,.1)}
+html[data-theme="light"] .nb-stbl tbody tr:hover td{background:rgba(2,132,199,.05)}
+html[data-theme="light"] .nb-stbl tr.sel td{background:rgba(2,132,199,.08)}
+/* ===== end Pass 69 ===== */
 </style>
 <script>/* THEME bootstrap — set html[data-theme] before first paint (no dark->light flash) */
 (function(){ var m='dark'; try{ m=localStorage.getItem('peq_theme')||'dark'; }catch(e){}
@@ -6668,7 +6708,7 @@ var PIE=(function(){
       var rt=$('#sbx-rail-tg'); if(rt) rt.addEventListener('click',function(){ vw.rail=!vw.rail; ap(); toast(vw.rail?'Control panel back':'Stage maximized','⬒'); });
       var mt=$('#sbx-max-tg'); if(mt) mt.addEventListener('click',function(){ vw.max=!vw.max; ap(); toast(vw.max?'Focus — sidebar hidden':'Sidebar restored','⛶'); });
       ap(); })();
-    ['useG','g','useC','walls'].forEach(function(k){ var c=$('#sbx-f-'+k); if(c)c.addEventListener('change',function(){ if(k==='g'){ if(this.checked){ P.g=(P._gLast&&P._gLast>0)?P._gLast:240; } else { if(P.g>0)P._gLast=P.g; P.g=0; } } else P[k]=this.checked; }); });
+    ['useG','g','useC','walls'].forEach(function(k){ var c=$('#sbx-f-'+k); if(c)c.addEventListener('change',function(){ if(k==='g'){ if(this.checked){ P.g=(P._gLast&&P._gLast>0)?P._gLast:240; } else { if(P.g>0)P._gLast=P.g; P.g=0; } } else P[k]=this.checked; if(STILL)draw(); }); });
     [['Bz','Bz'],['Ey','Ey'],['Ex','Ex'],['G','G'],['kc','kc'],['ropeStiff','ropeStiff']].forEach(function(p){ var c=$('#sbx-cs-'+p[0]); if(c)c.addEventListener('input',function(){ P[p[1]]=+this.value; set('sbx-cv-'+p[0],Math.round(this.value*100)/100); if(STILL)draw(); }); });
     ['physicalDrag','hands','webcam','hud','glow','buildMode'].forEach(function(k){ var c=$('#sbx-pie-'+k); if(c)c.addEventListener('change',function(){ PIE.set(k,this.checked); }); });
     ['grabRadius','spring','force','smooth'].forEach(function(k){ var c=$('#sbx-pie-'+k); if(c)c.addEventListener('input',function(){ var v=+this.value; PIE.set(k,v); var b=$('#sbx-piv-'+k); if(b)b.textContent=v; }); });
@@ -6699,7 +6739,7 @@ var PIE=(function(){
   function pieck(k,label,on){ return '<label class="sbx-ck"><input type="checkbox" id="sbx-pie-'+k+'" '+(on?'checked':'')+'> '+label+'</label>'; }
   function piesl(k,label,mn,mx,st,val){ return '<div class="sbx-irow sbx-csl"><span>'+label+'</span><input class="sl" id="sbx-pie-'+k+'" type="range" min="'+mn+'" max="'+mx+'" step="'+st+'" value="'+val+'"><b id="sbx-piv-'+k+'">'+val+'</b></div>'; }
   function st(label,id,c){ return '<div class="sbx-st"><div class="l">'+label+'</div><div class="v" id="'+id+'"'+(c?' style="color:'+c+'"':'')+'>—</div></div>'; }
-  function syncForceUI(){ var m={useG:P.useG,g:P.g>0,useC:P.useC,walls:P.walls}; Object.keys(m).forEach(function(k){ var c=$('#sbx-f-'+k); if(c)c.checked=m[k]; }); var v={showTrails:showTrails,showVec:showVec,showGrid:showGrid,showField:showField}; Object.keys(v).forEach(function(k){ var c=$('#sbx-v-'+k); if(c)c.checked=v[k]; });
+  function syncForceUI(){ if(P.g>0)P._gLast=P.g; var m={useG:P.useG,g:P.g>0,useC:P.useC,walls:P.walls}; Object.keys(m).forEach(function(k){ var c=$('#sbx-f-'+k); if(c)c.checked=m[k]; }); var v={showTrails:showTrails,showVec:showVec,showGrid:showGrid,showField:showField}; Object.keys(v).forEach(function(k){ var c=$('#sbx-v-'+k); if(c)c.checked=v[k]; });
     [['Bz',P.Bz],['Ey',P.Ey],['Ex',P.Ex],['G',P.G],['kc',P.kc],['ropeStiff',P.ropeStiff]].forEach(function(p){ var c=$('#sbx-cs-'+p[0]); if(c){ c.value=p[1]; set('sbx-cv-'+p[0],Math.round(p[1]*100)/100); } }); }
   function tip(){ var t=$('#sbx-tip'); if(!t)return; var m={select:'Drag a body to move it — release to fling. Drag empty space to pan, scroll to zoom.',mass:'Click to drop a mass. Drag before releasing to give it velocity.',planet:'Drag out a planet with an initial velocity to set up an orbit.',star:'Click to drop a heavy star — a deep gravity well. Drag before releasing for velocity.','charge+':'Place a positive charge.','charge-':'Place a negative charge.',spring:'Press on one body and release on another to connect a spring.',rod:'Press on one body and release on another to link a rigid rod.',rope:'Drag across empty space to lay a rope/string (both ends pinned). Pluck it with gravity OFF for travelling waves, or turn gravity ON for a hanging catenary.',pin:'Click a body to pin/unpin it in place.','delete':'Click a body to remove it.'}; t.textContent=m[tool]||''; }
   /* replay: a rolling ~10 s tape of positions + rope segments, played back at half speed */
@@ -8333,6 +8373,42 @@ var INV_GENERIC={
   research:'Where does this phenomenon show up at the research frontier or in real technology?'
 };
 var INV={
+  orbit:{predict:{q:'You increase the eccentricity of a planet’s orbit (same star, same semi-major axis). The planet’s speed along the orbit will…',opts:['Stay the same all the way round','Be fastest at perihelion (closest) and slowest at aphelion','Be fastest at aphelion (farthest)','Change randomly'],a:1,why:'Kepler’s second law: the line to the star sweeps equal areas in equal times — so the planet must race through the close passage and crawl through the far one.'},
+    hypothesis:'The orbit is an ellipse with the star at one <b>focus</b> (Kepler I), and the star–planet line sweeps <b>equal areas in equal times</b> (Kepler II) — so speed rises exactly as distance falls.',
+    setup:'Use the <b>Eccentricity</b> slider. Independent variable: eccentricity e (0 = perfect circle → 0.9 = highly stretched); dependent: the orbit’s shape and the spacing of the trail dots — the trail is your speedometer.',
+    collect:'Step e up from 0. At e = 0 the trail dots are evenly spaced everywhere; as e grows, watch the dots stretch apart as the planet whips past the star and bunch tightly out at the far side.',
+    analyze:'Trail spacing ∝ speed. Conservation of angular momentum gives v_peri/v_aph = (1+e)/(1−e): at e = 0.5 the planet moves 3× faster at closest approach than at farthest. Notice the star sits at a focus — never at the centre.',
+    reason:'Gravity is a <b>central force</b> — it exerts no torque about the star, so angular momentum L = mvr is conserved: small r forces large v. Equivalently, kinetic energy trades against gravitational potential −GMm/r on every lap.',
+    reflect:'Everyday intuition says orbits are circles at constant speed. Real orbits are ellipses — Halley’s comet (e ≈ 0.97) spends decades crawling in the dark and only weeks sprinting round the Sun.',
+    extend:'Kepler III: T² ∝ a³ — the period depends only on the semi-major axis, not on e. Push e → 1 and the ellipse degenerates into a plunge; give the planet escape speed and the conic opens into a hyperbola.',
+    research:'Mission designers ride elliptical Hohmann transfers between planets; astronomers read exoplanet masses and eccentricities out of tiny stellar wobbles; Neptune was discovered from unexplained wiggles in exactly these orbits.'},
+  blackhole:{predict:{q:'You double a black hole’s mass. Its event horizon (the Schwarzschild radius) will…',opts:['Stay the same','Double','Quadruple','Shrink by half'],a:1,why:'r_s = 2GM/c² is linear in mass: twice the mass, twice the horizon. A 10 M☉ black hole has a horizon of only ~30 km.'},
+    hypothesis:'The horizon radius grows <b>linearly</b> with mass (r_s = 2GM/c²); light passing nearby is bent (gravitational lensing), and at 1.5 r_s photons can circle the hole — the photon ring.',
+    setup:'Drag the <b>Mass</b> slider (5–80 M☉). Independent variable: mass M; dependent: the size of the black shadow, the bright photon ring hugging it, and how strongly the background stars are dragged and smeared.',
+    collect:'Raise M in steps. Watch the shadow and the photon ring grow in direct proportion, and stars near the edge get pulled into arcs — the closer their light passes, the harder it bends.',
+    analyze:'Shadow size vs M is a straight line — linear, not squared. The accretion disk glows brighter on one side: gas orbiting at near light speed beams its radiation forward (relativistic Doppler beaming).',
+    reason:'Mass curves spacetime; light simply follows the straightest available paths through that curved geometry — it is not being pulled in the Newtonian sense. Inside r_s the escape speed exceeds c, so nothing — not even light — returns.',
+    reflect:'A black hole is not a cosmic vacuum cleaner: swap the Sun for a 1 M☉ black hole and Earth’s orbit would not change. Only within a few r_s does general relativity take over from Newton.',
+    extend:'Real holes spin (Kerr): they drag spacetime around with them and grow an ergosphere. Clocks near the horizon run measurably slow — extreme time dilation. Quantum mechanics adds Hawking radiation: tiny holes evaporate.',
+    research:'The Event Horizon Telescope photographed the photon rings of M87* and Sgr A*, and LIGO hears merging black holes ring like struck bells — general relativity has passed every test so far.'},
+  fourier:{predict:{q:'You add sine waves at frequencies 1, 3, 5, 7… with amplitudes 1, 1/3, 1/5, 1/7… The sum approaches…',opts:['A bigger, smoother sine wave','A square wave','Random noise','Zero — they cancel out'],a:1,why:'That is exactly the Fourier series of a square wave: odd harmonics only, amplitudes falling as 1/n. Every periodic shape hides a recipe of pure sines.'},
+    hypothesis:'Any periodic signal can be built from pure sine waves — a Fourier series. A square wave needs only the <b>odd</b> harmonics n = 1, 3, 5…, each with amplitude ∝ 1/n.',
+    setup:'Use the <b>Harmonics</b> slider (1–12 circles). Independent variable: the number of terms; dependent: how closely the green trace on the right approaches a square wave. Each spinning circle is one term of the series.',
+    collect:'Start at 1 — a pure sine. Add terms one at a time: every new circle is smaller and spins faster, and the trace grows flatter tops and steeper sides. Watch where the wiggle refuses to die.',
+    analyze:'Circle k spins at frequency (2k+1)ω with radius ∝ 1/(2k+1). Convergence is quick on the flat tops, but at each jump a ~9% overshoot persists no matter how many terms you add — the Gibbs phenomenon.',
+    reason:'Sines of different frequencies are <b>orthogonal</b> — independent ingredients whose amounts can be measured separately. The chain of spinning circles adds the terms tip-to-tail, drawing the partial sum of the series live.',
+    reflect:'A perfectly sharp edge needs infinitely many frequencies. That is why abrupt clicks sound harsh and bright, and why any band-limited channel — speaker, amplifier, cable — rounds off square pulses.',
+    extend:'Non-repeating signals need the Fourier <b>transform</b>; the FFT computes it fast enough to run in every phone. A signal short in time must be wide in frequency — the same trade-off as Heisenberg’s uncertainty principle.',
+    research:'JPEG and MP3 compression, MRI reconstruction, noise-cancelling headphones and LIGO’s gravitational-wave searches all run on Fourier analysis — arguably the most-used single tool in physics and engineering.'},
+  bloch:{predict:{q:'A qubit sits on the equator of the Bloch sphere (θ = 90°). You measure it in the |0⟩/|1⟩ basis. You get…',opts:['Always |0⟩','Always |1⟩','|0⟩ or |1⟩, 50/50 at random','A value halfway between'],a:2,why:'P(|0⟩) = cos²(θ/2) = cos²45° = ½. A measurement always answers with a pole — the state only sets the odds.'},
+    hypothesis:'A qubit state is a point on a sphere: |ψ⟩ = cos(θ/2)|0⟩ + e^{iφ} sin(θ/2)|1⟩. The tilt θ sets the measurement odds — P(|0⟩) = cos²(θ/2) — while the phase φ sets no odds at all, yet still matters.',
+    setup:'Drag the <b>θ</b> slider (0–180°) to tilt the state vector from the north pole |0⟩ to the south pole |1⟩. The <b>H</b> and <b>X</b> buttons apply quantum gates; the steady precession you see is the phase φ advancing.',
+    collect:'Park θ at 0°, 90° and 180° and note where the vector points. Press <b>X</b> — the vector flips through the equator (θ → 180° − θ), swapping the roles of |0⟩ and |1⟩. Press <b>H</b> — it jumps to the equator: an equal superposition.',
+    analyze:'P(|0⟩) = cos²(θ/2): certainty at the poles, 50/50 on the equator, smooth in between. The precessing angle φ changes no probability in this basis — but it is the <b>relative phase</b>, the ingredient interference feeds on.',
+    reason:'A classical bit has two states — two points. A qubit has an entire sphere. Quantum gates are <b>rotations</b> of that sphere (unitary, reversible); measurement is not a rotation — it collapses the vector to a pole with Born-rule probabilities.',
+    reflect:'The phase φ is invisible to any single measurement, yet it is the entire resource quantum algorithms choreograph. Two states can share identical measurement odds and still behave completely differently downstream.',
+    extend:'In real quantum mechanics, H applied twice returns exactly to |0⟩ — the two paths interfere back together. Add a second qubit and entangled states no longer fit on any pair of spheres: the description doubles with every qubit.',
+    research:'Every quantum computer is Bloch-sphere engineering: microwave pulses rotate superconducting qubits, decoherence drags the vector toward the sphere’s centre, and error correction is the fight to keep it on the surface.'},
   pendulum:{predict:{q:'You release two double pendulums from almost <i>exactly</i> the same angle. After a few swings they will…',opts:['Stay in step forever','Drift apart slowly but stay similar','Diverge completely — chaos','Both stop quickly'],a:2,why:'A double pendulum is chaotic: a microscopic difference in the start grows exponentially, so the two soon look totally unrelated — even though the equations are exactly deterministic.'},
     hypothesis:'The double pendulum obeys deterministic equations, yet it shows <b>sensitive dependence on initial conditions</b> — tiny differences amplify, making long-term motion unpredictable.',
     setup:'Release the pendulum and watch the lower bob trace its path. Independent variable: the <b>initial angle/energy</b>; observe how the trajectory unfolds.',

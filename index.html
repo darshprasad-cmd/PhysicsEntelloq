@@ -1617,6 +1617,22 @@ html[data-theme="light"] .rd-b.on{background:rgba(2,132,199,.1)}
 html[data-theme="light"] .nb-stbl tbody tr:hover td{background:rgba(2,132,199,.05)}
 html[data-theme="light"] .nb-stbl tr.sel td{background:rgba(2,132,199,.08)}
 /* ===== end Pass 69 ===== */
+/* — light-mode uniformity + sandbox chip lift (Pass 68) — */
+html[data-theme="light"] .sv-box textarea{background:var(--card)!important;color:var(--ink)!important;box-shadow:0 6px 24px -18px rgba(16,24,40,.25)!important;border-color:var(--line)!important}
+html[data-theme="light"] .sv-box textarea::placeholder{color:var(--ink-faint)}
+html[data-theme="light"] .rec{background:var(--card)!important;border-color:var(--line)!important;box-shadow:0 4px 18px -14px rgba(16,24,40,.2)!important}
+html[data-theme="light"] .rec:hover{border-color:rgba(3,105,161,.45)!important}
+html[data-theme="light"] .nb-ta,html[data-theme="light"] .xp-conc,html[data-theme="light"] .gx-inp,html[data-theme="light"] .xp-tbl td{background:var(--card)!important;color:var(--ink)!important;border-color:var(--line)!important}
+html[data-theme="light"] .t-search{background:var(--card)!important;border-color:var(--line)!important}
+html[data-theme="light"] .t-search input{color:var(--ink)}
+html[data-theme="light"] .lvl-chip,html[data-theme="light"] .mini-b{background:var(--card);border-color:var(--line);color:var(--ink-dim)}
+html[data-theme="light"] .lvl-chip.on{background:rgba(3,105,161,.1);border-color:rgba(3,105,161,.4);color:var(--blue)}
+/* presence chip must never cover the sandbox transport */
+#eq-pres.sbx-pos{bottom:108px;right:24px}
+@media(max-height:700px){#eq-pres.sbx-pos{display:none}}
+/* hand + focus controls: prominent, never buried */
+#sbx-hand,#sbx-rail-tg,#sbx-max-tg{color:var(--blue)!important;border-color:rgba(125,211,252,.5)!important;box-shadow:0 0 16px -7px rgba(125,211,252,.7);font-weight:600}
+#sbx-hand:hover,#sbx-rail-tg:hover,#sbx-max-tg:hover{box-shadow:0 0 20px -5px rgba(125,211,252,.9)}
 </style>
 <script>/* THEME bootstrap — set html[data-theme] before first paint (no dark->light flash) */
 (function(){ var m='dark'; try{ m=localStorage.getItem('peq_theme')||'dark'; }catch(e){}
@@ -10144,6 +10160,7 @@ var Presence=(function(){
     try{ Tutor.setContext(t?('The student is currently reading the lesson "'+t.name+'".'):('The student is currently in the '+v+' space of the app.')); }catch(e){}
     var pp=el.querySelector('.pp'); pp.textContent=(P.icon||'\u2726')+' '+(P.name||'ENTELLOQ'); pp.style.color=P.c||'';
     el.querySelector('.q').textContent=q;
+    el.classList.toggle('sbx-pos',v==='sandbox');
     if(hideView===v){ el.classList.remove('on'); return; }
     hideView='';
     el.classList.remove('on'); void el.offsetWidth; el.classList.add('on');

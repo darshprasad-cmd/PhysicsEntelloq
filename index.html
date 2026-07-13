@@ -1554,6 +1554,16 @@ html[data-theme="light"] .gx-stage{background:radial-gradient(120% 130% at 50% 0
 html[data-theme="light"] #off-bar{background:rgba(244,246,251,.96)}
 button:focus-visible,[data-go]:focus-visible,[data-link]:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--blue)!important;outline-offset:2px;border-radius:4px}
 @media(prefers-reduced-motion:reduce){#off-bar{transition:none}}
+/* — playground polish (Pass 59) — */
+.lab-blue .lab-card{position:relative;overflow:hidden;transition:transform .2s var(--ease),border-color .2s var(--ease),box-shadow .2s var(--ease)}
+.lab-blue .lab-card:hover{transform:translateY(-3px);border-color:rgba(125,211,252,.45);box-shadow:0 14px 34px -18px rgba(125,211,252,.5)}
+.lab-blue .lab-card::before,.lab-blue .lab-card::after{content:"";position:absolute;width:12px;height:12px;border:1px solid rgba(125,211,252,.5);z-index:2;pointer-events:none;opacity:0;transition:opacity .2s}
+.lab-blue .lab-card::before{top:6px;left:6px;border-right:0;border-bottom:0}
+.lab-blue .lab-card::after{bottom:6px;right:6px;border-left:0;border-top:0}
+.lab-blue .lab-card:hover::before,.lab-blue .lab-card:hover::after{opacity:1}
+.lab-blue .lab-card h4{font-family:var(--title)}
+.lab-blue .cont{border:1px solid rgba(125,211,252,.25);background:linear-gradient(135deg,rgba(125,211,252,.08),rgba(167,139,250,.05) 60%,transparent);box-shadow:0 0 34px -18px rgba(125,211,252,.5)}
+@media(prefers-reduced-motion:reduce){.lab-blue .lab-card,.lab-blue .lab-card:hover{transform:none}}
 </style>
 <script>/* THEME bootstrap — set html[data-theme] before first paint (no dark->light flash) */
 (function(){ var m='dark'; try{ m=localStorage.getItem('peq_theme')||'dark'; }catch(e){}
@@ -10478,10 +10488,12 @@ var LabVig=(function(){
   function pick(card){
     var id=card.dataset.tid||card.dataset.thjump||'';
     if(IDMAP[id]) return IDMAP[id];
-    if(card.dataset.nid) return 'pen';
-    if(card.dataset.dq!==undefined) return 'star';
-    if(card.dataset.eid) return 'bench';
-    return 'wave';
+    var s2=(card.dataset.nid||card.dataset.dq||card.dataset.eid||card.textContent||'').slice(0,30),hh=0,i2;
+    for(i2=0;i2<s2.length;i2++) hh=(hh*31+s2.charCodeAt(i2))>>>0;
+    var POOL=['orbit','chaos','spots','flock','quantum','wave','race','atom','action','lens','split','pen','star'];
+    if(card.dataset.eid!==undefined) return 'bench';
+    if(card.dataset.dq!==undefined) return POOL[(hh+4)%POOL.length];
+    return POOL[hh%POOL.length];
   }
   function decorate(root){
     $$('.rs-card .rs-cic',root).forEach(function(ic){

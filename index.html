@@ -1677,7 +1677,7 @@ button:focus-visible,[data-go]:focus-visible,[data-link]:focus-visible,a:focus-v
 "use strict";
 var AI_PROXY="https://groq-proxy.physicsedge.workers.dev";/* Cloudflare Worker holding the shared Groq key -> keyless AI for every visitor (same proxy quant.entelloq.com uses). */
 var GROQ_KEY="", GROQ_URL="https://api.groq.com/openai/v1/chat/completions", GROQ_MODEL="llama-3.3-70b-versatile";
-function aiURL(){ var k=''; try{k=(localStorage.getItem('peq_groq_key')||'').trim();}catch(e){} return (!k&&AI_PROXY)?(AI_PROXY.replace(/\/+$/,'')+'/v1/chat/completions'):GROQ_URL; }
+function aiURL(){ if(navigator.onLine===false){ try{ toast('Offline — the AI faculty needs a connection','⌁'); }catch(e){} throw new Error('offline'); } var k=''; try{k=(localStorage.getItem('peq_groq_key')||'').trim();}catch(e){} return (!k&&AI_PROXY)?(AI_PROXY.replace(/\/+$/,'')+'/v1/chat/completions'):GROQ_URL; }
 function aiText(j){ return (j&&j.choices&&j.choices[0]&&j.choices[0].message&&j.choices[0].message.content) || (j&&(j.content||j.text)) || ''; }
 function aiHeaders(){ var k=''; try{k=(localStorage.getItem('peq_groq_key')||'').trim();}catch(e){} var h={'Content-Type':'application/json'}; if(!(!k&&AI_PROXY)) h['Authorization']='Bearer '+(k||GROQ_KEY); return h; }/* proxy holds the key + its CORS forbids the Authorization header, so omit it there; send it only on the direct-to-Groq personal-key path */
 window.PEQ_setAIKey=function(){ var cur=""; try{cur=localStorage.getItem("peq_groq_key")||"";}catch(e){}

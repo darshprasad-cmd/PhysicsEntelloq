@@ -10559,6 +10559,20 @@ var Offline=(function(){
   window.__peqUx={ offline:function(){ return !!(bar&&bar.classList.contains('on')); }, show:show };
   return { is:function(){ return navigator.onLine===false; } };
 })();
+/* ===== AI OBSERVES INTERACTION — the faculty notices what your hands do ===== */
+(function(){ var last=0;
+  function offer(q,note){ var now=Date.now(); if(now-last<30000) return;
+    try{ if(curView!=='sandbox') return; var el=document.getElementById('eq-pres'); if(!el) return;
+      last=now; el.querySelector('.q').textContent=q; el._note=note||null; el._pid='research';
+      el.classList.remove('on'); void el.offsetWidth; el.classList.add('on'); }catch(e){}
+  }
+  try{ if(window.HPIE&&HPIE.on){
+    HPIE.on('SynchronizationAchieved',function(){ offer('My hands just moved in sync — why do waves interfere constructively?','observed synchronized bimanual motion'); });
+    HPIE.on('HighEnergyImpact',function(){ offer('Where does the energy go when I move that violently?','observed a high-energy impulse'); });
+    HPIE.on('Compress',function(){ offer('What pushes back when I compress a field?','observed field compression'); });
+    HPIE.on('Stretch',function(){ offer('What does stretching do to tension in a system?','observed stretching'); });
+  } }catch(e){}
+})();
 /* ===== INIT ===== */
 Me.streakInit(); renderSide(); buildSide(); Tutor.init(); Theme.init(); Presence.init();
 go('home');

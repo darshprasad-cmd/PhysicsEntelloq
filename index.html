@@ -6559,7 +6559,8 @@ var PIE=(function(){
       SIDES.forEach(function(s){ if(!found[s]){ miss[s]++; if(miss[s]>10){ pts[s]=null; gest[s]='none'; grab[s]=null; if(filt[s])filt[s].down(); radialClose(s); } else if(pts[s]){ try{ HPIE.predictInto(s,pts[s],tNow); }catch(e){} } } }); }
     function detect(p,side){ var scale=dist(p[0],p[9])||1,pd=dist(p[4],p[8])/scale;
       var wasP=(gest[side]==='pinch'),TH=wasP?0.62:0.50;   /* hysteresis: releasing is harder than grabbing */
-      if(pd<TH){ pinchMiss[side]=0; acquire(side,p); intent[side]=null; prevPd[side]=pd; return 'pinch'; }
+      if(pd<TH){ if(radial.side===side){ prevPd[side]=pd; return 'fist'; }   /* menu open: a closing hand DROPS (real fists read as pinch — thumb sits on the index) */
+      pinchMiss[side]=0; acquire(side,p); intent[side]=null; prevPd[side]=pd; return 'pinch'; }
       if(wasP&&pd<1.2&&(pinchMiss[side]=(pinchMiss[side]||0)+1)<6){ prevPd[side]=pd; return 'pinch'; }   /* ~150ms occlusion grace */
       pinchMiss[side]=0;
       var closing=(pd<1.05)&&(pd-(prevPd[side]||pd)<-0.012); prevPd[side]=pd;

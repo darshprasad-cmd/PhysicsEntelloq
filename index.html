@@ -1656,6 +1656,19 @@ html[data-theme="light"] #eq-pres{background:rgba(233,242,253,.95);border-color:
 html[data-theme="light"] .nb-sec,html[data-theme="light"] .deep-sec,html[data-theme="light"] .home-feat,html[data-theme="light"] .pr-card,html[data-theme="light"] .jn-ic,html[data-theme="light"] .jn-body,html[data-theme="light"] .jn-next,html[data-theme="light"] .dl-sec,html[data-theme="light"] .cmp-pick,html[data-theme="light"] .side-act,html[data-theme="light"] .tu-pchip,html[data-theme="light"] .sv-sc,html[data-theme="light"] .ex-bar,html[data-theme="light"] .rs-fbox,html[data-theme="light"] .th-stat{background:var(--card)!important;border-color:var(--line)!important;color:var(--ink)}
 html[data-theme="light"] .thumb{box-shadow:none!important}
 html[data-theme="light"] .xh-badge,html[data-theme="light"] .xg-badge{background:rgba(4,6,12,.72)!important;color:#7dd3fc!important}
+/* — light-mode Learn readability (Pass 72) — */
+html[data-theme="light"] .eq .f{color:#0b3a66!important;font-weight:600}
+html[data-theme="light"] .eq{background:var(--card)!important;border-color:var(--line)!important}
+html[data-theme="light"] .comp-card,html[data-theme="light"] .l-comp .comp-card{background:var(--card)!important;border-color:var(--line)!important;color:var(--ink)!important}
+html[data-theme="light"] .comp-card .cc-row span:first-child{color:var(--ink-faint)!important}
+html[data-theme="light"] .comp-card .cc-row span+span,html[data-theme="light"] .comp-card b{color:var(--ink)!important}
+html[data-theme="light"] .comp-card .cc-h{filter:saturate(1.4) brightness(.55)}
+html[data-theme="light"] .kg-conn{background:var(--card)!important}
+html[data-theme="light"] .xp-badge,html[data-theme="light"] .ti-rd,html[data-theme="light"] .kg-badge{filter:saturate(1.5) brightness(.6);border-color:currentColor!important}
+html[data-theme="light"] .lx-hint,html[data-theme="light"] .sbx-tip{color:#cfe2ff!important}
+html[data-theme="light"] .chips .chip,html[data-theme="light"] .rd-eta{color:var(--ink-dim)!important;border-color:var(--line)!important}
+/* mono micro-labels: never lighter than faint in light */
+html[data-theme="light"] .cc-flow span,html[data-theme="light"] .lm-tag,html[data-theme="light"] .gx-ph,html[data-theme="light"] .xg-meta{color:var(--ink-faint)!important}
 </style>
 <script>/* THEME bootstrap — set html[data-theme] before first paint (no dark->light flash) */
 (function(){ var m='dark'; try{ m=localStorage.getItem('peq_theme')||'dark'; }catch(e){}

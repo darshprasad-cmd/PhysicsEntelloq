@@ -1669,6 +1669,10 @@ html[data-theme="light"] .lx-hint,html[data-theme="light"] .sbx-tip{color:#cfe2f
 html[data-theme="light"] .chips .chip,html[data-theme="light"] .rd-eta{color:var(--ink-dim)!important;border-color:var(--line)!important}
 /* mono micro-labels: never lighter than faint in light */
 html[data-theme="light"] .cc-flow span,html[data-theme="light"] .lm-tag,html[data-theme="light"] .gx-ph,html[data-theme="light"] .xg-meta{color:var(--ink-faint)!important}
+.st-sec{border:1px solid var(--line);border-radius:14px;background:var(--card);padding:18px 20px;margin:0 0 16px}
+.st-h{font-family:var(--mono);font-size:9.5px;letter-spacing:.17em;color:var(--ink-faint);margin:0 0 12px}
+.st-row{display:flex;align-items:center;justify-content:space-between;gap:16px;font-size:13.5px;color:var(--ink-dim)}
+#tu-key{display:none!important}
 </style>
 <script>/* THEME bootstrap — set html[data-theme] before first paint (no dark->light flash) */
 (function(){ var m='dark'; try{ m=localStorage.getItem('peq_theme')||'dark'; }catch(e){}
@@ -1693,7 +1697,7 @@ html[data-theme="light"] .cc-flow span,html[data-theme="light"] .lm-tag,html[dat
     </div>
     <div class="side-scroll">
       <div class="nav-i" id="nav-cmdk"><span class="ic">⌕</span> Search<span class="kbd-hint">Ctrl K</span></div>
-      <div class="nav-i" id="nav-theme" role="button" tabindex="0" aria-label="Theme: dark" title="Theme — cycles dark / light / system"><span class="ic" id="nav-theme-ic">◐</span> Theme<span class="kbd-hint" id="nav-theme-hint">dark</span></div>
+      <div class="nav-i" data-go="settings"><span class="ic">⚙</span> Settings</div>
       <div class="nav-i" data-go="home"><span class="ic">⌂</span> Home</div>
       <div class="nav-i" data-go="universe"><span class="ic">✦</span> Universe</div>
       <div class="nav-i" data-go="learn"><span class="ic">◳</span> Learn</div>
@@ -7565,6 +7569,7 @@ function go(v,id){ stopSim();
   else if(v==='lesson') viewLesson(id);
   else if(v==='practice') viewPractice();
   else if(v==='review') viewReview();
+  else if(v==='settings') viewSettings();
   else if(v==='research') viewResearch();
   else if(v==='progress') viewProgress();
   else if(v==='lab') viewLab();
@@ -11032,6 +11037,19 @@ var Offline=(function(){
     HPIE.on('Stretch',function(){ offer('What does stretching do to tension in a system?','observed stretching'); });
   } }catch(e){}
 })();
+function viewSettings(){ setCrumb([{t:'Settings'}]);
+  var mode='dark'; try{ mode=localStorage.getItem('peq_theme')||'dark'; }catch(e){}
+  var key=''; try{ key=(localStorage.getItem('peq_groq_key')||'').trim(); }catch(e){}
+  main.innerHTML='<div class="wrap fade" style="max-width:760px"><div class="eyebrow">Settings</div><h1 class="h-hello" style="font-size:30px">Make it yours</h1>'+
+    '<div class="st-sec"><div class="st-h">APPEARANCE</div><div class="st-row"><span>Theme \u2014 how the interface is lit</span><span>'+['dark','light','system'].map(function(m){ return '<button class="lvl-chip st-th'+(mode===m?' on':'')+'" data-th="'+m+'">'+m+'</button>'; }).join(' ')+'</span></div></div>'+
+    '<div class="st-sec"><div class="st-h">AI FACULTY</div><div class="st-row" style="flex-wrap:wrap"><span>Personal Groq API key \u2014 optional; without it the built-in proxy answers</span><span style="display:flex;gap:8px;flex-wrap:wrap"><input id="st-key" type="password" placeholder="gsk_\u2026" value="'+esc(key)+'" style="font-family:var(--mono);font-size:12px;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px 10px;min-width:220px"><button class="mini-b" id="st-key-save">Save</button><button class="mini-b" id="st-key-clear">Clear</button></span></div></div>'+
+    '<div class="st-sec"><div class="st-h">DATA</div><div class="st-row"><span>Reset all progress, mastery and preferences on this device</span><button class="mini-b" id="st-reset" style="color:var(--red)">Reset everything</button></div></div>'+
+    '<div class="st-sec"><div class="st-h">ABOUT</div><div class="st-row"><span>Physics Entelloq \u2014 founded, designed and engineered by Darsh Prasad</span></div></div></div>';
+  $$('.st-th').forEach(function(b){ b.addEventListener('click',function(){ try{ Theme.set(b.dataset.th); }catch(e){} $$('.st-th').forEach(function(x){ x.classList.toggle('on',x===b); }); toast('Theme: '+b.dataset.th,'\u2699'); }); });
+  $('#st-key-save').addEventListener('click',function(){ var v=$('#st-key').value.trim(); try{ if(v) localStorage.setItem('peq_groq_key',v); else localStorage.removeItem('peq_groq_key'); }catch(e){} toast(v?'Key saved \u2014 the faculty now uses your key':'Key cleared','\ud83d\udd11'); });
+  $('#st-key-clear').addEventListener('click',function(){ $('#st-key').value=''; try{ localStorage.removeItem('peq_groq_key'); }catch(e){} toast('Key cleared','\ud83d\udd11'); });
+  $('#st-reset').addEventListener('click',function(){ if(!confirm('Erase ALL local progress, mastery, streaks and preferences? This cannot be undone.')) return; try{ var ks=[],i2; for(i2=0;i2<localStorage.length;i2++){ var kk=localStorage.key(i2); if(kk&&kk.indexOf('peq_')===0) ks.push(kk); } ks.forEach(function(kk2){ localStorage.removeItem(kk2); }); }catch(e){} location.reload(); });
+}
 /* ===== INIT ===== */
 Me.streakInit(); renderSide(); buildSide(); Tutor.init(); Theme.init(); Presence.init();
 go('home');

@@ -1675,6 +1675,10 @@ html[data-theme="light"] .cc-flow span,html[data-theme="light"] .lm-tag,html[dat
 #tu-key{display:none!important}
 .uni-ctrls button{width:auto;min-width:44px;padding:0 10px;font-family:var(--mono);font-size:10px;letter-spacing:.05em}
 .side-tog,#side-domains{display:none!important}
+/* — FBD trainer stage (Pass 87) — */
+.fbd-stage{position:relative;height:340px;border:1px solid var(--line-2);border-radius:14px;overflow:hidden;background:radial-gradient(120% 130% at 50% 0%,#0a1020,#04060c)}
+.fbd-stage canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:crosshair}
+@media(max-width:720px){.fbd-stage{height:260px}}
 </style>
 <script>/* THEME bootstrap — set html[data-theme] before first paint (no dark->light flash) */
 (function(){ var m='dark'; try{ m=localStorage.getItem('peq_theme')||'dark'; }catch(e){}
@@ -8944,6 +8948,127 @@ function viewUniverse(){
   main.innerHTML='<div class="uni" id="uni-host"></div>';
   Uni.mount($('#uni-host'));
 }
+/* ===== Pass 87 — FBD trainer: draw the forces, get coached ===== */
+var FBD=(function(){
+  var COLS={mg:'#fbbf24',N:'#7dd3fc',T:'#a78bfa',f:'#f0abfc',F:'#34d399'};
+  var WHY={mg:'gravity acts on every mass, always straight down',N:'the surface pushes back perpendicular to itself',T:'a string can only pull, along itself',f:'friction acts along the surface, opposing slip',F:'an applied push or pull'};
+  var SC=[
+    {id:'incline',n:'Block on a rough incline',d:'A block RESTS on a rough 30° incline that rises to the right. Draw every force on the block.',bx:0.5,by:0.6,
+     correct:[{lab:'mg',ang:270,why:'gravity pulls straight down — never "into the slope"'},{lab:'N',ang:120,why:'the normal force is perpendicular to the SURFACE, not vertical'},{lab:'f',ang:30,why:'the block tends to slide down-slope, so static friction points UP the slope'}],
+     scene:function(g,W,H){ g.strokeStyle='rgba(255,255,255,.3)'; g.lineWidth=2; g.beginPath(); g.moveTo(W*0.1,H*0.86); g.lineTo(W*0.9,H*0.86); g.lineTo(W*0.9,H*0.4); g.closePath(); g.stroke();
+       g.fillStyle='rgba(125,211,252,.12)'; g.save(); g.translate(W*0.5,H*0.6); g.rotate(-0.524); g.fillRect(-24,-30,48,30); g.strokeStyle='rgba(125,211,252,.5)'; g.lineWidth=1.5; g.strokeRect(-24,-30,48,30); g.restore();
+       g.fillStyle='rgba(159,177,208,.7)'; g.font='10px JetBrains Mono'; g.fillText('30°',W*0.16,H*0.83); } },
+    {id:'projectile',n:'Ball in flight',d:'A thrown ball is in mid-flight (ignore air resistance). Draw every force on the ball — and ONLY real forces.',bx:0.5,by:0.4,
+     correct:[{lab:'mg',ang:270,why:'in flight, gravity is the ONLY force — velocity is not a force, and nothing keeps pushing it forward'}],
+     scene:function(g,W,H){ g.setLineDash([4,5]); g.strokeStyle='rgba(255,255,255,.18)'; g.lineWidth=1.4; g.beginPath();
+       for(var x=0;x<=W;x+=6){ var u=x/W,y=H*0.82-Math.sin(u*Math.PI)*H*0.44; x?g.lineTo(x,y):g.moveTo(x,y); } g.stroke(); g.setLineDash([]);
+       var vx=W*0.5+34,vy=H*0.4-6; g.strokeStyle='rgba(148,163,184,.55)'; g.lineWidth=1.5; g.beginPath(); g.moveTo(W*0.5+14,H*0.4-4); g.lineTo(vx,vy); g.stroke();
+       g.fillStyle='rgba(148,163,184,.7)'; g.font='10px JetBrains Mono'; g.fillText('v (velocity — not a force!)',vx+5,vy+3); } },
+    {id:'pulled',n:'Dragged at constant speed',d:'A block is dragged RIGHT at constant speed along a rough floor by a horizontal rope. Draw all four forces.',bx:0.45,by:0.64,
+     correct:[{lab:'mg',ang:270,why:'weight, straight down'},{lab:'N',ang:90,why:'the floor pushes straight up on the block'},{lab:'T',ang:0,why:'the rope pulls along itself — horizontally, to the right'},{lab:'f',ang:180,why:'kinetic friction opposes the sliding, pointing left'}],
+     scene:function(g,W,H){ g.strokeStyle='rgba(255,255,255,.3)'; g.lineWidth=2; g.beginPath(); g.moveTo(W*0.06,H*0.74); g.lineTo(W*0.94,H*0.74); g.stroke();
+       g.fillStyle='rgba(125,211,252,.12)'; g.fillRect(W*0.45-26,H*0.74-40,52,40); g.strokeStyle='rgba(125,211,252,.5)'; g.lineWidth=1.5; g.strokeRect(W*0.45-26,H*0.74-40,52,40);
+       g.strokeStyle='rgba(167,139,250,.6)'; g.beginPath(); g.moveTo(W*0.45+26,H*0.64); g.lineTo(W*0.9,H*0.64); g.stroke();
+       g.fillStyle='rgba(159,177,208,.7)'; g.font='10px JetBrains Mono'; g.fillText('constant v →',W*0.62,H*0.58); } },
+    {id:'hanging',n:'Ball on a string',d:'A ball hangs AT REST from a string. Draw every force on the ball.',bx:0.5,by:0.56,
+     correct:[{lab:'mg',ang:270,why:'weight, straight down'},{lab:'T',ang:90,why:'the string pulls up along itself; at rest it exactly balances mg'}],
+     scene:function(g,W,H){ g.strokeStyle='rgba(255,255,255,.3)'; g.lineWidth=2; g.beginPath(); g.moveTo(W*0.3,H*0.12); g.lineTo(W*0.7,H*0.12); g.stroke();
+       g.strokeStyle='rgba(167,139,250,.6)'; g.lineWidth=1.5; g.beginPath(); g.moveTo(W*0.5,H*0.12); g.lineTo(W*0.5,H*0.56); g.stroke(); } },
+    {id:'circular',n:'Car turning left',d:'A car (seen from BEHIND) turns LEFT on a flat road at steady speed. The centre of the turn is to the left. Draw all forces.',bx:0.5,by:0.6,
+     correct:[{lab:'mg',ang:270,why:'weight, straight down'},{lab:'N',ang:90,why:'the road pushes straight up'},{lab:'f',ang:180,why:'friction from the road IS the centripetal force — it points toward the centre of the turn (left)'}],
+     scene:function(g,W,H){ g.strokeStyle='rgba(255,255,255,.3)'; g.lineWidth=2; g.beginPath(); g.moveTo(W*0.06,H*0.74); g.lineTo(W*0.94,H*0.74); g.stroke();
+       g.fillStyle='rgba(125,211,252,.12)'; g.beginPath(); if(g.roundRect)g.roundRect(W*0.5-34,H*0.74-42,68,42,8); else g.rect(W*0.5-34,H*0.74-42,68,42); g.fill();
+       g.strokeStyle='rgba(125,211,252,.5)'; g.lineWidth=1.5; g.stroke();
+       g.fillStyle='rgba(159,177,208,.7)'; g.font='10px JetBrains Mono'; g.fillText('← centre of the turn',W*0.08,H*0.3); } }
+  ];
+  var host=null,cv=null,g=null,cur=0,AR=[],selIx=-1,downPt=null,doneMap={};
+  try{ doneMap=JSON.parse(localStorage.getItem('peq_fbd_done')||'{}')||{}; }catch(e){ doneMap={}; }
+  function bodyPx(){ var r=cv.getBoundingClientRect(); return [SC[cur].bx*r.width,SC[cur].by*r.height]; }
+  function fit(){ var r=cv.getBoundingClientRect(),pr=Math.min(devicePixelRatio||1,2);
+    if(cv.width!==Math.round(r.width*pr)){ cv.width=Math.round(r.width*pr); cv.height=Math.round(r.height*pr); g.setTransform(pr,0,0,pr,0,0); }
+    return [r.width,r.height]; }
+  function draw(){ if(!cv)return; var wh=fit(),W=wh[0],H=wh[1]; g.clearRect(0,0,W,H);
+    try{ SC[cur].scene(g,W,H); }catch(e){}
+    var b=bodyPx();
+    g.fillStyle='#e8edff'; g.beginPath(); g.arc(b[0],b[1],7,0,7); g.fill();
+    g.strokeStyle='rgba(255,255,255,.35)'; g.lineWidth=1; g.beginPath(); g.arc(b[0],b[1],11,0,7); g.stroke();
+    for(var i=0;i<AR.length;i++){ var a=AR[i],rad=a.ang*Math.PI/180,ex=b[0]+Math.cos(rad)*a.len,ey=b[1]-Math.sin(rad)*a.len;
+      var col=a.lab?COLS[a.lab]:'rgba(255,255,255,.8)';
+      g.strokeStyle=col; g.fillStyle=col; g.lineWidth=i===selIx?3:2;
+      g.beginPath(); g.moveTo(b[0],b[1]); g.lineTo(ex,ey); g.stroke();
+      var aa=Math.atan2(ey-b[1],ex-b[0]);
+      g.beginPath(); g.moveTo(ex,ey); g.lineTo(ex-Math.cos(aa-0.42)*9,ey-Math.sin(aa-0.42)*9); g.lineTo(ex-Math.cos(aa+0.42)*9,ey-Math.sin(aa+0.42)*9); g.closePath(); g.fill();
+      g.font='11px JetBrains Mono'; g.fillText((a.lab||'?')+' · '+Math.round(a.ang)+'°',ex+7,ey+4);
+      if(i===selIx&&!a.lab){ g.fillStyle='rgba(255,255,255,.75)'; g.font='10px JetBrains Mono'; g.fillText('← pick a label below',ex+7,ey+18); } }
+    g.fillStyle='rgba(159,177,208,.8)'; g.font='10.5px JetBrains Mono';
+    g.fillText('drag FROM the body to draw a force arrow · click an arrow to reselect it',12,16); }
+  function arrowHeadAt(x,y){ var b=bodyPx();
+    for(var i=AR.length-1;i>=0;i--){ var a=AR[i],rad=a.ang*Math.PI/180,ex=b[0]+Math.cos(rad)*a.len,ey=b[1]-Math.sin(rad)*a.len;
+      if(Math.hypot(x-ex,y-ey)<15) return i; } return -1; }
+  function onDown(e){ var r=cv.getBoundingClientRect(); downPt=[e.clientX-r.left,e.clientY-r.top]; try{ cv.setPointerCapture(e.pointerId); }catch(x){} }
+  function onUp(e){ if(!downPt)return; var r=cv.getBoundingClientRect(),ux=e.clientX-r.left,uy=e.clientY-r.top;
+    var moved=Math.hypot(ux-downPt[0],uy-downPt[1]);
+    if(moved<10){ var hit=arrowHeadAt(ux,uy); selIx=hit; draw(); downPt=null; return; }
+    var b=bodyPx(),dx=ux-b[0],dy=-(uy-b[1]),len=Math.hypot(dx,dy);
+    if(len>=24){ var ang=Math.atan2(dy,dx)*180/Math.PI; if(ang<0)ang+=360;
+      AR.push({lab:null,ang:ang,len:Math.min(len,110)}); selIx=AR.length-1; draw(); }
+    downPt=null; }
+  function setLabel(lab){ if(selIx<0||!AR[selIx])return;
+    for(var i=AR.length-1;i>=0;i--){ if(i!==selIx&&AR[i].lab===lab){ AR.splice(i,1); if(i<selIx)selIx--; } }
+    AR[selIx].lab=lab; draw(); }
+  function wrapd(a,b){ return Math.abs(((a-b+540)%360)-180); }
+  function check(){ var sc=SC[cur],out=[],ok=true,i,j;
+    for(i=0;i<sc.correct.length;i++){ var c=sc.correct[i],found=null;
+      for(j=0;j<AR.length;j++) if(AR[j].lab===c.lab){ found=AR[j]; break; }
+      if(!found){ ok=false; out.push(['bad','Missing '+c.lab+' — '+c.why]); }
+      else { var d=wrapd(found.ang,c.ang);
+        if(d<=22) out.push(['good',c.lab+' ✓ right direction — '+c.why]);
+        else { ok=false; out.push(['bad',c.lab+' points '+Math.round(found.ang)+'° but should point '+c.ang+'° — '+c.why]); } } }
+    for(j=0;j<AR.length;j++){ var a2=AR[j];
+      if(!a2.lab){ ok=false; out.push(['bad','An unlabeled arrow — every force needs a name. Select it and pick a label.']); continue; }
+      var isCorrectLab=false; for(i=0;i<sc.correct.length;i++) if(sc.correct[i].lab===a2.lab) isCorrectLab=true;
+      if(!isCorrectLab){ ok=false; out.push(['bad',a2.lab+' does not belong here — '+(a2.lab==='F'?'nothing is pushing or pulling in this scenario':(a2.lab==='T'?'there is no string attached':(a2.lab==='f'?'no surface contact is resisting motion here':'that force is not acting on this body')))+'.']); } }
+    if(ok){ out.unshift(['win','Perfect free-body diagram — every force present, named, and pointing true.']);
+      if(!doneMap[sc.id]){ doneMap[sc.id]=1; try{ localStorage.setItem('peq_fbd_done',JSON.stringify(doneMap)); }catch(e){}
+        try{ Me.award(20,'FBD mastered: '+sc.n); }catch(e2){} } }
+    var vd=host.querySelector('#fbd-verdicts');
+    if(vd) vd.innerHTML=out.map(function(o){ var col=o[0]==='win'?'#34d399':(o[0]==='good'?'#34d399':'#f87171');
+      return '<div style="padding:6px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:13px;color:'+(o[0]==='win'?'#34d399':'var(--ink-dim)')+'"><span style="color:'+col+'">'+(o[0]==='bad'?'✗':'✓')+'</span> '+o[1]+'</div>'; }).join('');
+    return ok; }
+  function askAI(){ var sc=SC[cur];
+    var desc=AR.length?AR.map(function(a){ return (a.lab||'unlabeled')+' at '+Math.round(a.ang)+'°'; }).join(', '):'no arrows yet';
+    try{ Tutor.open('Free-body coach');
+      Tutor.ask('I am practising free-body diagrams. Scenario: '+sc.d+' My drawn force arrows (0° = right, 90° = up, 270° = down): '+desc+'. Coach me: which forces are right, which are missing or wrong, and the physical reason each force must be there. Under 150 words.','FBD: '+sc.n); }catch(e){} }
+  function setScenario(ix){ cur=ix; AR=[]; selIx=-1;
+    var d=host.querySelector('#fbd-desc'); if(d) d.textContent=SC[cur].d;
+    var vd=host.querySelector('#fbd-verdicts'); if(vd) vd.innerHTML='';
+    host.querySelectorAll('.fbd-sc').forEach(function(b,i){ b.classList.toggle('on',i===cur); });
+    draw(); }
+  function mount(h){ if(!h)return; host=h;
+    h.innerHTML='<div class="xp-sec"><div class="ph">Free-body trainer — draw the forces, get coached</div>'+
+      '<div style="display:flex;gap:7px;flex-wrap:wrap;margin:2px 0 10px">'+SC.map(function(s,i){ return '<button class="lvl-chip fbd-sc'+(i===0?' on':'')+'" data-i="'+i+'">'+(doneMap[s.id]?'✓ ':'')+s.n+'</button>'; }).join('')+'</div>'+
+      '<div class="dm" id="fbd-desc" style="margin:0 0 10px;color:var(--ink-dim);font-size:13px">'+SC[0].d+'</div>'+
+      '<div class="fbd-stage"><canvas id="fbd-cv"></canvas></div>'+
+      '<div style="display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-top:10px"><span class="dm" style="font-family:var(--mono);font-size:10px;color:var(--ink-faint)">LABEL THE SELECTED ARROW</span>'+
+        ['mg','N','T','f','F'].map(function(l){ return '<button class="mini-b fbd-lab" data-lab="'+l+'" style="color:'+COLS[l]+'" title="'+WHY[l]+'">'+l+'</button>'; }).join('')+
+        '<span style="flex:1"></span>'+
+        '<button class="mini-b" id="fbd-clear">Clear</button>'+
+        '<button class="mini-b" id="fbd-check">Check my diagram</button>'+
+        '<button class="mini-b" id="fbd-ask">✦ Coach me</button></div>'+
+      '<div id="fbd-verdicts" style="margin-top:10px"></div></div>';
+    cv=h.querySelector('#fbd-cv'); g=cv.getContext('2d');
+    cv.addEventListener('pointerdown',onDown); cv.addEventListener('pointerup',onUp);
+    h.querySelectorAll('.fbd-sc').forEach(function(b){ b.addEventListener('click',function(){ setScenario(+b.dataset.i); }); });
+    h.querySelectorAll('.fbd-lab').forEach(function(b){ b.addEventListener('click',function(){ setLabel(b.dataset.lab); }); });
+    h.querySelector('#fbd-clear').addEventListener('click',function(){ AR=[]; selIx=-1; var vd=h.querySelector('#fbd-verdicts'); if(vd)vd.innerHTML=''; draw(); });
+    h.querySelector('#fbd-check').addEventListener('click',check);
+    h.querySelector('#fbd-ask').addEventListener('click',askAI);
+    draw();
+    try{ window.__peqFbd={arrows:function(){ return AR; },add:function(ang,lab){ AR.push({lab:lab||null,ang:ang,len:80}); selIx=AR.length-1; draw(); },clear:function(){ AR=[]; selIx=-1; draw(); },check:check,scenario:setScenario,cur:function(){ return SC[cur].id; }}; }catch(e){}
+  }
+  return { mount:mount };
+})();
+
 var solveLevel='JEE';
 function viewSolve(){
   setCrumb([{t:'Solve'}]);
@@ -8964,6 +9089,7 @@ function viewSolve(){
     '<div class="sv-box"><textarea id="sv-input" rows="3" placeholder="e.g. A 2 kg block slides down a 30° frictionless incline. Find its acceleration and speed after 3 m."></textarea><button class="btn btn-pri" id="sv-go">Solve →</button></div>'+
     '<div class="dm" style="margin-top:8px;color:var(--ink-ghost);font-size:11.5px;font-family:var(--mono)">tip: Ctrl / ⌘ + Enter to solve</div>'+
     '<div class="xp-sec" style="margin-top:28px"><div class="ph">Or start from a classic</div><div class="rs-grid">'+examples.map(function(e,i){return '<button class="rs-card sv-exb" data-x="'+i+'" style="align-items:flex-start"><div class="rs-cic" style="color:#7dd3fc;border-color:#7dd3fc55">'+e[0]+'</div><div class="rs-ct"><div class="dm" style="white-space:normal;line-height:1.55;color:var(--ink-dim)">'+esc(e[1])+'</div></div><span class="arr">›</span></button>';}).join('')+'</div></div>'+
+    '<div id="fbd-host" style="margin-top:34px"></div>'+
     '<div id="sv-out" style="margin-top:26px"></div></div>';
   $$('.pr-diff .lvl-chip').forEach(function(c){ c.addEventListener('click',function(){ solveLevel=c.dataset.l; Solve.setLevel(solveLevel); var ld=$('#sv-ldesc'); if(ld) ld.textContent=LDESC[solveLevel]; $$('.pr-diff .lvl-chip').forEach(function(x){ x.classList.toggle('on',x.dataset.l===solveLevel); }); }); });
   Solve.setLevel(solveLevel);
@@ -8971,6 +9097,7 @@ function viewSolve(){
   $('#sv-go').addEventListener('click',fire);
   $('#sv-input').addEventListener('keydown',function(e){ if((e.metaKey||e.ctrlKey)&&e.key==='Enter') fire(); });
   $$('.sv-exb').forEach(function(b){ b.addEventListener('click',function(){ $('#sv-input').value=examples[+b.dataset.x][1]; fire(); }); });
+  try{ FBD.mount($('#fbd-host')); }catch(e){}
 }
 function viewHome(){
   setCrumb([{t:'Home'}]);

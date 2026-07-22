@@ -7110,10 +7110,10 @@ var PIE=(function(){
         '<div class="sbx-card sbx-adv-card"><div class="sbx-h">Interaction · mouse + hands</div>'+pieck('physicalDrag','Physical drag (spring)',true)+pieck('hands','Hand tracking (camera)',false)+pieck('webcam','Show webcam',false)+pieck('hud','Physics HUD',true)+pieck('glow','Glow effects',true)+pieck('buildMode','● Hands build objects (else force fields)',true)+piesl('grabRadius','Grab radius',30,160,5,80)+piesl('spring','Spring strength',8,80,2,28)+piesl('force','Force multiplier',0.2,3,0.1,1)+piesl('smooth','Hand responsiveness',0.15,0.85,0.05,0.45)+'</div>'+
       '</div>'+
       '<div class="sbx-foot"><div class="sbx-presets">'+PLIST.map(function(p){ return '<button class="sbx-pchip" data-preset="'+p[0]+'">'+p[1]+'</button>'; }).join('')+'</div>'+
-        '<div class="sbx-transport"><button class="sbx-play" id="sbx-play">‖</button><button class="mini-b" id="sbx-step">Step</button><button class="mini-b" id="sbx-undo" title="Undo (Ctrl+Z)" disabled>Undo</button><button class="mini-b" id="sbx-redo" title="Redo (Ctrl+Shift+Z or Ctrl+Y)" disabled>Redo</button><button class="mini-b" id="sbx-shot" title="Save a PNG snapshot of the canvas">Snapshot</button><button class="mini-b" id="sbx-camreset" title="Reset the camera view">Reset view</button><button class="mini-b" id="sbx-replay" title="Replay the last ~10 seconds at half speed">⟲ replay</button><button class="mini-b" id="sbx-rwd" title="Freeze time, drag backward through the last ~10 seconds, and resume the physics from any moment">Rewind</button><button class="mini-b" id="sbx-hand" title="Control the physics with your hands (camera)">Hands</button><button class="mini-b" id="sbx-camtog" style="display:none" title="Show the webcam behind the simulation">Camera</button><button class="mini-b" id="sbx-rail-tg" title="Show / hide the control panel — more room for the stage">Panel</button><button class="mini-b" id="sbx-max-tg" title="Focus — hide the app sidebar for the maximum stage">Focus</button><span class="sbx-spd">speed <input class="sl" id="sbx-speed" type="range" min="0.25" max="3" step="0.25" value="1" style="width:90px"></span></div></div>'+
+        '<div class="sbx-transport"><button class="sbx-play" id="sbx-play">‖</button><button class="mini-b" id="sbx-step">Step</button><button class="mini-b" id="sbx-undo" title="Undo (Ctrl+Z)" disabled>Undo</button><button class="mini-b" id="sbx-redo" title="Redo (Ctrl+Shift+Z or Ctrl+Y)" disabled>Redo</button><button class="mini-b" id="sbx-shot" title="Save a PNG snapshot of the canvas">Snapshot</button><button class="mini-b" id="sbx-share" title="Copy a link that recreates this exact universe, live, for anyone who opens it">Share</button><button class="mini-b" id="sbx-camreset" title="Reset the camera view">Reset view</button><button class="mini-b" id="sbx-replay" title="Replay the last ~10 seconds at half speed">⟲ replay</button><button class="mini-b" id="sbx-rwd" title="Freeze time, drag backward through the last ~10 seconds, and resume the physics from any moment">Rewind</button><button class="mini-b" id="sbx-hand" title="Control the physics with your hands (camera)">Hands</button><button class="mini-b" id="sbx-camtog" style="display:none" title="Show the webcam behind the simulation">Camera</button><button class="mini-b" id="sbx-rail-tg" title="Show / hide the control panel — more room for the stage">Panel</button><button class="mini-b" id="sbx-max-tg" title="Focus — hide the app sidebar for the maximum stage">Focus</button><span class="sbx-spd">speed <input class="sl" id="sbx-speed" type="range" min="0.25" max="3" step="0.25" value="1" style="width:90px"></span></div></div>'+
       '</div>';
     canvas=$('#sbx-c'); ctx=canvas.getContext('2d',{desynchronized:true})||canvas.getContext('2d'); cam.x=0;cam.y=0; // center set on first fit
-    try{ window.__peqSbx={pie:PIE,load:loadPreset,step:step,draw:draw,anchorLoad:anchorLoad,handLoads:handLoads,rwdEnter:rwdEnter,rwdExit:rwdExit,rwdState:function(){return rwd;},rwdSet:function(i){rwd.i=i;},tape:function(){return rec.frames;},probeAttach:function(id){probe.id=id;probe.d.length=0;},probeN:function(){return probe.d.length;},slowmo:function(v){slowmo=!!v;},measSet:function(m){meas=m;},simT:function(){return simT;},bodies:function(){return B;},state:function(){return {cradleOn:cradleOn,cradleNodes:cradleNodes,B:B,chains:chains,cradleLive:cradleLive,loadTot:cradleLoadTot,loadPeak:cradleLoadPeak};}}; }catch(e){}
+    try{ window.__peqSbx={pie:PIE,load:loadPreset,step:step,draw:draw,anchorLoad:anchorLoad,handLoads:handLoads,shareState:shareState,applyShared:applyShared,shareLink:shareLink,rwdEnter:rwdEnter,rwdExit:rwdExit,rwdState:function(){return rwd;},rwdSet:function(i){rwd.i=i;},tape:function(){return rec.frames;},probeAttach:function(id){probe.id=id;probe.d.length=0;},probeN:function(){return probe.d.length;},slowmo:function(v){slowmo=!!v;},measSet:function(m){meas=m;},simT:function(){return simT;},bodies:function(){return B;},state:function(){return {cradleOn:cradleOn,cradleNodes:cradleNodes,B:B,chains:chains,cradleLive:cradleLive,loadTot:cradleLoadTot,loadPeak:cradleLoadPeak};}}; }catch(e){}
     fitc(); cam.x=W()/2; cam.y=H()/2;
     loadPreset('solar'); syncForceUI();
     if(window.PeqSbxUX){ PeqSbxUX.attach(container,{
@@ -7154,6 +7154,7 @@ var PIE=(function(){
       if(STILL||rec.frames.length<20){ toast('Nothing on tape yet — let the physics run a few seconds first'); return; }
       replay={on:true,t:0,was:running}; running=false; rbtn.classList.add('on');
       var unhi=setInterval(function(){ if(!replay.on){ rbtn.classList.remove('on'); clearInterval(unhi); } },400); });
+    var shb=$('#sbx-share'); if(shb) shb.addEventListener('click',shareLink);
     var rwb=$('#sbx-rwd'); if(rwb) rwb.addEventListener('click',function(){ if(rwd.on) rwdExit(true); else rwdEnter(); });
     var engh=$('#sbx-eng'); if(engh){ engh.innerHTML=ENGX.map(function(e,i){ return '<button class="sbx-pchip" data-engx="'+i+'">'+esc(e[0])+'</button>'; }).join('');
       $$('#sbx-eng .sbx-pchip').forEach(function(b){ b.addEventListener('click',function(){ var o=$('#sbx-engout'); if(o){ o.style.display='block'; o.textContent=ENGX[+b.dataset.engx][1]; } }); }); }
@@ -7164,6 +7165,7 @@ var PIE=(function(){
     canvas.addEventListener('pointermove',onMove); canvas.addEventListener('pointerup',onUp); canvas.addEventListener('wheel',onWheel,{passive:false});
     refreshInspect(); tip();
     if(STILL){ for(var k=0;k<140;k++)step(1/120); simT+=140/120; draw(); } else loop();
+    if(window.__peqShare){ try{ applyShared(window.__peqShare); toast('A shared universe just materialized \u2014 the physics is live, go touch it','\u2728'); }catch(e){} window.__peqShare=null; }
     Me.award(6,'Opened the Physics Sandbox'); }
   function ck(k,label,on){ return '<label class="sbx-ck"><input type="checkbox" id="sbx-f-'+k+'" '+(on?'checked':'')+'> '+label+'</label>'; }
   function ckv(k,label,on){ return '<label class="sbx-ck"><input type="checkbox" id="sbx-v-'+k+'" '+(on?'checked':'')+'> '+label+'</label>'; }
@@ -7264,6 +7266,23 @@ var PIE=(function(){
     var t=e.target,tn=(t&&t.tagName)?t.tagName.toUpperCase():''; if(tn==='INPUT'||tn==='TEXTAREA')return; slowmo=true; });
   document.addEventListener('keyup',function(e){ if(e.key==='Shift')slowmo=false; });
   window.addEventListener('blur',function(){ slowmo=false; });
+  /* ===== Pass 81 — share your universe (the URL is the save file) ===== */
+  function shareState(){ return {B:B,springs:springs,rods:rods,pulleys:pulleys,chains:chains,bends:bends,P:P,cradleOn:cradleOn,cradleNodes:cradleNodes,nextId:nextId,s:cam.s,vw:{tr:showTrails,vec:showVec,gr:showGrid,fl:showField}}; }
+  function applyShared(st){ var k; B.length=0; (st.B||[]).forEach(function(b){ B.push(b); });
+    springs=st.springs||[]; rods=st.rods||[]; pulleys=st.pulleys||[]; chains=st.chains||[]; bends=st.bends||[];
+    for(k in st.P){ P[k]=st.P[k]; }
+    cradleOn=!!st.cradleOn; cradleNodes=st.cradleNodes||[]; cradleLive=false; sel=null; if(st.nextId)nextId=st.nextId;
+    if(st.s)cam.s=st.s; fitc(); cam.x=W()/2; cam.y=H()/2;
+    if(st.vw){ showTrails=!!st.vw.tr; showVec=!!st.vw.vec; showGrid=!!st.vw.gr; showField=!!st.vw.fl; }
+    trail={}; Ehist=[]; simT=0; rec.frames.length=0; replay.on=false; if(rwd.on)rwd.on=false; probe.id=null; probe.d.length=0; meas=null;
+    syncForceUI(); refreshInspect(); if(STILL)draw(); }
+  function shareLink(){ try{ var json=JSON.stringify(shareState()),b64=btoa(unescape(encodeURIComponent(json)));
+      if(b64.length>60000){ toast('This universe is too big to fit in a link \u2014 trim it down a little'); return; }
+      var url=location.origin+location.pathname+'#u='+b64;
+      if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(url).then(function(){ toast('Link copied \u2014 anyone who opens it gets this exact universe, live','\u2197'); },function(){ try{ window.prompt('Copy this link:',url); }catch(e2){} }); }
+      else { try{ window.prompt('Copy this link:',url); }catch(e3){} }
+    }catch(e){ toast('Share failed'); } }
+  try{ if(location.hash.indexOf('#u=')===0){ window.__peqShare=JSON.parse(decodeURIComponent(escape(atob(location.hash.slice(3))))); try{ history.replaceState(null,'',location.pathname+location.search); }catch(e2){} } }catch(e){ window.__peqShare=null; }
   function loop(){ cancelAnimationFrame(raf); function fr(){
     if(rwd.on){ drawRewindFrame(); if(!STILL&&curView==='sandbox') raf=requestAnimationFrame(fr); return; }
     if(replay.on){ drawReplayFrame(); if(!STILL&&curView==='sandbox') raf=requestAnimationFrame(fr); return; }
@@ -11497,7 +11516,7 @@ function viewSettings(){ setCrumb([{t:'Settings'}]);
 }
 /* ===== INIT ===== */
 Me.streakInit(); renderSide(); buildSide(); Tutor.init(); Theme.init(); Presence.init();
-go('home');
+go(window.__peqShare?'sandbox':'home');
 try{ var _pp=JSON.parse(localStorage.getItem('peq_profile')||'null'); if(_pp&&_pp.lens) window.__lensDefault=_pp.lens; }catch(e){}
 if(Landing.pending()){ Landing.show(function(){ Onboard.maybe(); }); } else { Onboard.maybe(); }
 })();

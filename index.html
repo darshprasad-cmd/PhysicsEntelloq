@@ -3426,36 +3426,585 @@ var Lens=(function(){
         vzLabel(g,'\u03b3 = 1/\u221a(1\u2212v\u00b2/c\u00b2) = '+gamma.toFixed(2),14,24,'#f87171');
         vzLabel(g,'1 s here  =  '+gamma.toFixed(2)+' s on the moving clock',14,H-10,'rgba(159,177,208,.9)'); } }
   };
-  /* ===== VIZT_B — per-topic Visual-lens bank (electrostatics, current, magnetism, modern, quantum, relativity) =====
-     Same entry shape as VIZ. mountViz (bank A edit) prefers VIZT_A[t.id]||VIZT_B[t.id]||VIZ[t.domain]. ES5 only. */
+  /* ---- VIZT_B: per-topic Visual-lens bank — electrostatics, current, magnetism, modern, quantum, relativity.
+     Same entry shape as VIZ: {hint, scrub:{label,min,max,val,unit,step?,on(s,v)}, init(W,H)->state, draw(g,s,W,H,t)}.
+     mountViz prefers VIZT_A[t.id] || VIZT_B[t.id] || VIZ[t.domain] (lookup shipped by bank A). ES5 only. */
+  function vztbAxes(g,gx,gy,gw,gh){ g.strokeStyle='rgba(255,255,255,.15)'; g.lineWidth=1; g.beginPath(); g.moveTo(gx,gy-gh); g.lineTo(gx,gy); g.lineTo(gx+gw,gy); g.stroke(); }
+  function vztbPlot(g,gx,gy,gw,gh,fn,col,lw){ var i,u,v,X,Y; g.strokeStyle=col; g.lineWidth=lw||2; g.beginPath();
+    for(i=0;i<=100;i++){ u=i/100; v=Math.max(0,Math.min(1,fn(u))); X=gx+u*gw; Y=gy-v*gh; i?g.lineTo(X,Y):g.moveTo(X,Y); } g.stroke(); }
+  function vztbDot(g,x,y,col){ g.fillStyle=col; g.beginPath(); g.arc(x,y,4.5,0,7); g.fill(); }
   var VIZT_B={
-    'capacitance':{ hint:'push the plates together — capacitance climbs',
-      init:function(){ return {d:2}; },
-      scrub:{label:'plate gap d',min:0.5,max:4,val:2,unit:'mm',on:function(s,v){ s.d=v; }},
-      draw:function(g,s,W,H,t){ var cx=W*0.5,py=H*0.48,pw=W*0.56,gap=H*0.1+s.d/4*H*0.4,y1=py-gap/2,y2=py+gap/2,C=88.5/s.d,V=12,i;
-        g.fillStyle='#f87171'; g.fillRect(cx-pw/2,y1-5,pw,5); g.fillStyle='#60a5fa'; g.fillRect(cx-pw/2,y2,pw,5);
-        var n=Math.max(3,Math.round(C/12)); g.font='11px monospace';
-        for(i=0;i<n;i++){ var x=cx-pw/2+(i+0.5)/n*pw;
-          vzArrow(g,x,y1+4,x,y2-4,'rgba(250,204,21,.45)');
-          g.fillStyle='#fca5a5'; g.fillText('+',x-3,y1-9); g.fillStyle='#93c5fd'; g.fillText('−',x-3,y2+16); }
-        vzLabel(g,'E = V/d = '+(V/s.d).toFixed(1)+' kV/m',cx+pw/2+8,py+4,'#facc15');
-        vzLabel(g,'C = ε₀A/d = '+C.toFixed(0)+' pF   (A = 100 cm², V = 12 V)',12,16,'#a78bfa');
-        vzLabel(g,'Q = CV = '+(C*V/1000).toFixed(2)+' nC · U = ½CV² = '+(0.5*C*V*V/1000).toFixed(1)+' nJ',12,H-8,'rgba(159,177,208,.9)'); } },
-    'dielectrics':{ hint:'the slab fights the field — and multiplies C',
-      init:function(){ return {k:2.5}; },
-      scrub:{label:'dielectric constant κ',min:1,max:8,val:2.5,unit:'',on:function(s,v){ s.k=v; }},
-      draw:function(g,s,W,H,t){ var px=W*0.14,pw=W*0.5,y1=H*0.14,y2=H*0.82,sy1=y1+(y2-y1)*0.32,sy2=y1+(y2-y1)*0.68,i;
-        g.fillStyle='#f87171'; g.fillRect(px,y1-6,pw,6); g.fillStyle='#60a5fa'; g.fillRect(px,y2,pw,6);
-        g.fillStyle='rgba(167,139,250,.16)'; g.fillRect(px,sy1,pw,sy2-sy1);
-        var nb=Math.min(9,Math.round(s.k)); g.font='10px monospace';
-        for(i=0;i<nb;i++){ var bx=px+(i+0.5)/nb*pw; g.fillStyle='#93c5fd'; g.fillText('−',bx-2,sy1+11); g.fillStyle='#fca5a5'; g.fillText('+',bx-2,sy2-4); }
-        var hIn=(sy2-sy1-22)/s.k,ym=(sy1+sy2)/2;
-        for(i=0;i<5;i++){ var ax=px+(i+0.5)/5*pw;
-          vzArrow(g,ax,y1+2,ax,sy1-2,'#facc15'); vzArrow(g,ax,sy2+2,ax,y2-2,'#facc15');
-          vzArrow(g,ax,ym-hIn/2,ax,ym+hIn/2,'rgba(250,204,21,.55)'); }
-        vzLabel(g,'E₀',px+pw+8,(y1+sy1)/2+4,'#facc15'); vzLabel(g,'E = E₀/κ',px+pw+8,ym+4,'rgba(250,204,21,.75)');
-        vzLabel(g,'C = κC₀ = '+s.k.toFixed(1)+' C₀   (fixed charge Q)',12,16,'#a78bfa');
-        vzLabel(g,'bound charges cancel part of the field inside',12,H-8,'rgba(159,177,208,.9)'); } },
+  /* ============ ELECTROSTATICS ============ */
+  "charge":{ hint:'charge only comes in whole lumps of e',
+    init:function(){ return {n:4}; },
+    scrub:{label:'electrons transferred n',min:0,max:10,val:4,unit:'e⁻',step:1,on:function(s,v){ s.n=Math.round(v); }},
+    draw:function(g,s,W,H,t){ var gx=W*0.1,gy=H*0.84,gw=W*0.5,gh=H*0.6,i,q=s.n*1.602;
+      vztbAxes(g,gx,gy,gw,gh);
+      for(i=0;i<=10;i++){ var x0=gx+i/11*gw,x1=gx+(i+1)/11*gw,y=gy-(i/10)*gh*0.9;
+        g.strokeStyle=i<=s.n?'#facc15':'rgba(255,255,255,.18)'; g.lineWidth=i<=s.n?2.5:1.5;
+        g.beginPath(); g.moveTo(x0,y); g.lineTo(x1,y); g.stroke(); }
+      vztbDot(g,gx+(s.n+0.5)/11*gw,gy-(s.n/10)*gh*0.9,'#facc15');
+      vzLabel(g,'q',gx-8,gy-gh-4,'#facc15'); vzLabel(g,'n →',gx+gw-22,gy+13);
+      var cx=W*0.79,cy=H*0.42,R=Math.min(W,H)*0.14;
+      g.strokeStyle='rgba(125,211,252,.5)'; g.lineWidth=1.4; g.beginPath(); g.arc(cx,cy,R,0,7); g.stroke();
+      for(i=0;i<s.n;i++){ var a=i/10*6.283+1.3; g.fillStyle='#7dd3fc'; g.beginPath(); g.arc(cx+Math.cos(a)*R*0.6,cy+Math.sin(a)*R*0.6,3,0,7); g.fill(); }
+      g.textAlign='center'; vzLabel(g,s.n+' e⁻',cx,cy+R+16,'#7dd3fc'); g.textAlign='left';
+      vzLabel(g,'q = ne = '+(s.n===0?'0':'−'+q.toFixed(2)+'×10⁻¹⁹ C'),12,18,'#fff');
+      vzLabel(g,'a staircase, never a ramp — charge is quantized',12,H-8,'rgba(159,177,208,.9)'); } },
+  "coulomb":{ hint:'halve the distance → four times the force',
+    init:function(){ return {r:1.5}; },
+    scrub:{label:'separation r',min:0.5,max:3,val:1.5,unit:'m',on:function(s,v){ s.r=v; }},
+    draw:function(g,s,W,H,t){ var F=8.99/(s.r*s.r),cy=H*0.26,cx=W*0.5,half=(s.r/3)*W*0.32,ax=cx-half,bx=cx+half,alen=Math.min(64,F*2.2+8);
+      g.strokeStyle='rgba(255,255,255,.15)'; g.lineWidth=1; g.beginPath(); g.moveTo(ax,cy); g.lineTo(bx,cy); g.stroke();
+      g.textAlign='center'; g.font='bold 12px sans-serif';
+      g.fillStyle='#f87171'; g.beginPath(); g.arc(ax,cy,9,0,7); g.fill(); g.fillStyle='#fff'; g.fillText('+',ax,cy+4);
+      g.fillStyle='#f87171'; g.beginPath(); g.arc(bx,cy,9,0,7); g.fill(); g.fillStyle='#fff'; g.fillText('+',bx,cy+4); g.textAlign='left';
+      vzArrow(g,ax-11,cy,ax-11-alen,cy,'#fbbf24'); vzArrow(g,bx+11,cy,bx+11+alen,cy,'#fbbf24');
+      var gx=W*0.12,gy=H*0.9,gw=W*0.76,gh=H*0.44;
+      vztbAxes(g,gx,gy,gw,gh);
+      vztbPlot(g,gx,gy,gw,gh,function(u){ var rr=0.5+u*2.5; return (8.99/(rr*rr))/36; },'#fbbf24');
+      vztbDot(g,gx+(s.r-0.5)/2.5*gw,gy-Math.min(1,F/36)*gh,'#fff');
+      vzLabel(g,'F',gx-8,gy-gh-4,'#fbbf24'); vzLabel(g,'r →',gx+gw-20,gy+12);
+      vzLabel(g,'F = kq₁q₂/r² = '+F.toFixed(1)+' mN   (q = 1 μC each)',12,18,'#fff'); } },
+  "e-field":{ hint:'the field is real — an arrow at every point in space',
+    init:function(){ return {q:2}; },
+    scrub:{label:'charge Q',min:-3,max:3,val:2,unit:'μC',on:function(s,v){ s.q=v; }},
+    draw:function(g,s,W,H,t){ var cx=W*0.5,cy=H*0.52,i,j,step=Math.min(W,H)/7.2;
+      for(i=-3;i<=3;i++) for(j=-2;j<=2;j++){ if(!i&&!j) continue;
+        var px=cx+i*step,py=cy+j*step,dx=px-cx,dy=py-cy,r2=(dx*dx+dy*dy)/(step*step),d=Math.sqrt(dx*dx+dy*dy);
+        var mag=Math.min(step*0.6,Math.abs(s.q)*step*1.1/r2); if(mag<2.5) continue;
+        var sgn=s.q>=0?1:-1,ux=dx/d*sgn,uy=dy/d*sgn;
+        vzArrow(g,px-ux*mag/2,py-uy*mag/2,px+ux*mag/2,py+uy*mag/2,s.q>=0?'rgba(250,204,21,.75)':'rgba(96,165,250,.85)'); }
+      g.textAlign='center'; g.font='bold 13px sans-serif';
+      g.fillStyle=s.q>=0?'#f87171':'#60a5fa'; g.beginPath(); g.arc(cx,cy,10,0,7); g.fill();
+      g.fillStyle='#fff'; g.fillText(s.q>=0?'+':'−',cx,cy+4); g.textAlign='left';
+      vzLabel(g,'E = kQ/r² = '+(8.99*Math.abs(s.q)).toFixed(1)+' kN/C at r = 1 m',12,18,'#fff');
+      vzLabel(g,s.q===0?'no charge — no field':(s.q>0?'E points away from + · falls off as 1/r²':'E points toward − · falls off as 1/r²'),12,H-8,'rgba(159,177,208,.9)'); } },
+  "potential":{ hint:'a contour map of energy — each ring one step in V',
+    init:function(){ return {q:2}; },
+    scrub:{label:'charge Q',min:1,max:5,val:2,unit:'μC',on:function(s,v){ s.q=v; }},
+    draw:function(g,s,W,H,t){ var cx=W*0.32,cy=H*0.5,scale=Math.min(W,H)*0.1,n;
+      for(n=1;n<=14;n++){ var r=8.99*s.q/(6*n)*scale; if(r<7||r>Math.min(W,H)*0.55) continue;
+        g.strokeStyle='rgba(250,204,21,'+(0.15+n*0.045).toFixed(2)+')'; g.lineWidth=1.2; g.beginPath(); g.arc(cx,cy,r,0,7); g.stroke(); }
+      g.fillStyle='#f87171'; g.beginPath(); g.arc(cx,cy,7,0,7); g.fill();
+      var gx=W*0.66,gy=H*0.82,gw=W*0.28,gh=H*0.56;
+      vztbAxes(g,gx,gy,gw,gh);
+      vztbPlot(g,gx,gy,gw,gh,function(u){ var r=0.2+u*2.8; return (8.99*s.q/r)/120; },'#facc15');
+      vzLabel(g,'V(r) = kQ/r',gx,gy-gh-6,'#facc15'); vzLabel(g,'r →',gx+gw-18,gy+12);
+      vzLabel(g,'V = kQ/r = '+(8.99*s.q).toFixed(1)+' kV at 1 m   ·   E = −dV/dr',12,18,'#fff');
+      vzLabel(g,'rings every 6 kV — they crowd where the field is strong',12,H-8,'rgba(159,177,208,.9)'); } },
+  "capacitance":{ hint:'push the plates closer — capacitance grows',
+    init:function(){ return {d:2}; },
+    scrub:{label:'plate gap d',min:0.5,max:5,val:2,unit:'mm',on:function(s,v){ s.d=v; }},
+    draw:function(g,s,W,H,t){ var C=88.5/s.d,cx=W*0.38,gap=s.d/5*H*0.42+10,py=H*0.48,pw=W*0.44,i;
+      g.fillStyle='#f87171'; g.fillRect(cx-pw/2,py-gap/2-4,pw,4);
+      g.fillStyle='#60a5fa'; g.fillRect(cx-pw/2,py+gap/2,pw,4);
+      for(i=0;i<7;i++){ var x=cx-pw/2+(i+0.5)/7*pw; vzArrow(g,x,py-gap/2+3,x,py+gap/2-3,'rgba(250,204,21,.55)'); }
+      g.textAlign='center'; vzLabel(g,'+Q',cx,py-gap/2-10,'#f87171'); vzLabel(g,'−Q',cx,py+gap/2+16,'#60a5fa'); g.textAlign='left';
+      var bx=W*0.78,bh=H*0.56,frac=Math.min(1,C/177);
+      g.fillStyle='rgba(255,255,255,.07)'; g.fillRect(bx,H*0.82-bh,26,bh);
+      g.fillStyle='#34d399'; g.fillRect(bx,H*0.82-bh*frac,26,bh*frac);
+      vzLabel(g,'C',bx+8,H*0.82+14,'#34d399');
+      vzLabel(g,'C = ε₀A/d = '+C.toFixed(0)+' pF   (A = 100 cm²)',12,18,'#fff');
+      vzLabel(g,'at 12 V:  E = V/d = '+(12/s.d).toFixed(1)+' kV/m   ·   U = ½CV² = '+(C*0.072).toFixed(1)+' nJ',12,H-8,'rgba(159,177,208,.9)'); } },
+  "gauss":{ hint:'any surface around the charge catches the same flux',
+    init:function(){ return {r:1.5}; },
+    scrub:{label:'Gaussian radius r',min:0.6,max:2.5,val:1.5,unit:'m',on:function(s,v){ s.r=v; }},
+    draw:function(g,s,W,H,t){ var cx=W*0.36,cy=H*0.5,px=Math.min(W,H)*0.17,R=s.r*px,i,N=16;
+      for(i=0;i<N;i++){ var a=i/N*6.283,len=Math.min(W,H)*0.46;
+        g.strokeStyle='rgba(250,204,21,.4)'; g.lineWidth=1.1; g.beginPath(); g.moveTo(cx+Math.cos(a)*9,cy+Math.sin(a)*9); g.lineTo(cx+Math.cos(a)*len,cy+Math.sin(a)*len); g.stroke(); }
+      g.setLineDash([5,4]); g.strokeStyle='#7dd3fc'; g.lineWidth=2; g.beginPath(); g.arc(cx,cy,R,0,7); g.stroke(); g.setLineDash([]);
+      g.fillStyle='#f87171'; g.beginPath(); g.arc(cx,cy,8,0,7); g.fill();
+      var E=8.99/(s.r*s.r),A2=4*Math.PI*s.r*s.r,bx=W*0.8,bh=H*0.5,by=H*0.78;
+      g.fillStyle='rgba(255,255,255,.07)'; g.fillRect(bx,by-bh,16,bh); g.fillRect(bx+24,by-bh,16,bh);
+      g.fillStyle='#facc15'; g.fillRect(bx,by-bh*Math.min(1,E/25),16,bh*Math.min(1,E/25));
+      g.fillStyle='#7dd3fc'; g.fillRect(bx+24,by-bh*Math.min(1,A2/80),16,bh*Math.min(1,A2/80));
+      vzLabel(g,'E',bx+3,by+13,'#facc15'); vzLabel(g,'A',bx+27,by+13,'#7dd3fc');
+      vzLabel(g,'Φ = E·4πr² = q/ε₀ = 1.13×10⁵ V·m   (q = 1 μC)',12,18,'#fff');
+      vzLabel(g,'all '+N+' lines cross, whatever the radius — E×A stays fixed',12,H-8,'rgba(159,177,208,.9)'); } },
+  "dielectrics":{ hint:'the slab fights back — the field inside shrinks',
+    init:function(){ return {k:2}; },
+    scrub:{label:'dielectric constant κ',min:1,max:8,val:2,unit:'',on:function(s,v){ s.k=v; }},
+    draw:function(g,s,W,H,t){ var px=W*0.12,pw=W*0.5,topY=H*0.18,botY=H*0.82,i,j,pol=1-1/s.k;
+      g.fillStyle='#f87171'; g.fillRect(px,topY-5,pw,5); g.fillStyle='#60a5fa'; g.fillRect(px,botY,pw,5);
+      g.fillStyle='rgba(167,139,250,.12)'; g.fillRect(px+6,topY+12,pw-12,botY-topY-24);
+      for(i=0;i<6;i++) for(j=0;j<3;j++){ var mx=px+16+(i+0.5)/6*(pw-32),my=topY+24+(j+0.5)/3*(botY-topY-48),r=6;
+        g.strokeStyle='rgba(232,237,255,.35)'; g.lineWidth=1; g.beginPath();
+        if(g.ellipse) g.ellipse(mx,my,r*0.7,r+pol*3.5,0,0,7); else g.arc(mx,my,r,0,7); g.stroke();
+        g.fillStyle='rgba(96,165,250,'+(0.25+pol*0.65).toFixed(2)+')'; g.beginPath(); g.arc(mx,my-r-pol*3,2.2,0,7); g.fill();
+        g.fillStyle='rgba(248,113,113,'+(0.25+pol*0.65).toFixed(2)+')'; g.beginPath(); g.arc(mx,my+r+pol*3,2.2,0,7); g.fill(); }
+      var E0=H*0.28,El=E0/s.k;
+      vzArrow(g,W*0.76,H*0.3,W*0.76,H*0.3+E0,'rgba(250,204,21,.45)');
+      vzArrow(g,W*0.88,H*0.3,W*0.88,H*0.3+El,'#facc15');
+      vzLabel(g,'E₀',W*0.735,H*0.26,'rgba(250,204,21,.7)'); vzLabel(g,'E = E₀/κ',W*0.845,H*0.26,'#facc15');
+      vzLabel(g,'κ = '+s.k.toFixed(1)+'   →   C = κC₀ = '+(s.k).toFixed(1)+'× the vacuum capacitance',12,18,'#fff');
+      vzLabel(g,'− ends face the + plate: bound charge opposes E₀',12,H-8,'rgba(159,177,208,.9)'); } },
+  /* ============ CURRENT ============ */
+  "ohms-law":{ hint:'ohmic means a straight line through the origin',
+    init:function(){ return {R:6}; },
+    scrub:{label:'resistance R',min:1,max:20,val:6,unit:'Ω',on:function(s,v){ s.R=v; }},
+    draw:function(g,s,W,H,t){ var gx=W*0.14,gy=H*0.84,gw=W*0.72,gh=H*0.62,Imax=12,I=12/s.R;
+      vztbAxes(g,gx,gy,gw,gh);
+      vztbPlot(g,gx,gy,gw,gh,function(u){ var v=u*12; return (v<0.6?0:(v-0.6)*(v-0.6)*0.09)/Imax; },'rgba(255,255,255,.22)',1.2);
+      vztbPlot(g,gx,gy,gw,gh,function(u){ return (u*12/s.R)/Imax; },'#34d399');
+      vztbDot(g,gx+gw,gy-Math.min(1,I/Imax)*gh,'#fff');
+      vzLabel(g,'I (A)',gx-6,gy-gh-6,'#34d399'); vzLabel(g,'V → 12 V',gx+gw-54,gy+13);
+      vzLabel(g,'non-ohmic (diode)',gx+gw*0.56,gy-gh*0.2,'rgba(255,255,255,.4)');
+      vzLabel(g,'V = IR   →   I = 12 V / '+s.R.toFixed(1)+' Ω = '+I.toFixed(2)+' A',12,18,'#fff');
+      vzLabel(g,'slope of the I–V line is 1/R — constant only for ohmic conductors',12,H-8,'rgba(159,177,208,.9)'); } },
+  "resistor-networks":{ hint:'parallel always beats the smallest resistor',
+    init:function(){ return {R2:12}; },
+    scrub:{label:'R₂',min:1,max:24,val:12,unit:'Ω',on:function(s,v){ s.R2=v; }},
+    draw:function(g,s,W,H,t){ var R1=6,Rs=R1+s.R2,Rp=R1*s.R2/(R1+s.R2),max=30,i;
+      var bars=[['R₁',R1,'#7dd3fc'],['R₂',s.R2,'#a78bfa'],['series',Rs,'#fbbf24'],['parallel',Rp,'#34d399']];
+      var by=H*0.78,bh=H*0.54,bw=Math.min(48,W*0.12);
+      for(i=0;i<4;i++){ var bx=W*0.1+i*(W*0.22),h=Math.min(1,bars[i][1]/max)*bh;
+        g.fillStyle='rgba(255,255,255,.07)'; g.fillRect(bx,by-bh,bw,bh);
+        g.fillStyle=bars[i][2]; g.fillRect(bx,by-h,bw,h);
+        vzLabel(g,bars[i][0],bx,by+14,bars[i][2]); vzLabel(g,bars[i][1].toFixed(1),bx,by-h-6,'#fff'); }
+      var ymin=by-Math.min(1,Math.min(R1,s.R2)/max)*bh;
+      g.setLineDash([4,4]); g.strokeStyle='rgba(52,211,153,.5)'; g.lineWidth=1; g.beginPath(); g.moveTo(W*0.06,ymin); g.lineTo(W*0.94,ymin); g.stroke(); g.setLineDash([]);
+      vzLabel(g,'Rₛ = R₁+R₂ = '+Rs.toFixed(1)+' Ω     Rₚ = R₁R₂/(R₁+R₂) = '+Rp.toFixed(2)+' Ω',12,18,'#fff');
+      vzLabel(g,'dashed line = smaller resistor — the parallel bar never reaches it',12,H-8,'rgba(159,177,208,.9)'); } },
+  "emf-internal":{ hint:'load the cell — terminal voltage sags below ε',
+    init:function(){ return {R:6}; },
+    scrub:{label:'load R',min:0.5,max:20,val:6,unit:'Ω',on:function(s,v){ s.R=v; }},
+    draw:function(g,s,W,H,t){ var emf=12,r=1,I=emf/(s.R+r),V=emf-I*r,Imax=emf/r;
+      var gx=W*0.14,gy=H*0.84,gw=W*0.56,gh=H*0.6;
+      vztbAxes(g,gx,gy,gw,gh);
+      g.strokeStyle='#fbbf24'; g.lineWidth=2; g.beginPath(); g.moveTo(gx,gy-gh*0.92); g.lineTo(gx+gw,gy); g.stroke();
+      vztbDot(g,gx+I/Imax*gw,gy-(V/emf)*gh*0.92,'#fff');
+      vzLabel(g,'V',gx-8,gy-gh-4,'#fbbf24'); vzLabel(g,'I →',gx+gw-18,gy+13);
+      vzLabel(g,'intercept = ε',gx+4,gy-gh*0.92-5,'rgba(251,191,36,.85)'); vzLabel(g,'slope = −r',gx+gw*0.56,gy-gh*0.3,'rgba(251,191,36,.85)');
+      var bx=W*0.82,bh2=H*0.56,by=H*0.84;
+      g.fillStyle='rgba(255,255,255,.07)'; g.fillRect(bx,by-bh2,24,bh2);
+      g.fillStyle='#34d399'; g.fillRect(bx,by-bh2*(V/emf),24,bh2*(V/emf));
+      g.strokeStyle='rgba(255,255,255,.4)'; g.lineWidth=1; g.beginPath(); g.moveTo(bx-4,by-bh2); g.lineTo(bx+28,by-bh2); g.stroke();
+      vzLabel(g,'V/ε',bx,by+14,'#34d399');
+      vzLabel(g,'I = ε/(R+r) = '+I.toFixed(2)+' A   ·   V = ε − Ir = '+V.toFixed(2)+' V',12,18,'#fff');
+      vzLabel(g,'ε = 12 V, r = 1 Ω — open circuit reads ε; a short pulls 12 A',12,H-8,'rgba(159,177,208,.9)'); } },
+  "rc-circuits":{ hint:'63% after one τ — exponential, never linear',
+    init:function(){ return {R:3}; },
+    scrub:{label:'resistance R',min:1,max:10,val:3,unit:'kΩ',on:function(s,v){ s.R=v; }},
+    draw:function(g,s,W,H,t){ var tau=s.R,Twin=30,gx=W*0.12,gy=H*0.82,gw=W*0.78,gh=H*0.6;
+      vztbAxes(g,gx,gy,gw,gh);
+      g.setLineDash([3,4]); g.strokeStyle='rgba(255,255,255,.25)'; g.lineWidth=1; g.beginPath(); g.moveTo(gx,gy-gh*0.92); g.lineTo(gx+gw,gy-gh*0.92); g.stroke(); g.setLineDash([]);
+      vztbPlot(g,gx,gy,gw,gh,function(u){ return (1-Math.exp(-u*Twin/tau))*0.92; },'#34d399');
+      var xt=gx+tau/Twin*gw,y63=gy-0.632*0.92*gh;
+      g.setLineDash([2,3]); g.strokeStyle='rgba(52,211,153,.5)'; g.beginPath(); g.moveTo(xt,gy); g.lineTo(xt,y63); g.lineTo(gx,y63); g.stroke(); g.setLineDash([]);
+      var tt=(t*3)%Twin; vztbDot(g,gx+tt/Twin*gw,gy-(1-Math.exp(-tt/tau))*0.92*gh,'#fff');
+      vzLabel(g,'q/Q',gx-6,gy-gh-4,'#34d399'); vzLabel(g,'t → 30 s',gx+gw-44,gy+13);
+      vzLabel(g,'63%',gx+3,y63-4,'rgba(52,211,153,.85)'); vzLabel(g,'τ',xt-3,gy+13,'#34d399');
+      vzLabel(g,'q = Q(1−e^(−t/τ))   τ = RC = '+tau.toFixed(1)+' s   (C = 1000 μF)',12,18,'#fff');
+      vzLabel(g,'‘fully charged’ ≈ 5τ = '+(5*tau).toFixed(0)+' s',12,H-8,'rgba(159,177,208,.9)'); } },
+  "wheatstone":{ hint:'balance the bridge — the needle falls to zero',
+    init:function(){ return {S:18}; },
+    scrub:{label:'unknown S',min:5,max:60,val:18,unit:'Ω',on:function(s,v){ s.S=v; }},
+    draw:function(g,s,W,H,t){ var P=10,Q=20,R=15,Sb=Q*R/P,cx=W*0.32,cy=H*0.48,rr=Math.min(W,H)*0.3;
+      var A={x:cx-rr,y:cy},B={x:cx,y:cy-rr},C2={x:cx+rr,y:cy},D={x:cx,y:cy+rr};
+      g.strokeStyle='rgba(255,255,255,.3)'; g.lineWidth=1.4;
+      g.beginPath(); g.moveTo(A.x,A.y); g.lineTo(B.x,B.y); g.lineTo(C2.x,C2.y); g.lineTo(D.x,D.y); g.closePath(); g.stroke();
+      g.strokeStyle='rgba(125,211,252,.5)'; g.beginPath(); g.moveTo(B.x,B.y); g.lineTo(D.x,D.y); g.stroke();
+      vzLabel(g,'P '+P,(A.x+B.x)/2-26,(A.y+B.y)/2-6,'#e8edff'); vzLabel(g,'Q '+Q,(B.x+C2.x)/2+8,(B.y+C2.y)/2-6,'#e8edff');
+      vzLabel(g,'R '+R,(A.x+D.x)/2-26,(A.y+D.y)/2+16,'#e8edff'); vzLabel(g,'S '+s.S.toFixed(0),(C2.x+D.x)/2+6,(C2.y+D.y)/2+16,'#facc15');
+      var vB=Q/(P+Q)-s.S/(R+s.S),bal=Math.abs(vB)<0.004;
+      var mx=W*0.78,my=H*0.46,mr=Math.min(W,H)*0.2,ang=-Math.PI/2+Math.max(-1,Math.min(1,vB*5))*1.1;
+      g.strokeStyle='rgba(255,255,255,.25)'; g.lineWidth=1.2; g.beginPath(); g.arc(mx,my,mr,Math.PI*1.15,Math.PI*1.85); g.stroke();
+      g.strokeStyle=bal?'#34d399':'#f87171'; g.lineWidth=2; g.beginPath(); g.moveTo(mx,my); g.lineTo(mx+Math.cos(ang)*mr,my+Math.sin(ang)*mr); g.stroke();
+      g.textAlign='center'; vzLabel(g,bal?'BALANCED':'I_G ≠ 0',mx,my+18,bal?'#34d399':'#f87171'); g.textAlign='left';
+      vzLabel(g,'balance:  P/Q = R/S  →  S = QR/P = '+Sb.toFixed(0)+' Ω',12,18,'#fff');
+      vzLabel(g,'at balance no current crosses the galvanometer — supply-independent',12,H-8,'rgba(159,177,208,.9)'); } },
+  /* ============ MAGNETISM & EMI ============ */
+  "magnetic-field":{ hint:'crossed E and B — only one speed flies straight',
+    init:function(){ return {v:2}; },
+    scrub:{label:'particle speed v',min:0.5,max:4,val:2,unit:'×10⁶ m/s',on:function(s,v){ s.v=v; }},
+    draw:function(g,s,W,H,t){ var v0=2,x0=W*0.1,x1=W*0.9,cy=H*0.48,ph2=H*0.2,i;
+      g.fillStyle='#f87171'; g.fillRect(x0,cy-ph2-6,x1-x0,4); g.fillStyle='#60a5fa'; g.fillRect(x0,cy+ph2+2,x1-x0,4);
+      g.textAlign='center'; vzLabel(g,'+ plate — E points down',(x0+x1)/2,cy-ph2-12,'rgba(248,113,113,.8)'); g.textAlign='left';
+      for(i=0;i<10;i++){ var bx=x0+(i+0.5)/10*(x1-x0); g.fillStyle='rgba(96,165,250,.6)'; g.beginPath(); g.arc(bx,cy+ph2*0.55,1.8,0,7); g.fill();
+        g.strokeStyle='rgba(96,165,250,.3)'; g.lineWidth=1; g.beginPath(); g.arc(bx,cy+ph2*0.55,5,0,7); g.stroke(); }
+      vzLabel(g,'⊙ B out of page',x0+6,cy+ph2*0.55+18,'rgba(96,165,250,.85)');
+      var k=(v0-s.v)*0.09;
+      function yOf(u){ return Math.max(cy-ph2,Math.min(cy+ph2,cy+k*u*u*H)); }
+      g.strokeStyle='#facc15'; g.lineWidth=2; g.beginPath();
+      for(i=0;i<=60;i++){ var u=i/60,X=x0+u*(x1-x0),Y=yOf(u); i?g.lineTo(X,Y):g.moveTo(X,Y); } g.stroke();
+      var up=(t*0.5)%1; vztbDot(g,x0+up*(x1-x0),yOf(up),'#fff');
+      vzLabel(g,'F_E = qE (down)   F_B = qvB (up)   → net force '+(s.v<v0?'downward':(s.v>v0?'upward':'zero')),12,18,'#fff');
+      vzLabel(g,'undeflected only when qE = qvB  →  v = E/B = 2×10⁶ m/s',12,H-8,'rgba(159,177,208,.9)'); } },
+  "em-induction":{ hint:'sweep the rod — flux grows, EMF appears',
+    init:function(){ return {v:4,x:0.3}; },
+    scrub:{label:'rod speed v',min:0,max:10,val:4,unit:'m/s',on:function(s,v){ s.v=v; }},
+    draw:function(g,s,W,H,t){ var B=0.5,L=0.4,emf=B*L*s.v,x0=W*0.08,x1=W*0.92,yT=H*0.24,yB=H*0.72,i,j;
+      s.x+=s.v*0.0012; if(s.x>0.94) s.x=0.06; var rx=x0+s.x*(x1-x0);
+      g.fillStyle='rgba(52,211,153,.09)'; g.fillRect(x0,yT,rx-x0,yB-yT);
+      for(i=0;i<10;i++) for(j=0;j<4;j++){ var xx=x0+(i+0.5)/10*(x1-x0),yy=yT+(j+0.5)/4*(yB-yT);
+        g.strokeStyle='rgba(96,165,250,.5)'; g.lineWidth=1; g.beginPath(); g.moveTo(xx-3,yy-3); g.lineTo(xx+3,yy+3); g.moveTo(xx+3,yy-3); g.lineTo(xx-3,yy+3); g.stroke(); }
+      g.strokeStyle='rgba(255,255,255,.35)'; g.lineWidth=2; g.beginPath(); g.moveTo(x1,yT); g.lineTo(x0,yT); g.lineTo(x0,yB); g.lineTo(x1,yB); g.stroke();
+      g.strokeStyle='#fbbf24'; g.lineWidth=3; g.beginPath(); g.moveTo(rx,yT); g.lineTo(rx,yB); g.stroke();
+      if(s.v>0){ vzArrow(g,rx+6,(yT+yB)/2,rx+6+Math.min(40,s.v*5),(yT+yB)/2,'#fbbf24');
+        vzArrow(g,x0+14,yT+12,x0+14,yB-12,'#34d399'); vzLabel(g,'I (Lenz)',x0+20,(yT+yB)/2+4,'#34d399'); }
+      vzLabel(g,'× B into page',x1-92,yT-8,'rgba(96,165,250,.85)');
+      vzLabel(g,'ε = BLv = 0.5 × 0.4 × '+s.v.toFixed(1)+' = '+emf.toFixed(2)+' V',12,18,'#fff');
+      vzLabel(g,'flux Φ = B·A grows — the induced current opposes the growth',12,H-8,'rgba(159,177,208,.9)'); } },
+  "inductance":{ hint:'an inductor refuses sudden change — current ramps in',
+    init:function(){ return {L:2}; },
+    scrub:{label:'inductance L',min:0.5,max:10,val:2,unit:'H',on:function(s,v){ s.L=v; }},
+    draw:function(g,s,W,H,t){ var R=4,emf=12,I0=emf/R,tau=s.L/R,Twin=8,gx=W*0.12,gy=H*0.82,gw=W*0.78,gh=H*0.6;
+      vztbAxes(g,gx,gy,gw,gh);
+      g.setLineDash([3,4]); g.strokeStyle='rgba(255,255,255,.25)'; g.lineWidth=1; g.beginPath(); g.moveTo(gx,gy-gh*0.9); g.lineTo(gx+gw,gy-gh*0.9); g.stroke(); g.setLineDash([]);
+      vztbPlot(g,gx,gy,gw,gh,function(u){ return (1-Math.exp(-u*Twin/tau))*0.9; },'#a78bfa');
+      var xt=gx+Math.min(1,tau/Twin)*gw;
+      g.setLineDash([2,3]); g.strokeStyle='rgba(167,139,250,.5)'; g.beginPath(); g.moveTo(xt,gy); g.lineTo(xt,gy-0.632*0.9*gh); g.stroke(); g.setLineDash([]);
+      var tt=(t*2)%Twin; vztbDot(g,gx+tt/Twin*gw,gy-(1-Math.exp(-tt/tau))*0.9*gh,'#fff');
+      vzLabel(g,'I → ε/R = 3 A',gx+4,gy-gh*0.9-6,'rgba(255,255,255,.6)');
+      vzLabel(g,'τ = L/R',xt+4,gy-8,'#a78bfa'); vzLabel(g,'t → 8 s',gx+gw-40,gy+13);
+      vzLabel(g,'I = (ε/R)(1−e^(−t/τ))   τ = L/R = '+tau.toFixed(2)+' s',12,18,'#fff');
+      vzLabel(g,'settled current stores U = ½LI² = '+(0.5*s.L*I0*I0).toFixed(1)+' J in the field',12,H-8,'rgba(159,177,208,.9)'); } },
+  "ac-circuits":{ hint:'sweep the drive — the circuit sings at one frequency',
+    init:function(){ return {f:100}; },
+    scrub:{label:'drive frequency f',min:40,max:400,val:100,unit:'Hz',on:function(s,v){ s.f=v; }},
+    draw:function(g,s,W,H,t){ var R=10,L=0.05,C=20e-6,V=10,f0=1/(2*Math.PI*Math.sqrt(L*C));
+      function amp(f){ var w=2*Math.PI*f,X=w*L-1/(w*C); return V/Math.sqrt(R*R+X*X); }
+      var gx=W*0.12,gy=H*0.8,gw=W*0.78,gh=H*0.58,Imax=V/R;
+      vztbAxes(g,gx,gy,gw,gh);
+      vztbPlot(g,gx,gy,gw,gh,function(u){ return amp(40+u*360)/Imax*0.92; },'#fb923c');
+      var xf0=gx+(f0-40)/360*gw;
+      g.setLineDash([3,4]); g.strokeStyle='rgba(251,146,60,.5)'; g.lineWidth=1; g.beginPath(); g.moveTo(xf0,gy); g.lineTo(xf0,gy-gh*0.96); g.stroke(); g.setLineDash([]);
+      var I=amp(s.f); vztbDot(g,gx+(s.f-40)/360*gw,gy-I/Imax*0.92*gh,'#fff');
+      vzLabel(g,'I₀ (A)',gx-6,gy-gh-4,'#fb923c'); vzLabel(g,'f →',gx+gw-16,gy+13);
+      vzLabel(g,'f₀ = '+f0.toFixed(0)+' Hz',xf0+5,gy-gh*0.9,'#fb923c');
+      var wL=2*Math.PI*s.f*L,wC=1/(2*Math.PI*s.f*C);
+      vzLabel(g,'Z = √(R²+(X_L−X_C)²) = '+(V/I).toFixed(1)+' Ω  →  I = '+I.toFixed(2)+' A',12,18,'#fff');
+      vzLabel(g,'X_L = '+wL.toFixed(1)+' Ω   X_C = '+wC.toFixed(1)+' Ω   '+(Math.abs(wL-wC)<3?'— resonance: they cancel':(wL>wC?'— inductive: current lags':'— capacitive: current leads')),12,H-8,'rgba(159,177,208,.9)'); } },
+  "em-waves":{ hint:'one wave family — from radio to gamma',
+    init:function(){ return {lg:14.6}; },
+    scrub:{label:'log₁₀ frequency',min:5,max:20,val:14.6,unit:'',on:function(s,v){ s.lg=v; }},
+    draw:function(g,s,W,H,t){ var f=Math.pow(10,s.lg),lam=3e8/f,i;
+      var y0=H*0.32,A=H*0.15,k=6.283/(26+((20-s.lg)/15)*95);
+      g.strokeStyle='#7dd3fc'; g.lineWidth=2; g.beginPath();
+      for(i=0;i<=W;i+=2){ var y=y0+A*Math.sin(k*i-t*3); i?g.lineTo(i,y):g.moveTo(i,y); } g.stroke();
+      g.strokeStyle='rgba(244,114,182,.55)'; g.lineWidth=1.4; g.beginPath();
+      for(i=0;i<=W;i+=2){ var y2=y0+A*0.45*Math.sin(k*i-t*3); i?g.lineTo(i,y2):g.moveTo(i,y2); } g.stroke();
+      vzLabel(g,'E',8,y0-A-4,'#7dd3fc'); vzLabel(g,'B (⊥, in step)',8,y0+A+14,'rgba(244,114,182,.8)');
+      var sy=H*0.72,sx=W*0.08,sw=W*0.84,names=['radio','μwave','IR','vis','UV','X-ray','γ'];
+      var edges=[5,9,11.5,14.4,15,16.5,18,20],cols=['rgba(148,163,184,.25)','rgba(52,211,153,.25)','rgba(248,113,113,.3)','rgba(250,204,21,.5)','rgba(167,139,250,.35)','rgba(125,211,252,.3)','rgba(244,114,182,.3)'];
+      for(i=0;i<7;i++){ var xa=sx+(edges[i]-5)/15*sw,xb=sx+(edges[i+1]-5)/15*sw;
+        g.fillStyle=cols[i]; g.fillRect(xa,sy,xb-xa,14); if(xb-xa>24) vzLabel(g,names[i],xa+3,sy+26,'rgba(232,237,255,.6)'); }
+      var mk=sx+(s.lg-5)/15*sw; vzArrow(g,mk,sy-16,mk,sy-3,'#fff');
+      var lt=lam>=1?lam.toFixed(1)+' m':(lam>=1e-3?(lam*1e3).toFixed(1)+' mm':(lam>=1e-6?(lam*1e6).toFixed(1)+' μm':(lam*1e9).toFixed(1)+' nm'));
+      vzLabel(g,'c = fλ  →  λ = '+lt+'   at  f = 10^'+s.lg.toFixed(1)+' Hz',12,18,'#fff');
+      vzLabel(g,'same speed c for all — only the wavelength changes',12,H-8,'rgba(159,177,208,.9)'); } },
+  "cyclotron":{ hint:'a constant-frequency spiral — kicked twice per turn',
+    init:function(){ return {B:1,th:0}; },
+    scrub:{label:'field B',min:0.5,max:2,val:1,unit:'T',on:function(s,v){ s.B=v; }},
+    draw:function(g,s,W,H,t){ var cx=W*0.4,cy=H*0.5,Rmax=Math.min(W,H)*0.4,f=15.25*s.B,N=Math.max(2,Math.round(4*s.B*s.B)),i;
+      g.strokeStyle='rgba(96,165,250,.35)'; g.lineWidth=1.2;
+      g.beginPath(); g.arc(cx,cy,Rmax+6,Math.PI*0.53,Math.PI*1.47); g.stroke();
+      g.beginPath(); g.arc(cx,cy,Rmax+6,-Math.PI*0.47,Math.PI*0.47); g.stroke();
+      vzLabel(g,'dee',cx-Rmax*0.8,cy-Rmax*0.6,'rgba(96,165,250,.6)'); vzLabel(g,'dee',cx+Rmax*0.55,cy-Rmax*0.6,'rgba(96,165,250,.6)');
+      var thMax=N*6.283;
+      g.strokeStyle='#facc15'; g.lineWidth=1.6; g.beginPath();
+      for(i=0;i<=240;i++){ var th=i/240*thMax,r=Rmax*Math.sqrt(th/thMax),X=cx+Math.cos(th)*r,Y=cy+Math.sin(th)*r; i?g.lineTo(X,Y):g.moveTo(X,Y); } g.stroke();
+      s.th+=0.06*s.B; if(s.th>thMax) s.th=0;
+      var rp=Rmax*Math.sqrt(s.th/thMax); vztbDot(g,cx+Math.cos(s.th)*rp,cy+Math.sin(s.th)*rp,'#fff');
+      vzLabel(g,'f = qB/2πm = '+f.toFixed(1)+' MHz (proton) — same for every loop',12,18,'#fff');
+      vzLabel(g,'r = mv/qB grows with each kick · exit KE = q²B²R²/2m ≈ '+(12*s.B*s.B).toFixed(0)+' MeV (R = 0.5 m)',12,H-8,'rgba(159,177,208,.9)'); } },
+  "lc-oscillations":{ hint:'energy sloshes: capacitor ⇄ inductor',
+    init:function(){ return {C:50}; },
+    scrub:{label:'capacitance C',min:10,max:200,val:50,unit:'μF',on:function(s,v){ s.C=v; }},
+    draw:function(g,s,W,H,t){ var L=1,f=1/(2*Math.PI*Math.sqrt(L*s.C*1e-6)),ph=t*2.2,qq=Math.cos(ph),ii=Math.sin(ph),i;
+      var by=H*0.76,bh=H*0.48;
+      g.fillStyle='rgba(255,255,255,.07)'; g.fillRect(W*0.07,by-bh,28,bh); g.fillRect(W*0.19,by-bh,28,bh);
+      g.fillStyle='#facc15'; g.fillRect(W*0.07,by-bh*qq*qq,28,bh*qq*qq);
+      g.fillStyle='#a78bfa'; g.fillRect(W*0.19,by-bh*ii*ii,28,bh*ii*ii);
+      vzLabel(g,'½q²/C',W*0.06,by+14,'#facc15'); vzLabel(g,'½LI²',W*0.185,by+14,'#a78bfa');
+      var gx=W*0.4,gw=W*0.54,y0=H*0.44,A=H*0.2,span=6;
+      g.strokeStyle='rgba(255,255,255,.12)'; g.lineWidth=1; g.beginPath(); g.moveTo(gx,y0); g.lineTo(gx+gw,y0); g.stroke();
+      g.strokeStyle='#facc15'; g.lineWidth=1.8; g.beginPath();
+      for(i=0;i<=100;i++){ var X=gx+i/100*gw,Y=y0-A*Math.cos(ph-span+i/100*span); i?g.lineTo(X,Y):g.moveTo(X,Y); } g.stroke();
+      g.strokeStyle='rgba(167,139,250,.8)'; g.lineWidth=1.4; g.beginPath();
+      for(i=0;i<=100;i++){ var X2=gx+i/100*gw,Y2=y0-A*Math.sin(ph-span+i/100*span); i?g.lineTo(X2,Y2):g.moveTo(X2,Y2); } g.stroke();
+      vzLabel(g,'q(t)',gx+6,y0-A-6,'#facc15'); vzLabel(g,'I(t) — 90° behind',gx+gw*0.4,y0+A+16,'rgba(167,139,250,.9)');
+      vzLabel(g,'f = 1/2π√(LC) = '+f.toFixed(1)+' Hz   (L = 1 H)',12,18,'#fff');
+      vzLabel(g,'the two bars always sum to the same total — an electrical SHM',12,H-8,'rgba(159,177,208,.9)'); } },
+  /* ============ MODERN ============ */
+  "photoelectric":{ hint:'below threshold: nothing, however bright the light',
+    init:function(){ return {f:8}; },
+    scrub:{label:'light frequency f',min:2,max:12,val:8,unit:'×10¹⁴ Hz',on:function(s,v){ s.f=v; }},
+    draw:function(g,s,W,H,t){ var phi=2.3,Eph=0.414*s.f,KE=Eph-phi,f0=phi/0.414,i;
+      var mx=W*0.05,my=H*0.62,mw=W*0.3;
+      g.fillStyle='rgba(148,163,184,.25)'; g.fillRect(mx,my,mw,H*0.26); vzLabel(g,'sodium  φ = 2.3 eV',mx+4,my+H*0.26-6,'rgba(232,237,255,.6)');
+      var pc=s.f<5?'#f87171':(s.f<6?'#facc15':(s.f<7.5?'#34d399':'#a78bfa'));
+      vzArrow(g,mx+mw*0.15,my-H*0.34,mx+mw*0.45,my-4,pc); vzLabel(g,'hf = '+Eph.toFixed(2)+' eV',mx,my-H*0.36,pc);
+      if(KE>0){ for(i=0;i<3;i++){ var up=((t*(0.5+Math.sqrt(KE)*0.4))+i*0.33)%1;
+        g.fillStyle='#7dd3fc'; g.beginPath(); g.arc(mx+mw*0.55+up*W*0.09+i*8,my-6-up*H*0.4,3,0,7); g.fill(); } }
+      var gx=W*0.48,gy=H*0.78,gw=W*0.44,gh=H*0.56;
+      vztbAxes(g,gx,gy,gw,gh);
+      vztbPlot(g,gx,gy,gw,gh,function(u){ var ff=2+u*10; return Math.max(0,0.414*ff-phi)/2.7*0.9; },'#facc15');
+      var xf0=gx+(f0-2)/10*gw;
+      vzLabel(g,'f₀',xf0-4,gy+13,'#facc15'); vzLabel(g,'KE_max',gx-6,gy-gh-4,'#facc15'); vzLabel(g,'f →',gx+gw-16,gy+13);
+      vztbDot(g,gx+(s.f-2)/10*gw,gy-Math.max(0,KE)/2.7*0.9*gh,'#fff');
+      vzLabel(g,KE>0?'KE_max = hf − φ = '+KE.toFixed(2)+' eV':'hf < φ — no electrons at ANY intensity',12,18,KE>0?'#fff':'#f87171');
+      vzLabel(g,'slope of the line is h · intercept f₀ = φ/h = 5.6×10¹⁴ Hz',12,H-8,'rgba(159,177,208,.9)'); } },
+  "bohr-model":{ hint:'each jump down to n = 2 paints one Balmer line',
+    init:function(){ return {n:3,ph:0}; },
+    scrub:{label:'upper level n',min:3,max:7,val:3,unit:'',step:1,on:function(s,v){ s.n=Math.round(v); s.ph=0; }},
+    draw:function(g,s,W,H,t){ var lam=1e9/(1.097e7*(0.25-1/(s.n*s.n))),i;
+      function lcol(l){ return l>620?'#f87171':(l>470?'#22d3ee':(l>425?'#60a5fa':(l>400?'#a78bfa':'#c084fc'))); }
+      var cx=W*0.3,cy=H*0.44,base=Math.min(W,H)*0.055;
+      for(i=1;i<=7;i++){ g.strokeStyle=i===2||i===s.n?'rgba(244,114,182,.6)':'rgba(255,255,255,.14)'; g.lineWidth=1.2;
+        g.beginPath(); g.arc(cx,cy,base*i,0,7); g.stroke(); }
+      g.fillStyle='#fb7185'; g.beginPath(); g.arc(cx,cy,4,0,7); g.fill();
+      s.ph=(s.ph+0.008)%1; var rNow=base*(s.n-(s.n-2)*s.ph),aNow=s.ph*9;
+      g.fillStyle='#f472b6'; g.beginPath(); g.arc(cx+Math.cos(aNow)*rNow,cy+Math.sin(aNow)*rNow,4.5,0,7); g.fill();
+      if(s.ph>0.85){ g.strokeStyle=lcol(lam); g.lineWidth=2; g.beginPath();
+        for(i=0;i<40;i+=2){ g.lineTo(cx+base*2+14+i,cy-14+Math.sin(i/2.4)*4); } g.stroke(); }
+      var sx=W*0.62,sy=H*0.3,sw=W*0.32;
+      g.fillStyle='rgba(255,255,255,.06)'; g.fillRect(sx,sy,sw,16);
+      [656,486,434,410,397].forEach(function(l,idx){ var X=sx+(700-l)/(700-380)*sw;
+        g.strokeStyle=idx+3===s.n?lcol(l):'rgba(255,255,255,.25)'; g.lineWidth=idx+3===s.n?3:1.2;
+        g.beginPath(); g.moveTo(X,sy-2); g.lineTo(X,sy+18); g.stroke(); });
+      vzLabel(g,'Balmer lines (→ n = 2)',sx,sy+32,'rgba(232,237,255,.65)');
+      vzLabel(g,'1/λ = R(1/2² − 1/'+s.n+'²)  →  λ = '+lam.toFixed(0)+' nm',12,18,lcol(lam));
+      vzLabel(g,'discrete orbits → discrete photon energies → line spectrum',12,H-8,'rgba(159,177,208,.9)'); } },
+  "matter-waves":{ hint:'accelerate harder — the electron’s wavelength shrinks',
+    init:function(){ return {V:100}; },
+    scrub:{label:'accelerating voltage',min:10,max:500,val:100,unit:'V',on:function(s,v){ s.V=v; }},
+    draw:function(g,s,W,H,t){ var lam=1.226/Math.sqrt(s.V),drawLam=18+lam*260,y0=H*0.28,A=H*0.11,i;
+      g.strokeStyle='#7dd3fc'; g.lineWidth=2; g.beginPath();
+      for(i=0;i<=W;i+=2){ var y=y0+A*Math.sin(6.283*i/drawLam-t*4); i?g.lineTo(i,y):g.moveTo(i,y); } g.stroke();
+      vztbDot(g,(t*60)%W,y0,'#fff');
+      var gx=W*0.14,gy=H*0.88,gw=W*0.72,gh=H*0.42;
+      vztbAxes(g,gx,gy,gw,gh);
+      vztbPlot(g,gx,gy,gw,gh,function(u){ return (1.226/Math.sqrt(10+u*490))/0.39; },'#a78bfa');
+      vztbDot(g,gx+(s.V-10)/490*gw,gy-(lam/0.39)*gh,'#fff');
+      vzLabel(g,'λ (nm)',gx-6,gy-gh-4,'#a78bfa'); vzLabel(g,'V →',gx+gw+6,gy+4);
+      vzLabel(g,'λ = h/p ≈ 1.23/√V nm = '+(lam*1000).toFixed(0)+' pm',12,18,'#fff');
+      vzLabel(g,'thousands of times shorter than light — why electron microscopes win',12,H-8,'rgba(159,177,208,.9)'); } },
+  "uncertainty":{ hint:'squeeze position — momentum spreads',
+    init:function(){ return {dx:1}; },
+    scrub:{label:'position spread Δx',min:0.2,max:3,val:1,unit:'nm',on:function(s,v){ s.dx=v; }},
+    draw:function(g,s,W,H,t){ var dp=5.27/s.dx,cx=W*0.5,y1=H*0.32,y2=H*0.84,A1=H*0.2,A2=H*0.26,i;
+      var w1=14+s.dx*W*0.075,w2=W*W*0.0026/w1;
+      g.strokeStyle='#7dd3fc'; g.lineWidth=1.6; g.beginPath();
+      for(i=0;i<=W;i+=2){ var env=Math.exp(-Math.pow((i-cx)/w1,2)),y=y1-A1*env*Math.sin(i*0.32+t*2); i?g.lineTo(i,y):g.moveTo(i,y); } g.stroke();
+      g.strokeStyle='rgba(125,211,252,.35)'; g.lineWidth=1; g.beginPath();
+      for(i=0;i<=W;i+=2){ var e2=Math.exp(-Math.pow((i-cx)/w1,2)); i?g.lineTo(i,y1-A1*e2):g.moveTo(i,y1-A1*e2); } g.stroke();
+      vzLabel(g,'ψ(x)   Δx = '+s.dx.toFixed(1)+' nm',12,y1-A1-8,'#7dd3fc');
+      g.strokeStyle='#f472b6'; g.lineWidth=2; g.beginPath();
+      for(i=0;i<=W;i+=2){ var e3=Math.exp(-Math.pow((i-cx)/w2,2)); i?g.lineTo(i,y2-A2*e3):g.moveTo(i,y2-A2*e3); } g.stroke();
+      vzLabel(g,'φ(p)   Δp = ℏ/2Δx = '+dp.toFixed(1)+'×10⁻²⁶ kg·m/s',12,y2-A2-8,'#f472b6');
+      vzLabel(g,'Δx·Δp = ℏ/2 — the minimum-uncertainty wave packet',12,18,'#fff'); } },
+  "atomic-spectra":{ hint:'a hard cutoff set by the voltage — plus element fingerprints',
+    init:function(){ return {V:40}; },
+    scrub:{label:'tube voltage',min:20,max:100,val:40,unit:'kV',on:function(s,v){ s.V=v; }},
+    draw:function(g,s,W,H,t){ var lmin=1240/s.V,lmax=80,gx=W*0.12,gy=H*0.8,gw=W*0.78,gh=H*0.58,i,peak=0,vals=[];
+      vztbAxes(g,gx,gy,gw,gh);
+      for(i=0;i<=100;i++){ var l=i/100*lmax,v=l>lmin?(l/lmin-1)/(l*l)*1000:0; vals.push(v); if(v>peak) peak=v; }
+      g.strokeStyle='#7dd3fc'; g.lineWidth=2; g.beginPath();
+      for(i=0;i<=100;i++){ var X=gx+i/100*gw,Y=gy-vals[i]/(peak||1)*gh*0.68; i?g.lineTo(X,Y):g.moveTo(X,Y); } g.stroke();
+      if(s.V>69.5){ var kl=[[21,'Kα'],[18.5,'Kβ']];
+        for(i=0;i<2;i++){ var Xk=gx+kl[i][0]/lmax*gw;
+          g.strokeStyle='#facc15'; g.lineWidth=2.5; g.beginPath(); g.moveTo(Xk,gy-2); g.lineTo(Xk,gy-gh*0.94); g.stroke(); vzLabel(g,kl[i][1],Xk+3,gy-gh*0.88,'#facc15'); } }
+      var Xm=gx+Math.min(1,lmin/lmax)*gw;
+      vzArrow(g,Xm,gy-gh*0.9,Xm,gy-gh*0.74,'#f87171'); vzLabel(g,'λ_min',Xm-16,gy-gh*0.94,'#f87171');
+      vzLabel(g,'λ → (pm)',gx+gw-52,gy+13); vzLabel(g,'intensity',gx-6,gy-gh-4,'#7dd3fc');
+      vzLabel(g,'λ_min = hc/eV = '+lmin.toFixed(1)+' pm'+(s.V>69.5?'   +  tungsten K lines excited':''),12,18,'#fff');
+      vzLabel(g,'bremsstrahlung continuum + sharp characteristic lines (need V > 69.5 kV)',12,H-8,'rgba(159,177,208,.9)'); } },
+  "semiconductors":{ hint:'a one-way valve for current',
+    init:function(){ return {V:0.5}; },
+    scrub:{label:'bias voltage',min:-1,max:0.8,val:0.5,unit:'V',on:function(s,v){ s.V=v; }},
+    draw:function(g,s,W,H,t){ function di(v){ return 1e-9*(Math.exp(v/0.05)-1); }
+      var I=di(s.V),Imax=di(0.8),jx=W*0.06,jy=H*0.3,jw=W*0.34,jh=H*0.3,wd=Math.sqrt(Math.max(0.04,0.7-s.V))*jw*0.3;
+      g.fillStyle='rgba(248,113,113,.15)'; g.fillRect(jx,jy,jw/2-wd/2,jh);
+      g.fillStyle='rgba(125,211,252,.15)'; g.fillRect(jx+jw/2+wd/2,jy,jw/2-wd/2,jh);
+      g.fillStyle='rgba(255,255,255,.05)'; g.fillRect(jx+jw/2-wd/2,jy,wd,jh);
+      g.textAlign='center'; vzLabel(g,'p',jx+jw*0.2,jy+jh/2+4,'#f87171'); vzLabel(g,'n',jx+jw*0.8,jy+jh/2+4,'#7dd3fc');
+      vzLabel(g,'depletion',jx+jw/2,jy+jh+14,'rgba(232,237,255,.5)'); g.textAlign='left';
+      if(I>1e-4) vzArrow(g,jx+4,jy-12,jx+jw-4,jy-12,'#34d399');
+      var ox=W*0.68,oy=H*0.62,gw2=W*0.26,gh2=H*0.46;
+      g.strokeStyle='rgba(255,255,255,.15)'; g.lineWidth=1; g.beginPath(); g.moveTo(ox-gw2*0.55,oy); g.lineTo(ox+gw2*0.45,oy); g.moveTo(ox,oy+14); g.lineTo(ox,oy-gh2); g.stroke();
+      g.strokeStyle='#34d399'; g.lineWidth=2; g.beginPath();
+      var i2; for(i2=0;i2<=100;i2++){ var v=-1+i2/100*1.8,X=ox+v/0.8*gw2*0.45,Y=oy-Math.max(-0.06,di(v)/Imax)*gh2*0.9; i2?g.lineTo(X,Y):g.moveTo(X,Y); } g.stroke();
+      vztbDot(g,ox+s.V/0.8*gw2*0.45,oy-Math.max(-0.06,I/Imax)*gh2*0.9,'#fff');
+      vzLabel(g,'I',ox+4,oy-gh2+4,'#34d399'); vzLabel(g,'V',ox+gw2*0.45-8,oy+13);
+      vzLabel(g,'I = I₀(e^(V/nV_T)−1) = '+(I>=0.001?(I*1000).toFixed(1)+' mA':(I*1e6).toFixed(2)+' μA'),12,18,'#fff');
+      vzLabel(g,s.V>0.45?'forward bias: depletion narrows — the valve opens near 0.6–0.7 V':'reverse/low bias: depletion widens — only ~nA leaks',12,H-8,'rgba(159,177,208,.9)'); } },
+  /* ============ QUANTUM & NUCLEAR ============ */
+  "tunneling":{ hint:'the wave leaks through the wall',
+    init:function(){ return {L:0.6}; },
+    scrub:{label:'barrier width L',min:0.2,max:1.5,val:0.6,unit:'nm',on:function(s,v){ s.L=v; }},
+    draw:function(g,s,W,H,t){ var kap=5.12,T=Math.exp(-2*kap*s.L),bx=W*0.42,bw=s.L/1.5*W*0.26+8,y0=H*0.5,A=H*0.2,i;
+      g.fillStyle='rgba(167,139,250,.15)'; g.fillRect(bx,H*0.14,bw,H*0.72);
+      g.strokeStyle='rgba(167,139,250,.5)'; g.lineWidth=1.2; g.strokeRect(bx,H*0.14,bw,H*0.72);
+      vzLabel(g,'U = 2 eV',bx+4,H*0.14+14,'rgba(167,139,250,.85)');
+      var At=Math.max(0.02,Math.exp(-kap*2.2*s.L));
+      g.strokeStyle='#7dd3fc'; g.lineWidth=2; g.beginPath();
+      for(i=0;i<=W;i+=2){ var y;
+        if(i<bx) y=y0-A*Math.sin(i*0.13-t*3);
+        else if(i<bx+bw) y=y0-A*Math.exp(-kap*0.055*(i-bx))*Math.cos(t*3);
+        else y=y0-A*At*Math.sin((i-bx-bw)*0.13-t*3);
+        i?g.lineTo(i,y):g.moveTo(i,y); } g.stroke();
+      vzLabel(g,'incident E = 1 eV',12,y0-A-10,'#7dd3fc'); vzLabel(g,'transmitted',bx+bw+8,y0-A*At-10,'rgba(125,211,252,.8)');
+      vzLabel(g,'T ≈ e^(−2κL) = '+(T>=0.001?(T*100).toFixed(1)+'%':T.toExponential(1)),12,18,'#fff');
+      vzLabel(g,'κ = √(2m(U−E))/ℏ = 5.1 nm⁻¹ — the STM reads this leak atom by atom',12,H-8,'rgba(159,177,208,.9)'); } },
+  "radioactivity":{ hint:'every half-life, half of what remains',
+    init:function(){ return {th:4}; },
+    scrub:{label:'half-life t½',min:1,max:10,val:4,unit:'s',on:function(s,v){ s.th=v; }},
+    draw:function(g,s,W,H,t){ var lam=Math.LN2/s.th,Twin=30,gx=W*0.12,gy=H*0.82,gw=W*0.78,gh=H*0.62,i;
+      vztbAxes(g,gx,gy,gw,gh);
+      vztbPlot(g,gx,gy,gw,gh,function(u){ return Math.exp(-lam*u*Twin)*0.92; },'#34d399');
+      var fr=['½','¼','⅛'];
+      for(i=1;i<=3;i++){ var xt=gx+i*s.th/Twin*gw; if(xt>gx+gw) break;
+        var yv=gy-Math.pow(0.5,i)*0.92*gh;
+        g.setLineDash([2,3]); g.strokeStyle='rgba(52,211,153,.45)'; g.lineWidth=1; g.beginPath(); g.moveTo(xt,gy); g.lineTo(xt,yv); g.lineTo(gx,yv); g.stroke(); g.setLineDash([]);
+        vzLabel(g,fr[i-1],gx+3,yv-3,'rgba(52,211,153,.9)'); }
+      var tt=(t*3)%Twin; vztbDot(g,gx+tt/Twin*gw,gy-Math.exp(-lam*tt)*0.92*gh,'#fff');
+      vzLabel(g,'N/N₀',gx-6,gy-gh-4,'#34d399'); vzLabel(g,'t → 30 s',gx+gw-44,gy+13);
+      vzLabel(g,'N = N₀e^(−λt)   λ = ln2/t½ = '+lam.toFixed(3)+' s⁻¹',12,18,'#fff');
+      vzLabel(g,'after 10 half-lives ~0.1% is left — the clock behind carbon dating',12,H-8,'rgba(159,177,208,.9)'); } },
+  "nuclear-binding":{ hint:'the curve of the strongest glue — iron wins',
+    init:function(){ return {A:120}; },
+    scrub:{label:'mass number A',min:2,max:240,val:120,unit:'',step:1,on:function(s,v){ s.A=Math.round(v); }},
+    draw:function(g,s,W,H,t){ function bea(A){ var Z=A/(2+0.0155*Math.pow(A,2/3)),be=15.75*A-17.8*Math.pow(A,2/3)-0.711*Z*(Z-1)/Math.pow(A,1/3)-23.7*(A-2*Z)*(A-2*Z)/A;
+        return Math.max(0.5,be/A); }
+      var gx=W*0.12,gy=H*0.82,gw=W*0.78,gh=H*0.62;
+      vztbAxes(g,gx,gy,gw,gh);
+      vztbPlot(g,gx,gy,gw,gh,function(u){ return bea(2+u*238)/9.2; },'#fb923c');
+      var xFe=gx+54/238*gw,yFe=gy-bea(56)/9.2*gh;
+      g.setLineDash([2,3]); g.strokeStyle='rgba(251,146,60,.5)'; g.lineWidth=1; g.beginPath(); g.moveTo(xFe,gy); g.lineTo(xFe,yFe); g.stroke(); g.setLineDash([]);
+      vzLabel(g,'Fe-56',xFe-14,yFe-8,'#fb923c');
+      var X=gx+(s.A-2)/238*gw,Y=gy-bea(s.A)/9.2*gh; vztbDot(g,X,Y,'#fff');
+      if(s.A<45){ vzArrow(g,X+10,Y-8,X+44,Y-2,'#34d399'); vzLabel(g,'fusion →',X+12,Y-14,'#34d399'); }
+      if(s.A>90){ vzArrow(g,X-10,Y-8,X-44,Y-2,'#7dd3fc'); vzLabel(g,'← fission',X-58,Y-14,'#7dd3fc'); }
+      vzLabel(g,'BE/A (MeV)',gx-6,gy-gh-6,'#fb923c'); vzLabel(g,'A →',gx+gw-20,gy+13);
+      vzLabel(g,'BE/A('+s.A+') ≈ '+bea(s.A).toFixed(2)+' MeV — climbing toward the peak releases energy',12,18,'#fff');
+      vzLabel(g,'BE = Δm·c² — the missing mass IS the glue',12,H-8,'rgba(159,177,208,.9)'); } },
+  "fission-fusion":{ hint:'k decides: fizzle, steady burn, or runaway',
+    init:function(){ return {k:1.6}; },
+    scrub:{label:'neutrons per fission k',min:0.6,max:2.4,val:1.6,unit:'',on:function(s,v){ s.k=v; }},
+    draw:function(g,s,W,H,t){ var G=6,x0=W*0.1,gap=(W*0.8)/(G-1),top=H*0.2,bot=H*0.74,i,j;
+      var col=s.k>1.05?'#f87171':(s.k<0.95?'rgba(148,163,184,.8)':'#facc15');
+      for(i=0;i<G;i++){ var n=Math.pow(s.k,i),disp=Math.min(20,Math.round(n)),x=x0+i*gap;
+        g.strokeStyle='rgba(255,255,255,.1)'; g.lineWidth=1; g.beginPath(); g.moveTo(x,top); g.lineTo(x,bot); g.stroke();
+        for(j=0;j<disp;j++){ var y=(top+bot)/2+((j%2?1:-1)*Math.ceil(j/2))*((bot-top)/22);
+          g.fillStyle=col; g.beginPath(); g.arc(x,y,3.2,0,7); g.fill(); }
+        g.textAlign='center';
+        vzLabel(g,disp===0?'×':(n>=100?n.toFixed(0):(n>=10?n.toFixed(0):n.toFixed(1))),x,bot+16,disp===0?'rgba(148,163,184,.7)':col);
+        vzLabel(g,'gen '+i,x,top-8,'rgba(159,177,208,.6)'); g.textAlign='left'; }
+      vzLabel(g,'N after '+(G-1)+' generations = k⁵ = '+Math.pow(s.k,5).toFixed(1)+'   (~200 MeV each)',12,18,'#fff');
+      vzLabel(g,s.k<0.95?'k < 1: subcritical — the chain dies out':(s.k>1.05?'k > 1: supercritical — runaway growth (bomb)':'k ≈ 1: critical — steady power (reactor)'),12,H-8,col); } },
+  "entanglement":{ hint:'correlations too strong for any local story',
+    init:function(){ return {th:60}; },
+    scrub:{label:'detector angle θ',min:0,max:180,val:60,unit:'°',on:function(s,v){ s.th=v; }},
+    draw:function(g,s,W,H,t){ var Eq=-Math.cos(s.th*Math.PI/180),Ec=2*s.th/180-1;
+      var gx=W*0.14,gw=W*0.74,gy0=H*0.5,gh=H*0.3,i;
+      g.strokeStyle='rgba(255,255,255,.15)'; g.lineWidth=1; g.beginPath(); g.moveTo(gx,gy0); g.lineTo(gx+gw,gy0); g.moveTo(gx,gy0-gh); g.lineTo(gx,gy0+gh); g.stroke();
+      vzLabel(g,'+1',gx-22,gy0-gh+4); vzLabel(g,'−1',gx-22,gy0+gh+4); vzLabel(g,'θ → 180°',gx+gw-44,gy0+gh+16);
+      g.strokeStyle='rgba(255,255,255,.3)'; g.lineWidth=1.2; g.beginPath(); g.moveTo(gx,gy0+gh); g.lineTo(gx+gw,gy0-gh); g.stroke();
+      g.strokeStyle='#c084fc'; g.lineWidth=2.2; g.beginPath();
+      for(i=0;i<=100;i++){ var th=i/100*Math.PI,X=gx+i/100*gw,Y=gy0+Math.cos(th)*gh; i?g.lineTo(X,Y):g.moveTo(X,Y); } g.stroke();
+      var Xm=gx+s.th/180*gw;
+      vztbDot(g,Xm,gy0-Eq*gh,'#c084fc'); vztbDot(g,Xm,gy0-Ec*gh,'rgba(255,255,255,.6)');
+      vzLabel(g,'quantum  E(θ) = −cosθ = '+Eq.toFixed(2),12,18,'#c084fc');
+      vzLabel(g,'best local model (straight line) = '+Ec.toFixed(2),12,34,'rgba(255,255,255,.6)');
+      vzLabel(g,'the curve dips below every classical line — Bell inequality violated',12,H-8,'rgba(159,177,208,.9)'); } },
+  /* ============ RELATIVITY & ASTRO ============ */
+  "mass-energy":{ hint:'the energy bill diverges as v → c',
+    init:function(){ return {b:0.6}; },
+    scrub:{label:'speed v',min:0,max:0.99,val:0.6,unit:'c',on:function(s,v){ s.b=v; }},
+    draw:function(g,s,W,H,t){ var ga=1/Math.sqrt(1-s.b*s.b),KEr=ga-1,ymax=6;
+      var gx=W*0.14,gy=H*0.82,gw=W*0.74,gh=H*0.6;
+      vztbAxes(g,gx,gy,gw,gh);
+      g.setLineDash([4,4]); g.strokeStyle='rgba(248,113,113,.5)'; g.lineWidth=1; g.beginPath(); g.moveTo(gx+gw,gy); g.lineTo(gx+gw,gy-gh); g.stroke(); g.setLineDash([]);
+      vztbPlot(g,gx,gy,gw,gh,function(u){ var b=u*0.99; return 0.5*b*b/ymax; },'rgba(255,255,255,.3)',1.2);
+      vztbPlot(g,gx,gy,gw,gh,function(u){ var b=u*0.99; return (1/Math.sqrt(1-b*b)-1)/ymax; },'#f87171');
+      vztbDot(g,gx+s.b/0.99*gw,gy-Math.min(1,KEr/ymax)*gh,'#fff');
+      vzLabel(g,'KE/mc²',gx-6,gy-gh-4,'#f87171'); vzLabel(g,'v = c',gx+gw-32,gy+13,'rgba(248,113,113,.85)');
+      vzLabel(g,'Newton: ½mv²',gx+gw*0.58,gy-gh*0.13,'rgba(255,255,255,.45)');
+      vzLabel(g,'γ = '+ga.toFixed(2)+'   ·   KE = (γ−1)mc² = '+KEr.toFixed(2)+' mc²',12,18,'#fff');
+      vzLabel(g,'E = γmc² — the wall at v = c costs infinite energy',12,H-8,'rgba(159,177,208,.9)'); } },
+  "stars":{ hint:'temperature sets both the colour and the blaze',
+    init:function(){ return {T:5800}; },
+    scrub:{label:'surface temperature',min:3000,max:30000,val:5800,unit:'K',on:function(s,v){ s.T=v; }},
+    draw:function(g,s,W,H,t){ var Lr=Math.pow(s.T/5772,4);
+      function scol(T){ return T<4000?'#f87171':(T<5300?'#fb923c':(T<6200?'#facc15':(T<8000?'#fef9c3':(T<12000?'#e0f2fe':'#93c5fd')))); }
+      var cx=W*0.26,cy=H*0.44,R=Math.min(W,H)*0.19,c=scol(s.T);
+      g.strokeStyle=c; g.globalAlpha=0.3; g.lineWidth=10; g.beginPath(); g.arc(cx,cy,R+8,0,7); g.stroke(); g.globalAlpha=1;
+      g.fillStyle=c; g.beginPath(); g.arc(cx,cy,R,0,7); g.fill();
+      g.textAlign='center'; vzLabel(g,s.T.toFixed(0)+' K',cx,cy+R+20,c); g.textAlign='left';
+      var gx=W*0.56,gy=H*0.8,gw=W*0.36,gh=H*0.58;
+      vztbAxes(g,gx,gy,gw,gh);
+      vztbPlot(g,gx,gy,gw,gh,function(u){ var T=3000+u*27000; return (Math.log(Math.pow(T/5772,4))/Math.LN10+1.2)/4.1; },'#facc15');
+      vztbDot(g,gx+(s.T-3000)/27000*gw,gy-(Math.log(Lr)/Math.LN10+1.2)/4.1*gh,'#fff');
+      var xs=gx+2772/27000*gw; vzLabel(g,'☉',xs-4,gy-(1.2/4.1)*gh-8,'rgba(250,204,21,.8)');
+      vzLabel(g,'log L/L☉',gx-6,gy-gh-4,'#facc15'); vzLabel(g,'T →',gx+gw-18,gy+13);
+      vzLabel(g,'L = 4πR²σT⁴ = '+(Lr>=10?Lr.toFixed(0):Lr.toFixed(2))+' L☉   (R = R☉)',12,18,'#fff');
+      vzLabel(g,'double T → 16× the luminosity — hot stars burn blue and fast',12,H-8,'rgba(159,177,208,.9)'); } },
+  "black-holes":{ hint:'a surface of no return — its radius grows with mass',
+    init:function(){ return {M:10}; },
+    scrub:{label:'mass M',min:1,max:50,val:10,unit:'M☉',on:function(s,v){ s.M=v; }},
+    draw:function(g,s,W,H,t){ var Rs=2.95*s.M,cx=W*0.28,cy=H*0.46,R=Math.sqrt(s.M/50)*Math.min(W,H)*0.3;
+      g.strokeStyle='#fb923c'; g.lineWidth=1.6; g.beginPath(); g.arc(cx,cy,R*1.5,0,7); g.stroke();
+      g.fillStyle='#02030a'; g.beginPath(); g.arc(cx,cy,R,0,7); g.fill();
+      g.strokeStyle='rgba(251,146,60,.4)'; g.lineWidth=1; g.beginPath(); g.arc(cx,cy,R,0,7); g.stroke();
+      g.textAlign='center'; vzLabel(g,'photon sphere 1.5 Rₛ',cx,cy-R*1.5-8,'rgba(251,146,60,.8)');
+      vzLabel(g,'Rₛ = '+Rs.toFixed(1)+' km',cx,cy+R*1.5+18,'#fb923c'); g.textAlign='left';
+      var gx=W*0.6,gy=H*0.78,gw=W*0.32,gh=H*0.54;
+      vztbAxes(g,gx,gy,gw,gh);
+      g.setLineDash([3,4]); g.strokeStyle='rgba(248,113,113,.5)'; g.lineWidth=1; g.beginPath(); g.moveTo(gx,gy-gh*0.9); g.lineTo(gx+gw,gy-gh*0.9); g.stroke(); g.setLineDash([]);
+      vztbPlot(g,gx,gy,gw,gh,function(u){ var r=1+u*4; return Math.sqrt(1/r)*0.9; },'#7dd3fc');
+      vzLabel(g,'v_esc = c',gx+3,gy-gh*0.9-4,'rgba(248,113,113,.85)');
+      vzLabel(g,'v_esc = √(2GM/r)',gx+gw*0.25,gy-gh*0.35,'#7dd3fc'); vzLabel(g,'r/Rₛ →',gx+gw-36,gy+13);
+      vzLabel(g,'Rₛ = 2GM/c² = 2.95 km per solar mass',12,18,'#fff');
+      vzLabel(g,'at the horizon the escape speed reaches c — even light is trapped',12,H-8,'rgba(159,177,208,.9)'); } },
+  "cosmology":{ hint:'space itself stretches — and stretches light with it',
+    init:function(){ var pts=[],i; for(i=0;i<14;i++) pts.push({x:Math.random()*2-1,y:Math.random()*2-1}); return {a:1.6,gal:pts}; },
+    scrub:{label:'scale factor a',min:1,max:3,val:1.6,unit:'×',on:function(s,v){ s.a=v; }},
+    draw:function(g,s,W,H,t){ var cx=W*0.3,cy=H*0.5,sc=Math.min(W,H)*0.14,i2;
+      s.gal.forEach(function(p){ var x1=cx+p.x*sc,y1=cy+p.y*sc,x2=cx+p.x*sc*s.a,y2=cy+p.y*sc*s.a;
+        g.strokeStyle='rgba(255,255,255,.12)'; g.lineWidth=1; g.beginPath(); g.moveTo(x1,y1); g.lineTo(x2,y2); g.stroke();
+        g.fillStyle='rgba(255,255,255,.25)'; g.beginPath(); g.arc(x1,y1,2,0,7); g.fill();
+        g.fillStyle='#facc15'; g.beginPath(); g.arc(x2,y2,2.8,0,7); g.fill(); });
+      var wx=W*0.6,wy1=H*0.28,wy2=H*0.6,ww=W*0.34;
+      g.strokeStyle='#7dd3fc'; g.lineWidth=1.6; g.beginPath();
+      for(i2=0;i2<=ww;i2+=2){ var y=wy1+8*Math.sin(i2*0.35); i2?g.lineTo(wx+i2,y):g.moveTo(wx+i2,y); } g.stroke();
+      g.strokeStyle='#f87171'; g.lineWidth=1.6; g.beginPath();
+      for(i2=0;i2<=ww;i2+=2){ var y2=wy2+8*Math.sin(i2*0.35/s.a); i2?g.lineTo(wx+i2,y2):g.moveTo(wx+i2,y2); } g.stroke();
+      vzLabel(g,'emitted λ',wx,wy1-14,'#7dd3fc'); vzLabel(g,'observed — stretched ×'+s.a.toFixed(1),wx,wy2-14,'#f87171');
+      vzLabel(g,'z = Δλ/λ = a − 1 = '+(s.a-1).toFixed(2)+'    ·    v = H₀d: farther → faster',12,18,'#fff');
+      vzLabel(g,'grey = then, gold = now — every galaxy recedes from every other',12,H-8,'rgba(159,177,208,.9)'); } },
+  "twin-paradox":{ hint:'the traveller’s spacetime path holds less time',
+    init:function(){ return {v:0.8}; },
+    scrub:{label:'cruise speed v',min:0.1,max:0.95,val:0.8,unit:'c',on:function(s,v){ s.v=v; }},
+    draw:function(g,s,W,H,t){ var ga=1/Math.sqrt(1-s.v*s.v),Th=20,Ta=Th/ga,i;
+      var gx=W*0.34,gy=H*0.88,topY=H*0.14,midY=(gy+topY)/2,dx=s.v*(gy-topY)/2*0.8;
+      vzLabel(g,'time ↑',gx-52,topY+12);
+      g.strokeStyle='#7dd3fc'; g.lineWidth=2; g.beginPath(); g.moveTo(gx,gy); g.lineTo(gx,topY); g.stroke();
+      for(i=0;i<=Th;i++){ var y=gy-i/Th*(gy-topY); g.strokeStyle='rgba(125,211,252,.6)'; g.lineWidth=1; g.beginPath(); g.moveTo(gx-4,y); g.lineTo(gx+4,y); g.stroke(); }
+      g.strokeStyle='#fbbf24'; g.lineWidth=2; g.beginPath(); g.moveTo(gx,gy); g.lineTo(gx+dx,midY); g.lineTo(gx,topY); g.stroke();
+      for(i=1;i<Ta;i++){ var u=i*ga/Th,X,Y2;
+        if(u<=0.5){ X=gx+u*2*dx; Y2=gy-u*(gy-topY); } else { X=gx+dx-(u-0.5)*2*dx; Y2=gy-u*(gy-topY); }
+        g.strokeStyle='rgba(251,191,36,.8)'; g.lineWidth=1; g.beginPath(); g.moveTo(X-4,Y2); g.lineTo(X+4,Y2); g.stroke(); }
+      vzLabel(g,'stay-home: '+Th+' ticks',gx+8,topY+22,'#7dd3fc');
+      vzLabel(g,'traveller: '+Math.floor(Ta)+' ticks',gx+dx+8,midY,'#fbbf24');
+      vzLabel(g,'γ = '+ga.toFixed(2)+'  →  traveller ages '+Ta.toFixed(1)+' yr while home ages 20 yr',12,18,'#fff');
+      vzLabel(g,'the turn-around breaks the symmetry — only the traveller switches frames',12,H-8,'rgba(159,177,208,.9)'); } },
+  "gravitational-waves":{ hint:'space breathes — stretch one way, squeeze the other',
+    init:function(){ return {h:0.25}; },
+    scrub:{label:'strain h (exaggerated)',min:0.02,max:0.5,val:0.25,unit:'',on:function(s,v){ s.h=v; }},
+    draw:function(g,s,W,H,t){ var cx=W*0.3,cy=H*0.46,R=Math.min(W,H)*0.26,ph=Math.cos(t*2.5),i;
+      g.setLineDash([3,4]); g.strokeStyle='rgba(255,255,255,.15)'; g.lineWidth=1; g.beginPath(); g.arc(cx,cy,R,0,7); g.stroke(); g.setLineDash([]);
+      for(i=0;i<12;i++){ var a=i/12*6.283,x=cx+Math.cos(a)*R*(1+s.h*ph),y=cy+Math.sin(a)*R*(1-s.h*ph);
+        g.fillStyle='#7dd3fc'; g.beginPath(); g.arc(x,y,3.5,0,7); g.fill(); }
+      var gx=W*0.62,gy=H*0.46,gw=W*0.32,A=H*0.16;
+      g.strokeStyle='rgba(255,255,255,.12)'; g.lineWidth=1; g.beginPath(); g.moveTo(gx,gy); g.lineTo(gx+gw,gy); g.stroke();
+      g.strokeStyle='#f472b6'; g.lineWidth=1.8; g.beginPath();
+      for(i=0;i<=100;i++){ var u=i/100,amp=A*(0.22+0.78*u)*(u<0.93?1:0),Y=gy-amp*Math.sin(u*(2+u*6)*6.283-t*2.5);
+        i?g.lineTo(gx+u*gw,Y):g.moveTo(gx+u*gw,Y); } g.stroke();
+      vzLabel(g,'inspiral chirp h(t)',gx,gy-A-10,'#f472b6'); vzLabel(g,'merger',gx+gw*0.86,gy+A+14,'rgba(244,114,182,.7)');
+      vzLabel(g,'+ polarization:  x→(1+h)x,  y→(1−h)y',12,H-8,'rgba(159,177,208,.9)');
+      vzLabel(g,'real strain h ~ 10⁻²¹ (drawn ~10²⁰×) — LIGO reads ΔL = hL',12,18,'#fff'); } },
     'van-de-graaff':{ hint:'bigger dome — higher voltage before the air gives up',
       init:function(){ return {R:0.15}; },
       scrub:{label:'dome radius R',min:0.05,max:0.5,val:0.15,unit:'m',on:function(s,v){ s.R=v; }},
@@ -3472,33 +4021,6 @@ var Lens=(function(){
         g.stroke();
         vzLabel(g,'V_max = E_br·R = '+(Vmax*1000).toFixed(0)+' kV   (air breaks down at 3 MV/m)',12,16,'#facc15');
         vzLabel(g,'charge rides the belt, then spreads to the OUTER surface',12,H-8,'rgba(159,177,208,.9)'); } },
-    'ohms-law':{ hint:'a straight V–I line IS ohmic behaviour',
-      init:function(){ return {R:4}; },
-      scrub:{label:'resistance R',min:1,max:12,val:4,unit:'Ω',on:function(s,v){ s.R=v; }},
-      draw:function(g,s,W,H,t){ var gx=W*0.14,gy=H*0.82,gw=W*0.74,gh=H*0.64,Vm=12,Im=3,i;
-        g.strokeStyle='rgba(255,255,255,.15)'; g.lineWidth=1; g.beginPath(); g.moveTo(gx,gy-gh); g.lineTo(gx,gy); g.lineTo(gx+gw,gy); g.stroke();
-        vzLabel(g,'V →',gx+gw-28,gy+14); vzLabel(g,'I ↑',gx-12,gy-gh+2);
-        g.setLineDash([3,4]); g.strokeStyle='rgba(244,114,182,.55)'; g.lineWidth=1.4; g.beginPath();
-        for(i=0;i<=40;i++){ var vv=i/40*Vm,ii=Math.pow(vv/Vm,0.55)*2.2,xx=gx+vv/Vm*gw,yy=gy-Math.min(1,ii/Im)*gh; i?g.lineTo(xx,yy):g.moveTo(xx,yy); } g.stroke(); g.setLineDash([]);
-        var ie=Math.min(Im,Vm/s.R),ve=ie*s.R;
-        g.strokeStyle='#22d3ee'; g.lineWidth=2.2; g.beginPath(); g.moveTo(gx,gy); g.lineTo(gx+ve/Vm*gw,gy-ie/Im*gh); g.stroke();
-        var V0=9,I0=Math.min(Im,V0/s.R);
-        g.fillStyle='#fff'; g.beginPath(); g.arc(gx+V0/Vm*gw,gy-I0/Im*gh,4,0,7); g.fill();
-        vzLabel(g,'filament (non-ohmic)',gx+gw*0.4,gy-gh*0.92,'rgba(244,114,182,.8)');
-        vzLabel(g,'ohmic: I = V/R  (slope = 1/R)',12,16,'#22d3ee');
-        vzLabel(g,'at V = 9 V:  I = '+I0.toFixed(2)+' A   R = '+s.R.toFixed(0)+' Ω',12,H-8,'rgba(159,177,208,.9)'); } },
-    'resistor-networks':{ hint:'parallel always beats the smallest resistor',
-      init:function(){ return {R2:4}; },
-      scrub:{label:'R₂',min:1,max:20,val:4,unit:'Ω',on:function(s,v){ s.R2=v; }},
-      draw:function(g,s,W,H,t){ var R1=6,Rs=R1+s.R2,Rp=R1*s.R2/(R1+s.R2);
-        function bar(x,val,col,lbl){ var bh=Math.min(1,val/26)*H*0.5,by=H*0.76;
-          g.fillStyle='rgba(255,255,255,.07)'; g.fillRect(x,by-H*0.5,30,H*0.5);
-          g.fillStyle=col; g.fillRect(x,by-bh,30,bh);
-          vzLabel(g,lbl,x-4,by+14,col); vzLabel(g,val.toFixed(1),x,by-bh-6,col); }
-        bar(W*0.12,R1,'#22d3ee','R₁=6'); bar(W*0.29,s.R2,'#22d3ee','R₂');
-        bar(W*0.52,Rs,'#fbbf24','series'); bar(W*0.74,Rp,'#34d399','parallel');
-        vzLabel(g,'series: R₁+R₂ = '+Rs.toFixed(1)+' Ω',12,16,'#fbbf24');
-        vzLabel(g,'parallel: R₁R₂/(R₁+R₂) = '+Rp.toFixed(2)+' Ω — below min(R₁,R₂)',12,H-8,'#34d399'); } },
     'power-electrical':{ hint:'at fixed voltage, LESS resistance means MORE power',
       init:function(){ return {R:6}; },
       scrub:{label:'resistance R',min:1,max:24,val:6,unit:'Ω',on:function(s,v){ s.R=v; }},
@@ -3512,32 +4034,6 @@ var Lens=(function(){
         g.fillStyle='#fff'; g.beginPath(); g.arc(gx+(s.R-1)/23*gw,gy-Math.min(1,P/144)*gh,4,0,7); g.fill();
         vzLabel(g,'P = V²/R   at V = 12 V',gx,gy-gh-6,'#34d399');
         vzLabel(g,'P = '+P.toFixed(1)+' W   I = V/R = '+I.toFixed(1)+' A   (also P = VI = I²R)',12,H-8,'rgba(159,177,208,.9)'); } },
-    'emf-internal':{ hint:'load the battery — its terminal voltage sags',
-      init:function(){ return {R:5}; },
-      scrub:{label:'load R',min:0.5,max:12,val:5,unit:'Ω',on:function(s,v){ s.R=v; }},
-      draw:function(g,s,W,H,t){ var emf=12,r=1.5,I=emf/(s.R+r),Vt=emf-I*r,gx=W*0.12,gy=H*0.84,gw=W*0.76,gh=H*0.64;
-        g.strokeStyle='rgba(255,255,255,.15)'; g.lineWidth=1; g.beginPath(); g.moveTo(gx,gy-gh); g.lineTo(gx,gy); g.lineTo(gx+gw,gy); g.stroke();
-        g.strokeStyle='#fbbf24'; g.lineWidth=2; g.beginPath(); g.moveTo(gx,gy-gh); g.lineTo(gx+gw,gy); g.stroke();
-        var Xp=gx+(I/(emf/r))*gw,Yp=gy-(Vt/emf)*gh;
-        g.setLineDash([3,4]); g.strokeStyle='rgba(255,255,255,.25)'; g.beginPath(); g.moveTo(Xp,gy); g.lineTo(Xp,Yp); g.lineTo(gx,Yp); g.stroke(); g.setLineDash([]);
-        g.fillStyle='#fff'; g.beginPath(); g.arc(Xp,Yp,4.5,0,7); g.fill();
-        vzLabel(g,'ε = 12 V',gx+4,gy-gh-6,'#fbbf24'); vzLabel(g,'I →   (slope = −r)',gx+gw-104,gy+14);
-        vzLabel(g,'I = ε/(R+r) = '+I.toFixed(2)+' A',12,16,'#34d399');
-        vzLabel(g,'V = ε − Ir = '+Vt.toFixed(2)+' V   (lost inside: '+(I*r).toFixed(2)+' V, r = 1.5 Ω)',12,H-8,'rgba(159,177,208,.9)'); } },
-    'wheatstone':{ hint:'balance the bridge — the galvanometer goes quiet',
-      init:function(){ return {S:150}; },
-      scrub:{label:'unknown S',min:50,max:200,val:150,unit:'Ω',on:function(s,v){ s.S=v; }},
-      draw:function(g,s,W,H,t){ var P=100,Q=100,R=100,V=10,dv=V*Q/(P+Q)-V*s.S/(R+s.S),cx=W*0.42,cy=H*0.46,u=Math.min(W,H)*0.3;
-        var A={x:cx-u,y:cy},C={x:cx+u,y:cy},B={x:cx,y:cy-u*0.8},D={x:cx,y:cy+u*0.8};
-        g.strokeStyle='rgba(255,255,255,.3)'; g.lineWidth=1.6; g.beginPath();
-        g.moveTo(A.x,A.y); g.lineTo(B.x,B.y); g.lineTo(C.x,C.y); g.lineTo(D.x,D.y); g.closePath(); g.moveTo(B.x,B.y); g.lineTo(D.x,D.y); g.stroke();
-        vzLabel(g,'P=100',(A.x+B.x)/2-34,(A.y+B.y)/2-6,'#22d3ee'); vzLabel(g,'Q=100',(B.x+C.x)/2+8,(B.y+C.y)/2-6,'#22d3ee');
-        vzLabel(g,'R=100',(A.x+D.x)/2-34,(A.y+D.y)/2+16,'#22d3ee'); vzLabel(g,'S='+s.S.toFixed(0),(C.x+D.x)/2+8,(C.y+D.y)/2+16,'#fbbf24');
-        var bal=Math.abs(dv)<0.05,gr=18,na=-Math.PI/2+Math.max(-1.1,Math.min(1.1,dv*0.6));
-        g.strokeStyle='rgba(255,255,255,.25)'; g.lineWidth=1; g.beginPath(); g.arc(cx,cy,gr,0,7); g.stroke();
-        g.strokeStyle=bal?'#34d399':'#f87171'; g.lineWidth=2; g.beginPath(); g.moveTo(cx,cy); g.lineTo(cx+Math.cos(na)*gr,cy+Math.sin(na)*gr); g.stroke();
-        vzLabel(g,'V_B − V_D = '+dv.toFixed(2)+' V'+(bal?'  — balanced!':''),12,16,bal?'#34d399':'#f87171');
-        vzLabel(g,'balance: P/Q = R/S → S = QR/P = 100 Ω',12,H-8,'rgba(159,177,208,.9)'); } },
     'biot-savart':{ hint:'the field circles the wire and dies off as 1/r',
       init:function(){ return {I:5}; },
       scrub:{label:'current I',min:1,max:10,val:5,unit:'A',on:function(s,v){ s.I=v; }},
@@ -3553,67 +4049,6 @@ var Lens=(function(){
         vzLabel(g,'B ∝ 1/r',gx+6,gy-gh+4,'#60a5fa');
         vzLabel(g,'B = μ₀I/2πr = '+(s.I*4).toFixed(0)+' µT at r = 5 cm',12,16,'#60a5fa');
         vzLabel(g,'⊙ I out of page — right-hand grip rule',12,H-8,'rgba(159,177,208,.9)'); } },
-    'inductance':{ hint:'an inductor lets current rise only gradually',
-      init:function(){ return {L:0.5}; },
-      scrub:{label:'inductance L',min:0.1,max:2,val:0.5,unit:'H',on:function(s,v){ s.L=v; }},
-      draw:function(g,s,W,H,t){ var R=10,V=10,tau=s.L/R,I0=V/R,Tm=0.8,gx=W*0.12,gy=H*0.82,gw=W*0.78,gh=H*0.6,i;
-        g.strokeStyle='rgba(255,255,255,.15)'; g.lineWidth=1; g.beginPath(); g.moveTo(gx,gy-gh); g.lineTo(gx,gy); g.lineTo(gx+gw,gy); g.stroke();
-        g.setLineDash([3,4]); g.strokeStyle='rgba(255,255,255,.2)'; g.beginPath(); g.moveTo(gx,gy-gh); g.lineTo(gx+gw,gy-gh); g.stroke(); g.setLineDash([]);
-        g.strokeStyle='#60a5fa'; g.lineWidth=2.2; g.beginPath();
-        for(i=0;i<=90;i++){ var tt=i/90*Tm,f=1-Math.exp(-tt/tau),xx=gx+i/90*gw,yy=gy-f*gh; i?g.lineTo(xx,yy):g.moveTo(xx,yy); } g.stroke();
-        var tv=(t*0.35)%Tm,fv=1-Math.exp(-tv/tau);
-        g.fillStyle='#fff'; g.beginPath(); g.arc(gx+tv/Tm*gw,gy-fv*gh,4.5,0,7); g.fill();
-        var xT=gx+tau/Tm*gw;
-        if(tau<Tm){ g.strokeStyle='rgba(96,165,250,.5)'; g.beginPath(); g.moveTo(xT,gy); g.lineTo(xT,gy-gh*0.632); g.stroke(); vzLabel(g,'τ = L/R',xT-24,gy+14,'#60a5fa'); }
-        vzLabel(g,'I_max = V/R',gx+4,gy-gh-6);
-        vzLabel(g,'I = (V/R)(1 − e^(−tR/L))   τ = '+(tau*1000).toFixed(0)+' ms   U = ½LI² = '+(0.5*s.L*I0*I0).toFixed(2)+' J',12,16,'#60a5fa'); } },
-    'em-waves':{ hint:'E and B oscillate in lockstep, always ⊥',
-      init:function(){ return {f:3}; },
-      scrub:{label:'frequency',min:1,max:8,val:3,unit:'×10¹⁴ Hz',on:function(s,v){ s.f=v; }},
-      draw:function(g,s,W,H,t){ var y0=H*0.4,A=H*0.2,lam=W/(s.f*1.1),k=6.283/lam,x;
-        g.strokeStyle='rgba(255,255,255,.12)'; g.lineWidth=1; g.beginPath(); g.moveTo(0,y0); g.lineTo(W,y0); g.stroke();
-        g.strokeStyle='#facc15'; g.lineWidth=2; g.beginPath();
-        for(x=0;x<=W;x+=2){ var y=y0-A*Math.sin(k*x-t*4); x?g.lineTo(x,y):g.moveTo(x,y); } g.stroke();
-        g.textAlign='center';
-        for(x=10;x<W;x+=20){ var b=Math.sin(k*x-t*4);
-          g.fillStyle='rgba(96,165,250,'+(0.3+Math.abs(b)*0.6).toFixed(2)+')'; g.font=(8+Math.abs(b)*7).toFixed(0)+'px monospace';
-          g.fillText(b>0?'•':'×',x,H*0.8); }
-        g.textAlign='left';
-        vzLabel(g,'E (in plane)',12,16,'#facc15'); vzLabel(g,'B (⊥ plane: • out / × in)',12,H*0.8+18,'#60a5fa');
-        vzLabel(g,'c = fλ → λ = '+(3000/s.f).toFixed(0)+' nm   E = cB, in phase',12,H-8,'rgba(159,177,208,.9)'); } },
-    'photoelectric':{ hint:'below threshold, no electrons — no matter how bright',
-      init:function(){ return {f:7}; },
-      scrub:{label:'light frequency',min:2,max:14,val:7,unit:'×10¹⁴ Hz',step:0.2,on:function(s,v){ s.f=v; }},
-      draw:function(g,s,W,H,t){ var phi=2.3,f0=phi/0.4136,KE=0.4136*s.f-phi,my=H*0.6,i;
-        var hue=s.f<4?'#f87171':(s.f<5.2?'#fb923c':(s.f<6.2?'#facc15':(s.f<7.4?'#34d399':(s.f<9?'#60a5fa':'#a78bfa'))));
-        g.fillStyle='rgba(148,163,184,.25)'; g.fillRect(W*0.04,my,W*0.34,H*0.26);
-        vzLabel(g,'sodium  φ = 2.3 eV',W*0.04,my+H*0.26+14);
-        for(i=0;i<3;i++){ var p=((t*1.3+i*0.33)%1),sx=W*0.02+i*W*0.05+p*W*0.17,sy=H*0.06+p*(my-H*0.1);
-          vzArrow(g,sx,sy,sx+13,sy+13,hue); }
-        if(KE>0) for(i=0;i<4;i++){ var q=((t*(0.5+KE*0.35)+i*0.25)%1),sc=Math.sqrt(KE/3.5);
-          g.fillStyle='#22d3ee'; g.beginPath(); g.arc(W*0.1+i*W*0.07+q*W*0.34*sc,my-5-q*H*0.4*sc,3,0,7); g.fill(); }
-        var gx=W*0.52,gy=H*0.84,gw=W*0.42,gh=H*0.62,xf0=gx+(f0-2)/12*gw;
-        g.strokeStyle='rgba(255,255,255,.15)'; g.lineWidth=1; g.beginPath(); g.moveTo(gx,gy-gh); g.lineTo(gx,gy); g.lineTo(gx+gw,gy); g.stroke();
-        g.strokeStyle='#f472b6'; g.lineWidth=2; g.beginPath(); g.moveTo(xf0,gy); g.lineTo(gx+gw,gy-(0.4136*14-phi)/3.5*gh); g.stroke();
-        vzLabel(g,'f₀',xf0-6,gy+14,'#f472b6');
-        if(KE>0){ g.fillStyle='#fff'; g.beginPath(); g.arc(gx+(s.f-2)/12*gw,gy-KE/3.5*gh,4,0,7); g.fill(); }
-        vzLabel(g,'KE_max vs f   (slope = h)',gx,gy-gh-6,'#f472b6');
-        vzLabel(g,'KE = hf − φ = '+(KE>0?KE.toFixed(2)+' eV':'— below threshold (f₀ = '+f0.toFixed(1)+')'),12,16,hue); } },
-    'atomic-spectra':{ hint:'each series is a family of jumps to one floor',
-      init:function(){ return {n1:2}; },
-      scrub:{label:'series (final n)',min:1,max:3,val:2,unit:'',step:1,on:function(s,v){ s.n1=Math.round(v); }},
-      draw:function(g,s,W,H,t){ var n1=s.n1,R=1.097e-2,ax=W*0.08,aw=W*0.84,ay=H*0.5,n2;
-        function X(lam){ return ax+(Math.log(lam/50)/Math.log(40))*aw; }
-        g.fillStyle='rgba(255,255,255,.05)'; g.fillRect(ax,ay-26,aw,52);
-        g.fillStyle='rgba(255,255,255,.08)'; g.fillRect(X(380),ay-26,X(700)-X(380),52);
-        vzLabel(g,'visible',X(380)+4,ay-32,'rgba(255,255,255,.5)');
-        for(n2=n1+1;n2<=n1+6;n2++){ var lam=1/(R*(1/(n1*n1)-1/(n2*n2)));
-          var col=lam<380?'#a78bfa':(lam<450?'#818cf8':(lam<500?'#22d3ee':(lam<565?'#34d399':(lam<590?'#facc15':(lam<625?'#fb923c':(lam<700?'#f87171':'#9f5964'))))));
-          g.strokeStyle=col; g.lineWidth=2.5; g.beginPath(); g.moveTo(X(lam),ay-26); g.lineTo(X(lam),ay+26); g.stroke();
-          if(n2<=n1+3) vzLabel(g,lam.toFixed(0),X(lam)-12,ay+42,col); }
-        vzLabel(g,'50 nm',ax,ay+62); vzLabel(g,'2000 nm',ax+aw-48,ay+62);
-        vzLabel(g,['Lyman series → n=1 (all UV)','Balmer series → n=2 (visible!)','Paschen series → n=3 (all IR)'][n1-1],12,16,'#f472b6');
-        vzLabel(g,'1/λ = R(1/n₁² − 1/n₂²) — hydrogen’s fingerprint',12,H-8,'rgba(159,177,208,.9)'); } },
     'lasers':{ hint:'invert the population — photons start cloning',
       init:function(){ return {p:0.7}; },
       scrub:{label:'pump strength',min:0,max:1,val:0.7,unit:'',on:function(s,v){ s.p=v; }},
@@ -3631,72 +4066,6 @@ var Lens=(function(){
           for(i=0;i<4;i++){ var q=((t*1.5+i*0.25)%1); g.fillStyle='#fca5a5'; g.beginPath(); g.arc(xL+q*(xR-xL),by,2.5,0,7); g.fill(); } }
         vzLabel(g,inv?'N₂ > N₁ — stimulated emission wins: GAIN':'N₂ < N₁ — absorption wins: no beam',12,16,inv?'#f87171':'rgba(159,177,208,.9)');
         vzLabel(g,'clones: same phase, same direction · hf = E₂−E₁',12,H-8,'rgba(159,177,208,.9)'); } },
-    'semiconductors':{ hint:'a one-way valve for current',
-      init:function(){ return {V:0.3}; },
-      scrub:{label:'bias voltage',min:-1,max:0.8,val:0.3,unit:'V',on:function(s,v){ s.V=v; }},
-      draw:function(g,s,W,H,t){ var VT=0.052,I=Math.exp(s.V/VT)-1,Im=Math.exp(0.8/VT)-1,gx=W*0.5,gy=H*0.72,gw=W*0.44,gh=H*0.52,i;
-        var dep=Math.max(2,Math.sqrt(Math.max(0.01,0.7-s.V))*W*0.07);
-        g.fillStyle='rgba(244,114,182,.18)'; g.fillRect(W*0.04,H*0.24,W*0.18,H*0.3);
-        g.fillStyle='rgba(255,255,255,.06)'; g.fillRect(W*0.22,H*0.24,dep,H*0.3);
-        g.fillStyle='rgba(34,211,238,.18)'; g.fillRect(W*0.22+dep,H*0.24,W*0.18,H*0.3);
-        vzLabel(g,'p',W*0.11,H*0.41,'#f472b6'); vzLabel(g,'n',W*0.3+dep,H*0.41,'#22d3ee');
-        vzLabel(g,'depletion ∝ √(V_bi − V)',W*0.04,H*0.24-8,'rgba(255,255,255,.5)');
-        var x0=gx+(1/1.8)*gw;
-        g.strokeStyle='rgba(255,255,255,.15)'; g.lineWidth=1; g.beginPath(); g.moveTo(gx,gy); g.lineTo(gx+gw,gy); g.moveTo(x0,gy-gh); g.lineTo(x0,gy+8); g.stroke();
-        g.strokeStyle='#f472b6'; g.lineWidth=2; g.beginPath();
-        for(i=0;i<=80;i++){ var vv=-1+i/80*1.8,ii=Math.max(-0.02,(Math.exp(vv/VT)-1)/Im),xx=gx+i/80*gw,yy=gy-ii*gh; i?g.lineTo(xx,yy):g.moveTo(xx,yy); } g.stroke();
-        g.fillStyle='#fff'; g.beginPath(); g.arc(gx+(s.V+1)/1.8*gw,gy-Math.max(-0.02,I/Im)*gh,4,0,7); g.fill();
-        vzLabel(g,'I = I₀(e^(V/nV_T) − 1)',gx,gy-gh-6,'#f472b6');
-        vzLabel(g,s.V>0.4?'forward — barrier collapses, current flows':(s.V<0?'reverse — depletion widens, blocked':'below turn-on (~0.6 V for Si)'),12,H-8,'rgba(159,177,208,.9)'); } },
-    'radioactivity':{ hint:'every half-life, half of what remains gives up',
-      init:function(){ var d=[],i; for(i=0;i<120;i++) d.push(Math.random()); return {n:1,d:d}; },
-      scrub:{label:'elapsed time',min:0,max:4,val:1,unit:'half-lives',on:function(s,v){ s.n=v; }},
-      draw:function(g,s,W,H,t){ var frac=Math.pow(0.5,s.n),i,k;
-        for(i=0;i<120;i++){ var alive=s.d[i]<frac;
-          g.fillStyle=alive?'#c4b5fd':'rgba(148,163,184,.18)';
-          g.beginPath(); g.arc(W*0.06+(i%15)*W*0.036,H*0.14+((i/15)|0)*H*0.095,4,0,7); g.fill(); }
-        var gx=W*0.66,gy=H*0.86,gw=W*0.3,gh=H*0.7;
-        g.strokeStyle='rgba(255,255,255,.15)'; g.lineWidth=1; g.beginPath(); g.moveTo(gx,gy-gh); g.lineTo(gx,gy); g.lineTo(gx+gw,gy); g.stroke();
-        g.strokeStyle='#c4b5fd'; g.lineWidth=2; g.beginPath();
-        for(k=0;k<=60;k++){ var xx=gx+k/60*gw,yy=gy-Math.pow(0.5,k/60*4)*gh; k?g.lineTo(xx,yy):g.moveTo(xx,yy); } g.stroke();
-        g.setLineDash([2,4]); g.strokeStyle='rgba(255,255,255,.2)';
-        for(k=1;k<=3;k++){ var xh=gx+k/4*gw; g.beginPath(); g.moveTo(xh,gy); g.lineTo(xh,gy-Math.pow(0.5,k)*gh); g.stroke(); }
-        g.setLineDash([]);
-        g.fillStyle='#fff'; g.beginPath(); g.arc(gx+s.n/4*gw,gy-frac*gh,4,0,7); g.fill();
-        vzLabel(g,'N = N₀e^(−λt)',gx,gy-gh-6,'#c4b5fd');
-        vzLabel(g,'after '+s.n.toFixed(1)+' t½ :  '+(frac*100).toFixed(0)+'% remain — (½)ⁿ, t½ = ln2/λ',12,16,'#c4b5fd'); } },
-    'nuclear-binding':{ hint:'iron sits on the summit of stability',
-      init:function(){ return {A:56}; },
-      scrub:{label:'mass number A',min:2,max:238,val:56,unit:'',step:1,on:function(s,v){ s.A=Math.round(v); }},
-      draw:function(g,s,W,H,t){ var gx=W*0.1,gy=H*0.8,gw=W*0.82,gh=H*0.6,i;
-        function bea(A){ var Z=Math.round(A/(1.98+0.0155*Math.pow(A,2/3)));
-          var be=15.75*A-17.8*Math.pow(A,2/3)-0.711*Z*(Z-1)/Math.pow(A,1/3)-23.7*(A-2*Z)*(A-2*Z)/A;
-          return Math.max(0.5,be/A); }
-        g.strokeStyle='rgba(255,255,255,.15)'; g.lineWidth=1; g.beginPath(); g.moveTo(gx,gy-gh); g.lineTo(gx,gy); g.lineTo(gx+gw,gy); g.stroke();
-        g.strokeStyle='#c4b5fd'; g.lineWidth=2; g.beginPath();
-        for(i=0;i<=118;i++){ var A=2+i/118*236,xx=gx+i/118*gw,yy=gy-bea(A)/9*gh; i?g.lineTo(xx,yy):g.moveTo(xx,yy); } g.stroke();
-        var xf=gx+54/236*gw;
-        g.setLineDash([2,4]); g.strokeStyle='rgba(52,211,153,.6)'; g.beginPath(); g.moveTo(xf,gy); g.lineTo(xf,gy-bea(56)/9*gh); g.stroke(); g.setLineDash([]);
-        vzLabel(g,'Fe-56',xf-16,gy+14,'#34d399');
-        var b=bea(s.A);
-        g.fillStyle='#fff'; g.beginPath(); g.arc(gx+(s.A-2)/236*gw,gy-b/9*gh,4.5,0,7); g.fill();
-        vzLabel(g,'fusion ↗',gx+gw*0.06,gy-gh*0.3,'#fbbf24'); vzLabel(g,'↖ fission',gx+gw*0.78,gy-gh*0.55,'#f472b6');
-        vzLabel(g,'A = '+s.A+'   BE/A ≈ '+b.toFixed(2)+' MeV   (semi-empirical mass formula)',12,16,'#c4b5fd');
-        vzLabel(g,'both fusion and fission slide toward the iron peak',12,H-8,'rgba(159,177,208,.9)'); } },
-    'fission-fusion':{ hint:'k decides: fizzle, steady burn, or runaway',
-      init:function(){ return {k:1.5}; },
-      scrub:{label:'neutrons per fission k',min:0.5,max:2.5,val:1.5,unit:'',on:function(s,v){ s.k=v; }},
-      draw:function(g,s,W,H,t){ var gens=7,gx=W*0.08,gw=W*0.84,gy=H*0.12,gh=H*0.56,gen,i;
-        for(gen=0;gen<gens;gen++){ var n=Math.pow(s.k,gen),x=gx+gen/(gens-1)*gw;
-          if(n<0.5&&gen>0){ vzLabel(g,'†',x-3,gy+gh*0.5,'rgba(148,163,184,.6)'); continue; }
-          var show=Math.min(40,Math.max(1,Math.round(n)));
-          for(i=0;i<show;i++){ var y=gy+gh*0.5+((i%2?1:-1)*Math.ceil(i/2))*8;
-            g.fillStyle=n>=1?'#fbbf24':'rgba(251,191,36,.35)'; g.beginPath(); g.arc(x,y,3,0,7); g.fill(); }
-          vzLabel(g,n<10?n.toFixed(1):''+Math.round(n),x-8,gy+gh+16,'rgba(159,177,208,.8)'); }
-        vzLabel(g,'generation →',gx,gy+gh+34);
-        var mode=s.k<0.98?'subcritical — chain dies out':(s.k<1.02?'critical — steady burn (a reactor)':'supercritical — exponential runaway');
-        vzLabel(g,'after 6 generations: k⁶ = '+Math.pow(s.k,6).toFixed(1)+' fissions',12,16,'#fbbf24');
-        vzLabel(g,mode,12,H-8,s.k<0.98?'rgba(148,163,184,.9)':(s.k<1.02?'#34d399':'#f87171')); } },
     'carbon-dating':{ hint:'the fraction left IS the age',
       init:function(){ return {age:6}; },
       scrub:{label:'sample age',min:0,max:40,val:6,unit:'kyr',on:function(s,v){ s.age=v; }},
@@ -3710,73 +4079,277 @@ var Lens=(function(){
         g.setLineDash([3,4]); g.strokeStyle='rgba(52,211,153,.6)'; g.beginPath(); g.moveTo(gx,gy-frac*gh); g.lineTo(gx+s.age/40*gw,gy-frac*gh); g.lineTo(gx+s.age/40*gw,gy); g.stroke(); g.setLineDash([]);
         g.fillStyle='#fff'; g.beginPath(); g.arc(gx+s.age/40*gw,gy-frac*gh,4.5,0,7); g.fill();
         vzLabel(g,'C-14 remaining vs age   (t½ = 5730 yr)',gx,gy-gh-6,'#c4b5fd');
-        vzLabel(g,'age '+s.age.toFixed(0)+' kyr → '+(frac<0.01?(frac*100).toFixed(2):(frac*100).toFixed(1))+'% left   N = N₀e^(−λt)',12,16,'#34d399'); } },
-    'mass-energy':{ hint:'near c, energy explodes — mass never reaches light speed',
-      init:function(){ return {v:0.6}; },
-      scrub:{label:'speed v',min:0,max:0.99,val:0.6,unit:'c',on:function(s,v){ s.v=v; }},
-      draw:function(g,s,W,H,t){ var gam=1/Math.sqrt(1-s.v*s.v),gx=W*0.12,gy=H*0.82,gw=W*0.78,gh=H*0.64,cap=6,i;
+        vzLabel(g,'age '+s.age.toFixed(0)+' kyr → '+(frac<0.01?(frac*100).toFixed(2):(frac*100).toFixed(1))+'% left   N = N₀e^(−λt)',12,16,'#34d399'); } }
+  };
+  /* ---- VIZT_A: per-topic Visual-lens bank — mechanics, thermo, optics (built inline; the workflow
+     author was session-capped). Same entry shape as VIZ: {hint, scrub:{label,min,max,val,unit,step?,on(s,v)},
+     init(W,H)->state, draw(g,s,W,H,t)}. Topics with dedicated SIM_FOR sims are deliberately absent;
+     maxwell-boltzmann intentionally falls back (the thermo domain visual IS the MB distribution). ES5 only. */
+  var VIZT_A={
+    'kinematics':{ hint:'change a — watch the v–t slope and the spacing of the breadcrumbs',
+      init:function(){ return {a:1.2}; },
+      scrub:{label:'acceleration a',min:-3,max:3,val:1.2,unit:'m/s²',on:function(s,v){ s.a=v; }},
+      draw:function(g,s,W,H,t){ var u=40,a=s.a*26,T=6,tt=t%T,x0=W*0.12,road=H*0.2,i;
+        g.strokeStyle='rgba(255,255,255,.14)'; g.lineWidth=1; g.beginPath(); g.moveTo(8,road); g.lineTo(W-8,road); g.stroke();
+        for(i=0;i<=12;i++){ var ti=i*0.5; if(ti>tt)break; var xi=x0+u*ti+0.5*a*ti*ti; if(xi<8||xi>W-8)continue;
+          g.fillStyle='rgba(125,211,252,.35)'; g.beginPath(); g.arc(xi,road-7,2.2,0,7); g.fill(); }
+        var x=x0+u*tt+0.5*a*tt*tt; x=Math.max(8,Math.min(W-8,x));
+        g.fillStyle='#7dd3fc'; g.beginPath(); g.arc(x,road-7,6,0,7); g.fill();
+        var v=u+a*tt; if(Math.abs(v)>4) vzArrow(g,x,road-7,x+Math.max(-46,Math.min(46,v*0.3)),road-7,'#fbbf24');
+        var gx=W*0.12,gy=H*0.92,gw=W*0.76,gh=H*0.44,vmax=Math.abs(u)+Math.abs(a)*T+20;
+        g.strokeStyle='rgba(255,255,255,.15)'; g.beginPath(); g.moveTo(gx,gy-gh); g.lineTo(gx,gy); g.lineTo(gx+gw,gy); g.stroke();
+        var y0v=gy-gh*0.5; g.strokeStyle='rgba(255,255,255,.08)'; g.beginPath(); g.moveTo(gx,y0v); g.lineTo(gx+gw,y0v); g.stroke();
+        function vy(vv){ return y0v-vv/vmax*gh*0.48; }
+        g.fillStyle='rgba(52,211,153,.14)'; g.beginPath(); g.moveTo(gx,y0v);
+        for(i=0;i<=40;i++){ var t2=i/40*tt; g.lineTo(gx+t2/T*gw,vy(u+a*t2)); }
+        g.lineTo(gx+tt/T*gw,y0v); g.closePath(); g.fill();
+        g.strokeStyle='#34d399'; g.lineWidth=2; g.beginPath(); g.moveTo(gx,vy(u)); g.lineTo(gx+gw,vy(u+a*T)); g.stroke();
+        g.fillStyle='#fff'; g.beginPath(); g.arc(gx+tt/T*gw,vy(v),4,0,7); g.fill();
+        vzLabel(g,'v = u + at = '+v.toFixed(0)+'   ·   shaded area = displacement s',gx,gy-gh-8,'#34d399');
+        vzLabel(g,'slope of v–t IS the acceleration',gx,gy+14,'rgba(159,177,208,.9)'); } },
+    'newton-laws':{ hint:'same force, different mass — a = F/m decides',
+      init:function(){ return {F:20,v1:0,x1:0.1,v2:0,x2:0.1,lt:0}; },
+      scrub:{label:'applied force F',min:-40,max:40,val:20,unit:'N',on:function(s,v){ s.F=v; }},
+      draw:function(g,s,W,H,t){ var dt=Math.min(0.05,Math.max(0.001,t-(s.lt||t))); s.lt=t;
+        var m1=5,m2=15,a1=s.F/m1,a2=s.F/m2;
+        s.v1+=a1*dt*0.05; s.v2+=a2*dt*0.05; s.x1+=s.v1*dt; s.x2+=s.v2*dt;
+        if(s.x1>0.94){s.x1=0.06;} if(s.x1<0.02){s.x1=0.9;} if(s.x2>0.94){s.x2=0.06;} if(s.x2<0.02){s.x2=0.9;}
+        var lanes=[[s.x1,m1,H*0.3,'#7dd3fc',a1],[s.x2,m2,H*0.68,'#f472b6',a2]],i;
+        for(i=0;i<2;i++){ var L=lanes[i],X=L[0]*W,Y=L[2],sz=10+L[1]*1.4;
+          g.strokeStyle='rgba(255,255,255,.12)'; g.lineWidth=1; g.beginPath(); g.moveTo(8,Y+sz/2+2); g.lineTo(W-8,Y+sz/2+2); g.stroke();
+          g.fillStyle=L[3]; g.fillRect(X-sz/2,Y-sz/2,sz,sz);
+          if(Math.abs(s.F)>1) vzArrow(g,X,Y,X+Math.max(-52,Math.min(52,s.F*1.3)),Y,'#fbbf24');
+          vzLabel(g,'m = '+L[1]+'   a = F/m = '+L[4].toFixed(1),12,Y-sz/2-8,L[3]); }
+        vzLabel(g,'identical force — the light block wins the race',12,H-10,'rgba(159,177,208,.9)');
+        vzLabel(g,'F = ma',12,20,'#fbbf24'); } },
+    'friction':{ hint:'tilt it — nothing moves until tanθ beats μₛ',
+      init:function(){ return {th:20,ph:0,v:0,lt:0}; },
+      scrub:{label:'incline angle θ',min:0,max:45,val:20,unit:'°',on:function(s,v){ s.th=v; s.ph=0; s.v=0; }},
+      draw:function(g,s,W,H,t){ var dt=Math.min(0.05,Math.max(0.001,t-(s.lt||t))); s.lt=t;
+        var mus=0.45,muk=0.32,th=s.th*Math.PI/180,slides=Math.tan(th)>mus;
+        if(slides){ s.v+=160*(Math.sin(th)-muk*Math.cos(th))*dt; s.ph+=s.v*dt; if(s.ph>Math.min(W,H)*0.62){ s.ph=0; s.v=0; } }
+        var bx=W*0.12,by=H*0.85,L=Math.min(W*0.8,H*0.95);
+        g.strokeStyle='rgba(255,255,255,.3)'; g.lineWidth=2; g.beginPath(); g.moveTo(bx,by); g.lineTo(bx+L*Math.cos(th),by-L*Math.sin(th)); g.lineTo(bx+L*Math.cos(th),by); g.closePath(); g.stroke();
+        var d0=L*0.72-s.ph,cx2=bx+d0*Math.cos(th),cy2=by-d0*Math.sin(th),sz=16;
+        g.save(); g.translate(cx2,cy2); g.rotate(-th);
+        g.fillStyle=slides?'#f87171':'#34d399'; g.fillRect(-sz/2,-sz-1,sz,sz); g.restore();
+        var nx=Math.sin(th),ny=Math.cos(th);
+        vzArrow(g,cx2,cy2-8,cx2,cy2-8+34,'#fbbf24');
+        vzArrow(g,cx2,cy2-8,cx2-nx*30,cy2-8-ny*30,'#7dd3fc');
+        var fmag=slides?muk*Math.cos(th)*30:Math.sin(th)*30;
+        vzArrow(g,cx2,cy2-8,cx2+Math.cos(th)*fmag,cy2-8-Math.sin(th)*fmag,'#f0abfc');
+        vzLabel(g,'tanθ = '+Math.tan(th).toFixed(2)+'  vs  μₛ = '+mus,12,20,slides?'#f87171':'#34d399');
+        vzLabel(g,slides?'sliding — kinetic friction μₖ = '+muk+' takes over':'static friction holds — it matches the pull exactly',12,H-10,'rgba(159,177,208,.9)'); } },
+    'work-energy':{ hint:'every bounce trades the same energy — and loses a slice',
+      init:function(){ return {h:100,y:0,v:0,lt:0,E0:0}; },
+      scrub:{label:'drop height h',min:30,max:160,val:100,unit:'u',on:function(s,v){ s.h=v; s.y=0; s.v=0; s.E0=0; }},
+      draw:function(g,s,W,H,t){ var dt=Math.min(0.04,Math.max(0.001,t-(s.lt||t))); s.lt=t;
+        var gacc=300,e=0.72,floor=H*0.88,top=floor-s.h*(H/200);
+        if(!s.E0){ s.y=top; s.v=0; s.E0=gacc*(floor-top); }
+        s.v+=gacc*dt; s.y+=s.v*dt;
+        if(s.y>floor-7){ s.y=floor-7; s.v=-Math.abs(s.v)*e; if(Math.abs(s.v)<24){ s.E0=0; } }
+        var pe=gacc*Math.max(0,floor-7-s.y),ke=0.5*s.v*s.v,tot=s.E0||1,lost=Math.max(0,tot-pe-ke);
+        g.strokeStyle='rgba(255,255,255,.2)'; g.lineWidth=1.5; g.beginPath(); g.moveTo(8,floor); g.lineTo(W-8,floor); g.stroke();
+        g.setLineDash([3,4]); g.strokeStyle='rgba(255,255,255,.15)'; g.beginPath(); g.moveTo(8,top-7); g.lineTo(W*0.5,top-7); g.stroke(); g.setLineDash([]);
+        g.fillStyle='#7dd3fc'; g.beginPath(); g.arc(W*0.3,s.y,9,0,7); g.fill();
+        var barY=floor,barH=H*0.5,bw2=16,bx2=W*0.62;
+        function bar(f,c,x2,l2){ f=Math.max(0,Math.min(1,f)); g.fillStyle='rgba(255,255,255,.07)'; g.fillRect(x2,barY-barH,bw2,barH);
+          g.fillStyle=c; g.fillRect(x2,barY-barH*f,bw2,barH*f); vzLabel(g,l2,x2-2,barY+13,c); }
+        bar(pe/tot,'#f472b6',bx2,'PE'); bar(ke/tot,'#34d399',bx2+30,'KE'); bar(lost/tot,'#9ca3af',bx2+60,'lost');
+        vzLabel(g,'v at the floor = √(2gh) = '+Math.sqrt(2*gacc*(floor-top)).toFixed(0),12,20,'#fff');
+        vzLabel(g,'each bounce keeps e² = '+(e*e*100).toFixed(0)+'% — the rest became heat and sound',12,H-8,'rgba(159,177,208,.9)'); } },
+    'momentum':{ hint:'elastic collision — momentum never flinches',
+      init:function(){ return {r:2,x1:0.08,x2:0.5,v1:0.14,v2:0,hit:false,lt:0}; },
+      scrub:{label:'mass ratio m₂/m₁',min:0.25,max:4,val:2,unit:'×',on:function(s,v){ s.r=v; s.x1=0.08; s.x2=0.5; s.v1=0.14; s.v2=0; s.hit=false; }},
+      draw:function(g,s,W,H,t){ var dt=Math.min(0.05,Math.max(0.001,t-(s.lt||t))); s.lt=t;
+        var r1=13,r2=13*Math.pow(s.r,1/3);
+        s.x1+=s.v1*dt; s.x2+=s.v2*dt;
+        if(!s.hit&&s.x2*W-(s.x1*W)<=r1+r2){ var u1=s.v1; s.v1=(1-s.r)/(1+s.r)*u1; s.v2=2/(1+s.r)*u1; s.hit=true; }
+        if(s.x2>1.15||s.x1>1.15||s.x1<-0.15){ s.x1=0.08; s.x2=0.5; s.v1=0.14; s.v2=0; s.hit=false; }
+        var y=H*0.42;
+        g.strokeStyle='rgba(255,255,255,.12)'; g.lineWidth=1; g.beginPath(); g.moveTo(8,y+r2+4); g.lineTo(W-8,y+r2+4); g.stroke();
+        g.fillStyle='#7dd3fc'; g.beginPath(); g.arc(s.x1*W,y,r1,0,7); g.fill();
+        g.fillStyle='#f472b6'; g.beginPath(); g.arc(s.x2*W,y,r2,0,7); g.fill();
+        if(Math.abs(s.v1)>0.004) vzArrow(g,s.x1*W,y-r1-9,s.x1*W+s.v1*W*0.9,y-r1-9,'#7dd3fc');
+        if(Math.abs(s.v2)>0.004) vzArrow(g,s.x2*W,y-r2-9,s.x2*W+s.v2*W*0.9,y-r2-9,'#f472b6');
+        var p=(1*s.v1+s.r*s.v2)*W;
+        vzLabel(g,'p total = m₁v₁ + m₂v₂ = '+p.toFixed(1)+'  (constant, always)',12,20,'#fff');
+        vzLabel(g,s.r<0.9?'light target — both carry on forward':(s.r>1.15?'heavy target — the striker bounces back':'equal masses — a perfect handoff'),12,H-10,'rgba(159,177,208,.9)'); } },
+    'fluids':{ hint:'density decides — float, hover, or sink',
+      init:function(){ return {rho:0.6}; },
+      scrub:{label:'object density ρ',min:0.2,max:2.4,val:0.6,unit:'×ρw',on:function(s,v){ s.rho=v; }},
+      draw:function(g,s,W,H,t){ var wl=H*0.42,bw2=Math.min(W*0.22,74),bh=bw2*0.72,cx2=W*0.5;
+        g.fillStyle='rgba(56,130,246,.13)'; g.fillRect(8,wl,W-16,H*0.52);
+        g.strokeStyle='rgba(125,211,252,.5)'; g.lineWidth=1.5; g.beginPath();
+        for(var x2=8;x2<W-8;x2+=4){ g.lineTo(x2,wl+Math.sin(x2*0.08+t*2.4)*2); } g.stroke();
+        var frac=Math.min(1,s.rho),by2;
+        if(s.rho<1){ by2=wl-bh*(1-frac)+Math.sin(t*1.7)*2; } else { by2=wl+H*0.52-bh-6; }
+        g.fillStyle=s.rho<1?'#fbbf24':'#94a3b8'; g.fillRect(cx2-bw2/2,by2,bw2,bh);
+        var sub=s.rho<1?frac:1;
+        vzArrow(g,cx2-bw2*0.28,by2+bh/2,cx2-bw2*0.28,by2+bh/2+18+s.rho*16,'#f87171');
+        vzArrow(g,cx2+bw2*0.28,by2+bh/2,cx2+bw2*0.28,by2+bh/2-(18+sub*32),'#34d399');
+        vzLabel(g,'mg',cx2-bw2*0.28-10,by2+bh/2+30+s.rho*16,'#f87171');
+        vzLabel(g,'F_B',cx2+bw2*0.28+6,by2+bh/2-(20+sub*32),'#34d399');
+        vzLabel(g,s.rho<1?'floats — submerged fraction = ρ/ρw = '+(frac*100).toFixed(0)+'%':'sinks — buoyancy maxed out, still short of mg',12,20,'#fff');
+        vzLabel(g,'Archimedes: F_B = ρw·g·V_submerged',12,H-8,'rgba(159,177,208,.9)'); } },
+    'elasticity':{ hint:'push the strain — elastic, plastic, snap',
+      init:function(){ return {eps:3}; },
+      scrub:{label:'strain ε',min:0,max:12,val:3,unit:'%',on:function(s,v){ s.eps=v; }},
+      draw:function(g,s,W,H,t){ var yld=4,ult=9,frac=11.2,e2=s.eps;
+        function sig(ep){ if(ep<=yld) return ep/yld*0.72; if(ep<=ult) return 0.72+(ep-yld)/(ult-yld)*0.28; if(ep<frac) return 1-(ep-ult)/(frac-ult)*0.14; return 0; }
+        var broke=e2>=frac,zone=broke?3:(e2>ult?2:(e2>yld?1:0));
+        var rl=W*0.09,rt=H*0.2,rw2=W*0.2;
+        g.strokeStyle='rgba(255,255,255,.4)'; g.lineWidth=1.5; g.strokeRect(rl,rt-8,rw2,8);
+        var stretch=rw2*(1+e2*0.05);
+        if(!broke){ g.fillStyle=zone===0?'#34d399':(zone===1?'#fbbf24':'#f87171'); g.fillRect(rl,rt+12,stretch,8);
+          if(zone>0){ g.strokeStyle='rgba(255,255,255,.25)'; g.setLineDash([2,3]); g.strokeRect(rl,rt+12,rw2*(1+yld*0.05*0.4),8); g.setLineDash([]); } }
+        else { g.fillStyle='#f87171'; g.fillRect(rl,rt+12,stretch*0.55,8); g.fillRect(rl+stretch*0.62,rt+12,stretch*0.38,8); }
+        var gx=W*0.42,gy=H*0.86,gw=W*0.5,gh=H*0.6,i;
         g.strokeStyle='rgba(255,255,255,.15)'; g.lineWidth=1; g.beginPath(); g.moveTo(gx,gy-gh); g.lineTo(gx,gy); g.lineTo(gx+gw,gy); g.stroke();
-        g.setLineDash([3,4]); g.strokeStyle='rgba(248,113,113,.4)'; g.beginPath(); g.moveTo(gx+gw,gy); g.lineTo(gx+gw,gy-gh); g.stroke(); g.setLineDash([]);
-        vzLabel(g,'v = c',gx+gw-32,gy+14,'#f87171');
-        g.setLineDash([3,4]); g.strokeStyle='rgba(159,177,208,.6)'; g.lineWidth=1.5; g.beginPath();
-        for(i=0;i<=60;i++){ var vv=i/60*0.99,xx=gx+vv/0.99*gw,yy=gy-Math.min(1,0.5*vv*vv/cap)*gh; i?g.lineTo(xx,yy):g.moveTo(xx,yy); } g.stroke(); g.setLineDash([]);
-        g.strokeStyle='#f472b6'; g.lineWidth=2.2; g.beginPath();
-        for(i=0;i<=60;i++){ var v2=i/60*0.99,x2=gx+v2/0.99*gw,y2=gy-Math.min(1,(1/Math.sqrt(1-v2*v2)-1)/cap)*gh; i?g.lineTo(x2,y2):g.moveTo(x2,y2); } g.stroke();
-        g.fillStyle='#fff'; g.beginPath(); g.arc(gx+s.v/0.99*gw,gy-Math.min(1,(gam-1)/cap)*gh,4.5,0,7); g.fill();
-        vzLabel(g,'KE = (γ−1)mc²',gx+gw*0.42,gy-gh*0.86,'#f472b6'); vzLabel(g,'½mv² (Newton)',gx+gw*0.55,gy-gh*0.1,'rgba(159,177,208,.9)');
-        vzLabel(g,'γ = '+gam.toFixed(2)+'   E = γmc² = '+gam.toFixed(2)+' mc²   p = γmv',12,16,'#f472b6'); } },
-    'twin-paradox':{ hint:'the twin who turns around ages less',
-      init:function(){ return {v:0.8}; },
-      scrub:{label:'cruise speed',min:0.1,max:0.95,val:0.8,unit:'c',on:function(s,v){ s.v=v; }},
-      draw:function(g,s,W,H,t){ var gam=1/Math.sqrt(1-s.v*s.v),T=20,Tt=T/gam,gx=W*0.2,gy=H*0.86,gh=H*0.72;
-        g.strokeStyle='rgba(255,255,255,.15)'; g.lineWidth=1; g.beginPath(); g.moveTo(gx,gy); g.lineTo(gx,gy-gh); g.moveTo(gx,gy); g.lineTo(gx+gh*0.62,gy); g.stroke();
-        vzLabel(g,'ct ↑',gx-32,gy-gh+4); vzLabel(g,'x →',gx+gh*0.62+6,gy+13);
-        g.setLineDash([2,4]); g.strokeStyle='rgba(255,255,255,.25)'; g.beginPath(); g.moveTo(gx,gy); g.lineTo(gx+gh*0.55,gy-gh*0.55); g.stroke(); g.setLineDash([]);
-        vzLabel(g,'light',gx+gh*0.46,gy-gh*0.5,'rgba(255,255,255,.5)');
-        g.strokeStyle='#34d399'; g.lineWidth=2.4; g.beginPath(); g.moveTo(gx,gy); g.lineTo(gx,gy-gh); g.stroke();
-        var xt=s.v*gh/2;
-        g.strokeStyle='#f472b6'; g.lineWidth=2.4; g.beginPath(); g.moveTo(gx,gy); g.lineTo(gx+xt,gy-gh/2); g.lineTo(gx,gy-gh); g.stroke();
-        vzLabel(g,'home twin: '+T.toFixed(0)+' yr',W*0.6,H*0.3,'#34d399');
-        vzLabel(g,'traveller: '+Tt.toFixed(1)+' yr',W*0.6,H*0.42,'#f472b6');
-        vzLabel(g,'Δt_travel = Δt_home/γ   γ = '+gam.toFixed(2)+' → gap '+(T-Tt).toFixed(1)+' yr',12,16,'#f472b6');
-        vzLabel(g,'the turnaround (acceleration) breaks the symmetry',12,H-8,'rgba(159,177,208,.9)'); } },
-    'stars':{ hint:'hotter surface — bluer light and fierce luminosity',
-      init:function(){ return {T:6}; },
-      scrub:{label:'surface temp',min:3,max:25,val:6,unit:'kK',on:function(s,v){ s.T=v; }},
-      draw:function(g,s,W,H,t){ var Tk=s.T*1000,Lr=Math.pow(Tk/5772,4),cx=W*0.3,cy=H*0.44,r=Math.min(W,H)*0.2,i;
-        var col=s.T<4?'#f87171':(s.T<5?'#fb923c':(s.T<6.5?'#fde68a':(s.T<8?'#ffffff':(s.T<12?'#bfdbfe':'#93c5fd'))));
-        for(i=4;i>0;i--){ g.globalAlpha=0.07*i; g.fillStyle=col; g.beginPath(); g.arc(cx,cy,r*(1+i*0.18),0,7); g.fill(); }
-        g.globalAlpha=1; g.fillStyle=col; g.beginPath(); g.arc(cx,cy,r,0,7); g.fill();
-        var f=Math.max(0.02,Math.min(1,(Math.log(Lr)/Math.LN10+1.2)/3.8)),bx=W*0.72,by=H*0.76,bH=H*0.54;
-        g.fillStyle='rgba(255,255,255,.07)'; g.fillRect(bx,by-bH,26,bH);
-        g.fillStyle=col; g.fillRect(bx,by-bH*f,26,bH*f);
-        vzLabel(g,'L (log)',bx-10,by+14);
-        vzLabel(g,'L = 4πR²σT⁴ = '+(Lr<10?Lr.toFixed(2):Lr.toFixed(0))+' L☉   (R = R☉)',12,16,col);
-        vzLabel(g,'Wien: λ_peak = 2.9×10⁶/T = '+(2.9e6/Tk).toFixed(0)+' nm',12,H-8,'rgba(159,177,208,.9)'); } },
-    'cosmology':{ hint:'space itself stretches — every galaxy sees the same thing',
-      init:function(){ var p=[],i; for(i=0;i<26;i++) p.push({x:Math.random()-0.5,y:Math.random()-0.5}); return {a:1.4,g:p}; },
-      scrub:{label:'scale factor a',min:1,max:2.5,val:1.4,unit:'×',on:function(s,v){ s.a=v; }},
-      draw:function(g,s,W,H,t){ var cx=W*0.32,cy=H*0.5,u=Math.min(W,H)*0.38;
-        s.g.forEach(function(p){ var x=cx+p.x*u*s.a,y=cy+p.y*u*s.a,d=Math.hypot(p.x,p.y);
-          vzArrow(g,x,y,x+p.x*u*0.35,y+p.y*u*0.35,'rgba(244,114,182,.25)');
-          g.fillStyle='rgba(244,114,182,'+Math.max(0.2,0.9-d*0.9).toFixed(2)+')'; g.beginPath(); g.arc(x,y,2.6,0,7); g.fill(); });
-        g.fillStyle='#facc15'; g.beginPath(); g.arc(cx,cy,4,0,7); g.fill();
-        var gx=W*0.7,gy=H*0.78,gw=W*0.26,gh=H*0.54;
-        g.strokeStyle='rgba(255,255,255,.15)'; g.lineWidth=1; g.beginPath(); g.moveTo(gx,gy-gh); g.lineTo(gx,gy); g.lineTo(gx+gw,gy); g.stroke();
-        g.strokeStyle='#f472b6'; g.lineWidth=2; g.beginPath(); g.moveTo(gx,gy); g.lineTo(gx+gw,gy-gh*Math.min(1,(s.a-0.9)/1.6)); g.stroke();
-        vzLabel(g,'v = H₀d',gx+4,gy-gh-4,'#f472b6'); vzLabel(g,'d →',gx+gw-26,gy+13);
-        vzLabel(g,'space ×'+s.a.toFixed(2)+' → redshift z = Δλ/λ = '+(s.a-1).toFixed(2),12,16,'#f472b6');
-        vzLabel(g,'no centre — every observer sees recession ∝ distance',12,H-8,'rgba(159,177,208,.9)'); } },
-    'gravitational-waves':{ hint:'space itself breathes — stretch one way, squeeze the other',
-      init:function(){ return {h:0.25}; },
-      scrub:{label:'strain h (hugely exaggerated)',min:0,max:0.5,val:0.25,unit:'',on:function(s,v){ s.h=v; }},
-      draw:function(g,s,W,H,t){ var cx=W*0.5,cy=H*0.46,R=Math.min(W,H)*0.3,ph=Math.cos(t*2.5),i;
-        var sx=1+s.h*ph/2,sy=1-s.h*ph/2;
-        g.setLineDash([3,4]); g.strokeStyle='rgba(255,255,255,.15)'; g.lineWidth=1; g.beginPath(); g.arc(cx,cy,R,0,7); g.stroke(); g.setLineDash([]);
-        for(i=0;i<16;i++){ var a=i/16*6.283;
-          g.fillStyle='#f472b6'; g.beginPath(); g.arc(cx+Math.cos(a)*R*sx,cy+Math.sin(a)*R*sy,4,0,7); g.fill(); }
-        vzLabel(g,'h⁺ polarization:  Δx = ½h·x, opposite sign in y',12,16,'#f472b6');
-        vzLabel(g,'real LIGO strain ΔL/L ~ 10⁻²¹ — a proton-width over 4 km',12,H-8,'rgba(159,177,208,.9)'); } }
+        g.strokeStyle='#a78bfa'; g.lineWidth=2; g.beginPath();
+        for(i=0;i<=60;i++){ var ep2=i/60*frac,X2=gx+ep2/12*gw,Y2=gy-sig(ep2)*gh*0.9; i?g.lineTo(X2,Y2):g.moveTo(X2,Y2); } g.stroke();
+        var Xd=gx+Math.min(e2,frac)/12*gw,Yd=gy-sig(Math.min(e2,frac))*gh*0.9;
+        g.fillStyle=zone===0?'#34d399':(zone===1?'#fbbf24':'#f87171'); g.beginPath(); g.arc(Xd,Yd,5,0,7); g.fill();
+        vzLabel(g,'stress σ',gx-4,gy-gh-6,'rgba(167,139,250,.9)'); vzLabel(g,'strain ε',gx+gw-40,gy+14,'rgba(167,139,250,.9)');
+        vzLabel(g,['elastic — σ = Eε, snaps back','plastic — permanently bent','necking — weakening toward failure','FRACTURE'][zone],12,20,zone===0?'#34d399':(zone===3?'#f87171':'#fbbf24'));
+        vzLabel(g,'yield at 4% · breaks near 11%',12,H-8,'rgba(159,177,208,.9)'); } },
+    'center-of-mass':{ hint:'the ends tumble — the COM flies a clean parabola',
+      init:function(){ return {w:2.4,tt:0,lt:0,com:[],p1:[],p2:[]}; },
+      scrub:{label:'spin rate ω',min:0,max:6,val:2.4,unit:'rad/s',on:function(s,v){ s.w=v; s.tt=0; s.com=[]; s.p1=[]; s.p2=[]; }},
+      draw:function(g,s,W,H,t){ var dt=Math.min(0.05,Math.max(0.001,t-(s.lt||t))); s.lt=t; s.tt+=dt;
+        var x0=W*0.08,y0=H*0.82,vx=W*0.16,vy=-H*0.62,ga=H*0.5,T2=(-2*vy/ga),tt=s.tt%(T2+0.6),arm=Math.min(W,H)*0.11;
+        var cx2=x0+vx*tt,cy2=y0+vy*tt+0.5*ga*tt*tt,ang=s.w*tt;
+        if(tt<dt*1.5){ s.com=[]; s.p1=[]; s.p2=[]; }
+        var m1=2,m2=1,d1=arm*m2/(m1+m2),d2=arm*m1/(m1+m2);
+        var ax2=cx2-Math.cos(ang)*d1,ay2=cy2-Math.sin(ang)*d1,bx2=cx2+Math.cos(ang)*d2,by2=cy2+Math.sin(ang)*d2;
+        s.com.push([cx2,cy2]); s.p1.push([ax2,ay2]); s.p2.push([bx2,by2]);
+        if(s.com.length>200){ s.com.shift(); s.p1.shift(); s.p2.shift(); }
+        function path(pts,c2,w2,al){ if(pts.length<2)return; g.strokeStyle=c2; g.globalAlpha=al; g.lineWidth=w2; g.beginPath();
+          for(var i=0;i<pts.length;i++){ i?g.lineTo(pts[i][0],pts[i][1]):g.moveTo(pts[i][0],pts[i][1]); } g.stroke(); g.globalAlpha=1; }
+        path(s.p1,'#7dd3fc',1,0.25); path(s.p2,'#f472b6',1,0.25); path(s.com,'#34d399',2,0.9);
+        g.strokeStyle='rgba(255,255,255,.5)'; g.lineWidth=2.5; g.beginPath(); g.moveTo(ax2,ay2); g.lineTo(bx2,by2); g.stroke();
+        g.fillStyle='#7dd3fc'; g.beginPath(); g.arc(ax2,ay2,9,0,7); g.fill();
+        g.fillStyle='#f472b6'; g.beginPath(); g.arc(bx2,by2,6.5,0,7); g.fill();
+        g.fillStyle='#34d399'; g.beginPath(); g.arc(cx2,cy2,3.4,0,7); g.fill();
+        vzLabel(g,'gravity only ever grabs the COM — green path stays a parabola',12,20,'#34d399');
+        vzLabel(g,'x_com = Σmᵢxᵢ / Σmᵢ  (closer to the heavy end)',12,H-8,'rgba(159,177,208,.9)'); } },
+    'terminal-velocity':{ hint:'drag grows with speed until it cancels gravity',
+      init:function(){ return {b:1.2,fy:0.06}; },
+      scrub:{label:'drag strength b',min:0.4,max:3,val:1.2,unit:'×',on:function(s,v){ s.b=v; }},
+      draw:function(g,s,W,H,t){ var T2=8,tt=t%T2,vt=1/s.b;
+        function vf(x2){ return vt*(1-Math.exp(-s.b*x2)); }
+        var col=W*0.18,yy=H*0.08+((vt*(tt-(1-Math.exp(-s.b*tt))/s.b))*H*0.22)%(H*0.78);
+        g.strokeStyle='rgba(255,255,255,.1)'; g.lineWidth=1; g.beginPath(); g.moveTo(col-26,H*0.06); g.lineTo(col-26,H*0.94); g.moveTo(col+26,H*0.06); g.lineTo(col+26,H*0.94); g.stroke();
+        var vnow=vf(tt);
+        g.fillStyle='#fbbf24'; g.beginPath(); g.arc(col,H*0.08+yy%(H*0.8),8,0,7); g.fill();
+        vzArrow(g,col,H*0.08+yy%(H*0.8),col,H*0.08+yy%(H*0.8)+26,'#f87171');
+        vzArrow(g,col,H*0.08+yy%(H*0.8),col,H*0.08+yy%(H*0.8)-26*(vnow/vt),'#7dd3fc');
+        var gx=W*0.42,gy=H*0.82,gw=W*0.5,gh=H*0.55,i;
+        g.strokeStyle='rgba(255,255,255,.15)'; g.beginPath(); g.moveTo(gx,gy-gh); g.lineTo(gx,gy); g.lineTo(gx+gw,gy); g.stroke();
+        var yvt=gy-0.82*gh;
+        g.setLineDash([4,4]); g.strokeStyle='rgba(248,113,113,.6)'; g.beginPath(); g.moveTo(gx,yvt); g.lineTo(gx+gw,yvt); g.stroke(); g.setLineDash([]);
+        g.strokeStyle='#7dd3fc'; g.lineWidth=2; g.beginPath();
+        for(i=0;i<=70;i++){ var t3=i/70*T2,X2=gx+i/70*gw,Y2=gy-(vf(t3)/vt)*0.82*gh; i?g.lineTo(X2,Y2):g.moveTo(X2,Y2); } g.stroke();
+        g.fillStyle='#fff'; g.beginPath(); g.arc(gx+tt/T2*gw,gy-(vnow/vt)*0.82*gh,4,0,7); g.fill();
+        vzLabel(g,'v_t = mg/b  ·  τ = m/b = '+(1/s.b).toFixed(2)+' s (63% there at t = τ)',gx,gy-gh-8,'#f87171');
+        vzLabel(g,'weight vs drag — equal at terminal velocity',12,H-8,'rgba(159,177,208,.9)'); } },
+    'temp-heat':{ hint:'heat flows downhill in temperature — never up',
+      init:function(){ return {Th:80,T1:80,T2:20,lt:0,pause:0}; },
+      scrub:{label:'hot block T₀',min:40,max:100,val:80,unit:'°C',on:function(s,v){ s.Th=v; s.T1=v; s.T2=20; s.pause=0; }},
+      draw:function(g,s,W,H,t){ var dt=Math.min(0.05,Math.max(0.001,t-(s.lt||t))); s.lt=t;
+        var C1=1,C2=2,k=0.55;
+        if(s.pause>0){ s.pause-=dt; if(s.pause<=0){ s.T1=s.Th; s.T2=20; } }
+        else { var q=k*(s.T1-s.T2)*dt; s.T1-=q/C1; s.T2+=q/C2; if(Math.abs(s.T1-s.T2)<0.6) s.pause=1.6; }
+        var Teq=(C1*s.Th+C2*20)/(C1+C2);
+        function tc(T){ var f=Math.max(0,Math.min(1,(T-20)/80)); return 'rgb('+Math.round(70+f*185)+','+Math.round(100+f*30)+','+Math.round(240-f*180)+')'; }
+        var b1w=W*0.22,b2w=W*0.3,bh=H*0.34,y2=H*0.3,x1=W*0.5-b1w-2,x2=W*0.5+2;
+        g.fillStyle=tc(s.T1); g.fillRect(x1,y2,b1w,bh);
+        g.fillStyle=tc(s.T2); g.fillRect(x2,y2,b2w,bh);
+        g.fillStyle='rgba(6,9,18,.55)'; g.fillRect(x1+8,y2+8,58,16); g.fillRect(x2+8,y2+8,58,16);
+        vzLabel(g,s.T1.toFixed(1)+'°',x1+12,y2+20,'#fff'); vzLabel(g,s.T2.toFixed(1)+'°',x2+12,y2+20,'#fff');
+        var dT=s.T1-s.T2; if(dT>1){ var aw=Math.min(30,dT*0.5);
+          g.lineWidth=aw*0.28; g.strokeStyle='rgba(251,146,60,.8)'; g.beginPath(); g.moveTo(W*0.5-16,y2+bh*0.5); g.lineTo(W*0.5+10,y2+bh*0.5); g.stroke(); g.lineWidth=1;
+          vzArrow(g,W*0.5+2,y2+bh*0.5,W*0.5+18,y2+bh*0.5,'rgba(251,146,60,.9)'); }
+        var gy2=H*0.86; g.setLineDash([4,4]); g.strokeStyle='rgba(52,211,153,.6)'; g.beginPath(); g.moveTo(W*0.1,gy2-(Teq-20)/80*H*0.12); g.lineTo(W*0.9,gy2-(Teq-20)/80*H*0.12); g.stroke(); g.setLineDash([]);
+        vzLabel(g,'rate ∝ ΔT — the flow chokes off as they meet',12,20,'#fb923c');
+        vzLabel(g,'equilibrium: T = (m₁c₁T₁+m₂c₂T₂)/(m₁c₁+m₂c₂) = '+Teq.toFixed(1)+'°C (big block barely moves)',12,H-8,'rgba(159,177,208,.9)'); } },
+    'thermal-expansion':{ hint:'heat the rail — watch it eat the expansion gap',
+      init:function(){ return {dT:120}; },
+      scrub:{label:'temperature rise ΔT',min:0,max:300,val:120,unit:'K',on:function(s,v){ s.dT=v; }},
+      draw:function(g,s,W,H,t){ var alpha=12e-6,L0=10,dLmm=alpha*L0*s.dT*1000,gapmm=30;
+        var y2=H*0.42,railL=W*0.66,x0=W*0.08,gapPx=W*0.14,growth=Math.min(gapPx*(dLmm/gapmm),gapPx+6);
+        var f=Math.min(1,s.dT/300),buck=dLmm>=gapmm;
+        g.fillStyle='rgba(255,255,255,.25)'; g.fillRect(x0-14,y2-20,10,48); g.fillRect(x0+railL+gapPx+4,y2-20,10,48);
+        var col='rgb('+Math.round(120+f*135)+','+Math.round(120-f*40)+','+Math.round(140-f*90)+')';
+        if(!buck){ g.fillStyle=col; g.fillRect(x0,y2,railL+growth,10); }
+        else { g.strokeStyle=col; g.lineWidth=10; g.beginPath(); g.moveTo(x0,y2+5);
+          g.quadraticCurveTo(x0+(railL+gapPx)/2,y2+5-26-Math.sin(t*6)*2,x0+railL+gapPx,y2+5); g.stroke();
+          vzLabel(g,'BUCKLED — this is why rails and bridges get gaps',x0,y2+40,'#f87171'); }
+        g.strokeStyle='rgba(255,255,255,.2)'; g.lineWidth=1;
+        g.beginPath(); g.moveTo(x0+railL+growth,y2-8); g.lineTo(x0+railL+gapPx,y2-8); g.stroke();
+        vzLabel(g,'gap left: '+Math.max(0,gapmm-dLmm).toFixed(1)+' mm',x0+railL-40,y2-16,'rgba(232,237,255,.75)');
+        vzLabel(g,'ΔL = αL₀ΔT = '+dLmm.toFixed(1)+' mm   (α_steel = 12×10⁻⁶/K, L₀ = 10 m, drawn hugely exaggerated)',12,20,'#fff');
+        vzLabel(g,'tiny per degree — unstoppable in bulk',12,H-8,'rgba(159,177,208,.9)'); } },
+    'heat-transfer':{ hint:'a wall under ΔT — flux marches through',
+      init:function(){ var ph=[],i; for(i=0;i<14;i++) ph.push(Math.random()); return {dT:60,ph:ph}; },
+      scrub:{label:'ΔT across the wall',min:10,max:120,val:60,unit:'K',on:function(s,v){ s.dT=v; }},
+      draw:function(g,s,W,H,t){ var wx=W*0.38,ww=W*0.24,wy=H*0.12,wh=H*0.7,i;
+        g.fillStyle='rgba(248,113,113,.12)'; g.fillRect(8,wy,wx-8,wh);
+        g.fillStyle='rgba(96,165,250,.12)'; g.fillRect(wx+ww,wy,W-wx-ww-8,wh);
+        for(i=0;i<24;i++){ var f=i/23; g.fillStyle='rgb('+Math.round(230-f*140)+','+Math.round(90+f*30)+','+Math.round(80+f*150)+')';
+          g.globalAlpha=0.5; g.fillRect(wx+f*ww,wy,ww/24+1,wh); } g.globalAlpha=1;
+        var rate=s.dT/40;
+        for(i=0;i<s.ph.length;i++){ var yy=wy+((i+0.5)/s.ph.length)*wh,prog=(s.ph[i]+t*rate*0.22)%1;
+          vzArrow(g,wx+prog*ww*0.86,yy,wx+prog*ww*0.86+14,yy,'rgba(251,191,36,'+(0.35+0.4*Math.min(1,rate)).toFixed(2)+')'); }
+        vzLabel(g,'HOT',14,wy+16,'#f87171'); vzLabel(g,'COLD',W-52,wy+16,'#60a5fa');
+        vzLabel(g,'Q̇ = kAΔT/d = '+(0.8*s.dT).toFixed(0)+' W — double ΔT, double the flow',12,20,'#fbbf24');
+        vzLabel(g,'conduction is linear in ΔT · radiation would run as T⁴',12,H-8,'rgba(159,177,208,.9)'); } },
+    'degrees-of-freedom':{ hint:'more ways to move → more places for energy to hide',
+      init:function(){ return {n:2}; },
+      scrub:{label:'atoms in the molecule',min:1,max:3,val:2,unit:'',step:1,on:function(s,v){ s.n=Math.round(v); }},
+      draw:function(g,s,W,H,t){ var n=s.n,f=n===1?3:(n===2?5:6),cx2=W*0.26,cy2=H*0.4;
+        var jx=Math.sin(t*1.4)*14,jy=Math.cos(t*1.1)*10,rot=t*1.3,vib=1+(n===3?Math.sin(t*7)*0.12:0);
+        g.fillStyle='#7dd3fc';
+        if(n===1){ g.beginPath(); g.arc(cx2+jx,cy2+jy,11,0,7); g.fill(); }
+        else if(n===2){ var d=20*vib;
+          g.strokeStyle='rgba(255,255,255,.4)'; g.lineWidth=2.5; g.beginPath(); g.moveTo(cx2+jx-Math.cos(rot)*d,cy2+jy-Math.sin(rot)*d); g.lineTo(cx2+jx+Math.cos(rot)*d,cy2+jy+Math.sin(rot)*d); g.stroke();
+          g.beginPath(); g.arc(cx2+jx-Math.cos(rot)*d,cy2+jy-Math.sin(rot)*d,9,0,7); g.fill();
+          g.beginPath(); g.arc(cx2+jx+Math.cos(rot)*d,cy2+jy+Math.sin(rot)*d,9,0,7); g.fill(); }
+        else { var d2=20*vib,ba=2.1;
+          var xA=cx2+jx+Math.cos(rot)*d2,yA=cy2+jy+Math.sin(rot)*d2,xB=cx2+jx+Math.cos(rot+ba)*d2,yB=cy2+jy+Math.sin(rot+ba)*d2;
+          g.strokeStyle='rgba(255,255,255,.4)'; g.lineWidth=2.5; g.beginPath(); g.moveTo(xA,yA); g.lineTo(cx2+jx,cy2+jy); g.lineTo(xB,yB); g.stroke();
+          g.fillStyle='#f87171'; g.beginPath(); g.arc(cx2+jx,cy2+jy,10,0,7); g.fill();
+          g.fillStyle='#7dd3fc'; g.beginPath(); g.arc(xA,yA,8,0,7); g.fill(); g.beginPath(); g.arc(xB,yB,8,0,7); g.fill(); }
+        var modes=[['translation ×3','#7dd3fc',3],['rotation ×'+(n===1?0:(n===2?2:3)),'#fbbf24',n===1?0:(n===2?2:3)],['vibration','#f472b6',n===3?0:0]];
+        var gx=W*0.52,gy=H*0.78,bw2=Math.min(46,W*0.11),i;
+        for(i=0;i<2;i++){ var m2=modes[i],bh2=m2[2]/6*H*0.5;
+          g.fillStyle='rgba(255,255,255,.07)'; g.fillRect(gx+i*(bw2+18),gy-H*0.5,bw2,H*0.5);
+          g.fillStyle=m2[1]; g.fillRect(gx+i*(bw2+18),gy-bh2,bw2,bh2);
+          vzLabel(g,m2[0],gx+i*(bw2+18)-4,gy+14,m2[1]); }
+        vzLabel(g,'f = '+f+'   →   U = (f/2)kT · N     C_v = (f/2)R = '+(f/2).toFixed(1)+'R',12,20,'#fff');
+        vzLabel(g,'equipartition: ½kT per quadratic mode — no favourites',12,H-8,'rgba(159,177,208,.9)'); } },
+    'polarization':{ hint:'two filters — Malus decides what survives',
+      init:function(){ return {th:35}; },
+      scrub:{label:'analyzer angle θ',min:0,max:90,val:35,unit:'°',on:function(s,v){ s.th=v; }},
+      draw:function(g,s,W,H,t){ var y2=H*0.42,thr=s.th*Math.PI/180,I=Math.cos(thr)*Math.cos(thr);
+        var p1x=W*0.3,p2x=W*0.62,A=Math.min(H*0.14,34),x2,i;
+        for(i=0;i<7;i++){ var a2=i/7*Math.PI,xx=W*0.06+((i*13+t*30)%(p1x-W*0.1));
+          g.strokeStyle='rgba(232,237,255,.35)'; g.lineWidth=1.4; g.beginPath();
+          g.moveTo(xx-Math.cos(a2)*7,y2-Math.sin(a2)*7); g.lineTo(xx+Math.cos(a2)*7,y2+Math.sin(a2)*7); g.stroke(); }
+        g.strokeStyle='#7dd3fc'; g.lineWidth=2; g.beginPath();
+        for(x2=p1x+14;x2<=p2x-14;x2+=2){ g.lineTo(x2,y2+Math.sin(x2*0.11-t*5)*A); } g.stroke();
+        g.strokeStyle=I>0.02?'#a78bfa':'rgba(167,139,250,.15)'; g.lineWidth=2; g.beginPath();
+        for(x2=p2x+14;x2<=W-10;x2+=2){ g.lineTo(x2,y2+Math.sin(x2*0.11-t*5)*A*Math.cos(thr)); } g.stroke();
+        function pol(px2,ang,c2,l2){ g.save(); g.translate(px2,y2); g.strokeStyle=c2; g.lineWidth=2;
+          g.beginPath(); g.arc(0,0,A+14,0,7); g.stroke(); g.rotate(ang);
+          for(var k2=-2;k2<=2;k2++){ g.globalAlpha=0.55; g.beginPath(); g.moveTo(k2*8,-A-8); g.lineTo(k2*8,A+8); g.stroke(); g.globalAlpha=1; }
+          g.restore(); vzLabel(g,l2,px2-24,y2+A+30,c2); }
+        pol(p1x,0,'#7dd3fc','polarizer'); pol(p2x,thr,'#a78bfa','analyzer θ='+s.th.toFixed(0)+'°');
+        var bx2=W*0.08,bw3=W*0.5;
+        g.fillStyle='rgba(255,255,255,.08)'; g.fillRect(bx2,H*0.88,bw3,7);
+        g.fillStyle='#a78bfa'; g.fillRect(bx2,H*0.88,bw3*I,7);
+        vzLabel(g,'Malus: I = I₀cos²θ = '+(I*100).toFixed(0)+'%'+(s.th>=89?' — crossed: darkness':''),bx2,H*0.86-4,'#fff');
+        vzLabel(g,'unpolarized → half survives the first filter — then cos²θ',12,20,'rgba(159,177,208,.9)'); } }
   };
 
   function mountViz(stage,t,panel){
@@ -7277,6 +7850,7 @@ var PIE=(function(){
     if(st.s)cam.s=st.s; fitc(); cam.x=W()/2; cam.y=H()/2;
     if(st.vw){ showTrails=!!st.vw.tr; showVec=!!st.vw.vec; showGrid=!!st.vw.gr; showField=!!st.vw.fl; }
     trail={}; Ehist=[]; simT=0; rec.frames.length=0; replay.on=false; if(rwd.on)rwd.on=false; probe.id=null; probe.d.length=0; meas=null;
+    try{ if(window.PeqSbxUX)PeqSbxUX.push('shared'); }catch(e9){}
     syncForceUI(); refreshInspect(); if(STILL)draw(); }
   function shareLink(){ try{ var json=JSON.stringify(shareState()),b64=btoa(unescape(encodeURIComponent(json)));
       if(b64.length>60000){ toast('This universe is too big to fit in a link \u2014 trim it down a little'); return; }
@@ -7343,7 +7917,7 @@ var PIE=(function(){
   ];
   function chalById(id){ for(var i=0;i<CHAL.length;i++)if(CHAL[i].id===id)return CHAL[i]; return null; }
   function chalStart(id){ var c=chalById(id); if(!c)return; chal.active=id; chal.mem={}; chal.msg='';
-    try{ c.setup(); }catch(e){} syncForceUI(); refreshInspect(); chalRender(); toast(c.goal,'\u25b8'); if(STILL)draw(); }
+    try{ c.setup(); }catch(e){} try{ if(window.PeqSbxUX)PeqSbxUX.push('challenge'); }catch(e2){} syncForceUI(); refreshInspect(); chalRender(); toast(c.goal,'\u25b8'); if(STILL)draw(); }
   function chalRender(){ var host=$('#sbx-chgame'); if(!host)return; var H2='';
     CHAL.forEach(function(c){ var dn=!!chal.done[c.id],act=chal.active===c.id;
       H2+='<div style="padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05)">'+

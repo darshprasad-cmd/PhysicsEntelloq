@@ -5026,14 +5026,21 @@ var Uni=(function(){
     if(cv.width!==Math.round(W*dpr)){ cv.width=Math.round(W*dpr); cv.height=Math.round(H*dpr); ctx.setTransform(dpr,0,0,dpr,0,0); }
     t+=.006; cam.x+=(cam.tx-cam.x)*.08; cam.y+=(cam.ty-cam.y)*.08; cam.z+=(cam.tz-cam.z)*.08;
     ctx.clearRect(0,0,W,H);
+    var domDone={}; DOMAINS.forEach(function(d0){ var ts0=topicsOf(d0.k),dn0=0,i0; for(i0=0;i0<ts0.length;i0++) if(Me.isDone(ts0[i0].id)) dn0++; domDone[d0.k]=[dn0,ts0.length]; });
     // domain halos
     for(var dk in DC){ var c=DC[dk],p=S(c.x,c.y),R=320*cam.z; var g=ctx.createRadialGradient(p[0],p[1],0,p[0],p[1],R); g.addColorStop(0,c.c+'22'); g.addColorStop(1,'rgba(0,0,0,0)'); ctx.fillStyle=g; ctx.beginPath(); ctx.arc(p[0],p[1],R,0,7); ctx.fill();
+      var dd0=domDone[dk]; if(dd0&&dd0[1]>0&&dd0[0]===dd0[1]){ ctx.strokeStyle=c.c; ctx.globalAlpha=.26+.13*Math.sin(t*2.1); ctx.lineWidth=2;
+        ctx.beginPath(); ctx.arc(p[0],p[1],R*.56+Math.sin(t*1.4)*6*cam.z,0,7); ctx.stroke();
+        ctx.globalAlpha=.12; ctx.beginPath(); ctx.arc(p[0],p[1],R*.66+Math.cos(t*1.1)*8*cam.z,0,7); ctx.stroke(); ctx.globalAlpha=1; }
       if(dk==='relativity'){ ctx.strokeStyle=c.c; ctx.globalAlpha=.1; ctx.lineWidth=1.5; ctx.beginPath(); ctx.arc(p[0],p[1],R*.62,0,7); ctx.stroke(); ctx.globalAlpha=1; }
       else if(dk==='quantum'){ var g2=ctx.createRadialGradient(p[0]+Math.sin(t*1.7)*8,p[1]+Math.cos(t*1.3)*8,0,p[0],p[1],R*.7); g2.addColorStop(0,c.c+'14'); g2.addColorStop(1,'rgba(0,0,0,0)'); ctx.fillStyle=g2; ctx.beginPath(); ctx.arc(p[0],p[1],R*.7,0,7); ctx.fill(); }
       else if(dk==='thermo'){ var g3=ctx.createRadialGradient(p[0],p[1],0,p[0],p[1],R*.3); g3.addColorStop(0,'rgba(255,120,40,.10)'); g3.addColorStop(1,'rgba(0,0,0,0)'); ctx.fillStyle=g3; ctx.beginPath(); ctx.arc(p[0],p[1],R*.3,0,7); ctx.fill(); } }
     // within-domain path edges
     ctx.lineWidth=1;
-    DOMAINS.forEach(function(d){ var ts=topicsOf(d.k); ctx.strokeStyle=d.c+'22'; for(var j=1;j<ts.length;j++){ var a=nodes[ts[j-1].id],b=nodes[ts[j].id]; if(!a||!b) continue; var p1=S(a.x,a.y),p2=S(b.x,b.y); ctx.beginPath(); ctx.moveTo(p1[0],p1[1]); ctx.lineTo(p2[0],p2[1]); ctx.stroke(); } });
+    DOMAINS.forEach(function(d){ var ts=topicsOf(d.k); for(var j=1;j<ts.length;j++){ var a=nodes[ts[j-1].id],b=nodes[ts[j].id]; if(!a||!b) continue;
+      var lit=Me.isDone(ts[j-1].id)&&Me.isDone(ts[j].id);
+      ctx.strokeStyle=d.c+(lit?'aa':'22'); ctx.lineWidth=lit?1.7:1;
+      var p1=S(a.x,a.y),p2=S(b.x,b.y); ctx.beginPath(); ctx.moveTo(p1[0],p1[1]); ctx.lineTo(p2[0],p2[1]); ctx.stroke(); } ctx.lineWidth=1; });
     // resonance edges (glowing, flowing)
     for(var i=0;i<RES.length;i++){ var A=nodes[RES[i][0]],B=nodes[RES[i][1]]; var p1=S(A.x,A.y),p2=S(B.x,B.y);
       ctx.strokeStyle='rgba(167,139,250,.22)'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(p1[0],p1[1]); ctx.lineTo(p2[0],p2[1]); ctx.stroke();
@@ -5050,7 +5057,11 @@ var Uni=(function(){
       var gr=ctx.createRadialGradient(p[0],p[1],0,p[0],p[1],base*3.2*pulse); gr.addColorStop(0,col); gr.addColorStop(1,'rgba(0,0,0,0)');
       ctx.globalAlpha=(dim?.12:(done?.5:.34)); ctx.fillStyle=gr; ctx.beginPath(); ctx.arc(p[0],p[1],base*3.2*pulse,0,7); ctx.fill();
       ctx.globalAlpha=dim?.25:1; ctx.fillStyle=done?'#fff':col; ctx.beginPath(); ctx.arc(p[0],p[1],base*(isH?1.5:1),0,7); ctx.fill();
-      if(done){ ctx.strokeStyle=col; ctx.lineWidth=1.5; ctx.globalAlpha=.8; ctx.beginPath(); ctx.arc(p[0],p[1],base*1.9*pulse,0,7); ctx.stroke(); }
+      if(done){ ctx.strokeStyle=col; ctx.lineWidth=1.5; ctx.globalAlpha=.8; ctx.beginPath(); ctx.arc(p[0],p[1],base*1.9*pulse,0,7); ctx.stroke();
+        ctx.strokeStyle='rgba(255,255,255,.5)'; ctx.lineWidth=1; var sp=base*2.7*pulse;
+        ctx.beginPath(); ctx.moveTo(p[0]-sp,p[1]); ctx.lineTo(p[0]+sp,p[1]); ctx.moveTo(p[0],p[1]-sp); ctx.lineTo(p[0],p[1]+sp); ctx.stroke(); }
+      if(n.burst){ var bt=(t-n.burst)/0.9; if(bt>=1){ n.burst=0; } else if(bt>0){ ctx.strokeStyle='#fff'; ctx.globalAlpha=(1-bt)*.85; ctx.lineWidth=2;
+        ctx.beginPath(); ctx.arc(p[0],p[1],base*(2+bt*16),0,7); ctx.stroke(); ctx.globalAlpha=1; } }
       if(cam.z>.5&&!dim){ ctx.globalAlpha=1; uniAccent(ctx,n.t.domain,p[0],p[1],base,col,t,n.ph); }
       ctx.globalAlpha=1;
       // labels: when zoomed in, or hovered/done
@@ -5058,7 +5069,7 @@ var Uni=(function(){
     }
     // domain labels at low zoom
     if(cam.z<.66){ for(var dk2 in DC){ var c2=DC[dk2],pp=S(c2.x,c2.y); ctx.fillStyle=c2.c; ctx.globalAlpha=Math.min(1,(.66-cam.z)*4); ctx.font='600 '+(15)+'px Space Grotesk,sans-serif'; ctx.textAlign='center'; ctx.fillText(c2.n,pp[0],pp[1]-4);
-      ctx.font='10px JetBrains Mono,monospace'; ctx.fillStyle='rgba(220,230,245,.55)'; ctx.fillText((UNI_ID[dk2]||{}).tag||'',pp[0],pp[1]+13); ctx.fillStyle=c2.c; ctx.globalAlpha=1; ctx.textAlign='left'; } }
+      ctx.font='10px JetBrains Mono,monospace'; ctx.fillStyle='rgba(220,230,245,.55)'; var ddz=domDone[dk2]; ctx.fillText((ddz&&ddz[1]>0&&ddz[0]===ddz[1])?'\u2726 constellation complete':(((UNI_ID[dk2]||{}).tag)||''),pp[0],pp[1]+13); ctx.fillStyle=c2.c; ctx.globalAlpha=1; ctx.textAlign='left'; } }
     try{ if(typeof UniHands!=='undefined') UniHands.overlay(ctx); }catch(e){}
     if(running) raf=requestAnimationFrame(draw);
   }
@@ -5077,7 +5088,7 @@ var Uni=(function(){
     host=h; layout();
     host.innerHTML='<canvas></canvas>'+
       '<div class="uni-top"><label class="uni-search"><span style="color:var(--violet)">✦</span><input id="uni-q" placeholder="Search the universe — fly to any concept…" autocomplete="off"/></label>'+
-      '<div class="uni-stat"><b>'+Me.doneCount()+'</b> / '+DB.length+' ignited<br>'+DB.length+' concepts · '+DOMAINS.length+' fields</div></div>'+
+      '<div class="uni-stat"><b>'+Me.doneCount()+'</b> / '+DB.length+' ignited<div style="height:4px;border-radius:3px;background:rgba(255,255,255,.12);margin:6px 0 5px;overflow:hidden"><i id="uni-mbar" style="display:block;height:100%;width:'+Math.round(Me.doneCount()/DB.length*100)+'%;background:linear-gradient(90deg,#7dd3fc,#a78bfa)"></i></div>'+DB.length+' concepts · '+DOMAINS.length+' fields</div></div>'+
       '<div class="uni-legend">'+DOMAINS.map(function(d){return '<span class="lg"><i style="background:'+d.c+'"></i>'+esc(d.n)+'</span>';}).join('')+'</div>'+
       '<div class="uni-ctrls"><button data-z="1.3" title="Zoom in">+</button><button data-z="0.77" title="Zoom out">−</button><button id="uni-home" title="Show all">Reset</button><button id="uni-hand" title="Fly by hand — pinch to grab, two pinches to zoom (uses camera)">Hands</button></div>'+
       '<div class="uni-card"><div style="display:flex;align-items:center;gap:8px"><span class="dm"></span><span class="lv" style="margin-left:auto"></span></div><h4></h4><p></p><div class="acts"><button class="btn btn-pri btn-sm" data-act="open">Open lesson →</button><button class="btn btn-ghost btn-sm" data-act="ask">✦ Ask</button></div><div class="uni-conn"></div></div>'+
@@ -5086,6 +5097,8 @@ var Uni=(function(){
     var rb=cv.getBoundingClientRect(); W=rb.width; H=rb.height; fitAll();
     // center on last studied concept if any
     if(Me.d.lastTopic&&nodes[Me.d.lastTopic]){ setTimeout(function(){ flyTo(nodes[Me.d.lastTopic],true); },400); }
+    var ign=null; try{ ign=localStorage.getItem('peq_ignite_new'); }catch(e){}
+    if(ign&&nodes[ign]){ (function(nd){ setTimeout(function(){ flyTo(nd,true); nd.burst=t+0.001; },700); })(nodes[ign]); try{ localStorage.removeItem('peq_ignite_new'); }catch(e){} }
     cv.addEventListener('pointerdown',function(e){ dragging=true; moved=false; last=[e.clientX,e.clientY]; host.classList.add('drag'); cv.setPointerCapture(e.pointerId); hideCard(); });
     cv.addEventListener('pointermove',function(e){ var rr=cv.getBoundingClientRect(),sx=e.clientX-rr.left,sy=e.clientY-rr.top;
       if(dragging){ var dx=e.clientX-last[0],dy=e.clientY-last[1]; if(Math.abs(dx)+Math.abs(dy)>3) moved=true; cam.tx-=dx/cam.z; cam.ty-=dy/cam.z; cam.x-=dx/cam.z; cam.y-=dy/cam.z; last=[e.clientX,e.clientY]; }
@@ -9076,7 +9089,7 @@ function viewLesson(id){
     var wrap=cb.parentNode; if(wrap.querySelector('.mz-conf')) return;
     var box=ce('div','mz-conf'); box.innerHTML='<span class="mz-q">How solid do you feel?</span>'+[['Shaky',2,0,'#f87171'],['Getting it',3,1,'#fbbf24'],['Confident',5,2,'#34d399']].map(function(o){ return '<button class="mz-cb" data-g="'+o[1]+'" data-c="'+o[2]+'" style="--mc:'+o[3]+'">'+o[0]+'</button>'; }).join('');
     cb.style.display='none'; wrap.appendChild(box);
-    $$('.mz-cb',box).forEach(function(bb){ bb.addEventListener('click',function(){ var g=+bb.dataset.g,c=+bb.dataset.c; try{ Mastery.record(id,g,c); }catch(e){} var wasNew=Me.complete(id); if(wasNew) toast(t.name+' complete!','+15 XP'); if(next) go('lesson',next.id); else go('domain',t.domain); }); });
+    $$('.mz-cb',box).forEach(function(bb){ bb.addEventListener('click',function(){ var g=+bb.dataset.g,c=+bb.dataset.c; try{ Mastery.record(id,g,c); }catch(e){} var wasNew=Me.complete(id); if(wasNew){ toast(t.name+' complete!','+15 XP'); try{ localStorage.setItem('peq_ignite_new',id); }catch(e0){} } if(next) go('lesson',next.id); else go('domain',t.domain); }); });
   });
   $$('[data-flowx]').forEach(function(b){ b.addEventListener('click',function(){ var f=b.dataset.flowx;
     if(f==='sandbox'){ var _pz=SBX_TOPIC[t.id]||SBX_DOM[t.domain]||null; go('sandbox');

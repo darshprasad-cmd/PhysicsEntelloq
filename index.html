@@ -7103,6 +7103,7 @@ var PIE=(function(){
           '<div class="sbx-h" style="margin-top:13px">Same physics as</div><div id="sbx-eng" style="display:flex;gap:6px;flex-wrap:wrap"></div><div class="sbx-muted" id="sbx-engout" style="margin-top:7px;display:none"></div>'+
           '<button class="mini-b" id="sbx-ropenet" style="margin-top:11px">✦ Ask about this net</button>'+
         '</div>'+
+        '<div class="sbx-card"><div class="sbx-h">Challenges · prove it</div><div id="sbx-chgame"></div></div>'+
         '<div class="sbx-card"><div class="sbx-h">Inspector</div><div id="sbx-insp"></div></div>'+
         '<button class="mini-b sbx-advt" id="sbx-advt">⧉ Advanced controls ▸</button>'+
         '<div class="sbx-card sbx-adv-card"><div class="sbx-h">Fields &amp; constants · author the laws</div>'+csl('Bz','Magnetic field B (⊗ in)',-2,2,0.05,0)+csl('Ey','Electric field E ↓',-60,60,2,0)+csl('Ex','Electric field E →',-60,60,2,0)+csl('G','Gravity strength G',-400,1600,20,600)+csl('kc','Coulomb strength k',0,16000,200,6000)+csl('ropeStiff','Rope stiffness ∾',0,1,0.05,0.3)+'</div>'+
@@ -7113,7 +7114,7 @@ var PIE=(function(){
         '<div class="sbx-transport"><button class="sbx-play" id="sbx-play">‖</button><button class="mini-b" id="sbx-step">Step</button><button class="mini-b" id="sbx-undo" title="Undo (Ctrl+Z)" disabled>Undo</button><button class="mini-b" id="sbx-redo" title="Redo (Ctrl+Shift+Z or Ctrl+Y)" disabled>Redo</button><button class="mini-b" id="sbx-shot" title="Save a PNG snapshot of the canvas">Snapshot</button><button class="mini-b" id="sbx-share" title="Copy a link that recreates this exact universe, live, for anyone who opens it">Share</button><button class="mini-b" id="sbx-camreset" title="Reset the camera view">Reset view</button><button class="mini-b" id="sbx-replay" title="Replay the last ~10 seconds at half speed">⟲ replay</button><button class="mini-b" id="sbx-rwd" title="Freeze time, drag backward through the last ~10 seconds, and resume the physics from any moment">Rewind</button><button class="mini-b" id="sbx-hand" title="Control the physics with your hands (camera)">Hands</button><button class="mini-b" id="sbx-camtog" style="display:none" title="Show the webcam behind the simulation">Camera</button><button class="mini-b" id="sbx-rail-tg" title="Show / hide the control panel — more room for the stage">Panel</button><button class="mini-b" id="sbx-max-tg" title="Focus — hide the app sidebar for the maximum stage">Focus</button><span class="sbx-spd">speed <input class="sl" id="sbx-speed" type="range" min="0.25" max="3" step="0.25" value="1" style="width:90px"></span></div></div>'+
       '</div>';
     canvas=$('#sbx-c'); ctx=canvas.getContext('2d',{desynchronized:true})||canvas.getContext('2d'); cam.x=0;cam.y=0; // center set on first fit
-    try{ window.__peqSbx={pie:PIE,load:loadPreset,step:step,draw:draw,anchorLoad:anchorLoad,handLoads:handLoads,shareState:shareState,applyShared:applyShared,shareLink:shareLink,rwdEnter:rwdEnter,rwdExit:rwdExit,rwdState:function(){return rwd;},rwdSet:function(i){rwd.i=i;},tape:function(){return rec.frames;},probeAttach:function(id){probe.id=id;probe.d.length=0;},probeN:function(){return probe.d.length;},slowmo:function(v){slowmo=!!v;},measSet:function(m){meas=m;},simT:function(){return simT;},bodies:function(){return B;},state:function(){return {cradleOn:cradleOn,cradleNodes:cradleNodes,B:B,chains:chains,cradleLive:cradleLive,loadTot:cradleLoadTot,loadPeak:cradleLoadPeak};}}; }catch(e){}
+    try{ window.__peqSbx={pie:PIE,load:loadPreset,step:step,draw:draw,anchorLoad:anchorLoad,handLoads:handLoads,chalStart:chalStart,chalObj:function(){return chal;},params:function(){return P;},shareState:shareState,applyShared:applyShared,shareLink:shareLink,rwdEnter:rwdEnter,rwdExit:rwdExit,rwdState:function(){return rwd;},rwdSet:function(i){rwd.i=i;},tape:function(){return rec.frames;},probeAttach:function(id){probe.id=id;probe.d.length=0;},probeN:function(){return probe.d.length;},slowmo:function(v){slowmo=!!v;},measSet:function(m){meas=m;},simT:function(){return simT;},bodies:function(){return B;},state:function(){return {cradleOn:cradleOn,cradleNodes:cradleNodes,B:B,chains:chains,cradleLive:cradleLive,loadTot:cradleLoadTot,loadPeak:cradleLoadPeak};}}; }catch(e){}
     fitc(); cam.x=W()/2; cam.y=H()/2;
     loadPreset('solar'); syncForceUI();
     if(window.PeqSbxUX){ PeqSbxUX.attach(container,{
@@ -7154,6 +7155,7 @@ var PIE=(function(){
       if(STILL||rec.frames.length<20){ toast('Nothing on tape yet — let the physics run a few seconds first'); return; }
       replay={on:true,t:0,was:running}; running=false; rbtn.classList.add('on');
       var unhi=setInterval(function(){ if(!replay.on){ rbtn.classList.remove('on'); clearInterval(unhi); } },400); });
+    chalRender(); var chost=$('#sbx-chgame'); if(chost) chost.addEventListener('click',function(e){ var b=e.target&&e.target.closest?e.target.closest('[data-chal]'):null; if(b) chalStart(b.getAttribute('data-chal')); });
     var shb=$('#sbx-share'); if(shb) shb.addEventListener('click',shareLink);
     var rwb=$('#sbx-rwd'); if(rwb) rwb.addEventListener('click',function(){ if(rwd.on) rwdExit(true); else rwdEnter(); });
     var engh=$('#sbx-eng'); if(engh){ engh.innerHTML=ENGX.map(function(e,i){ return '<button class="sbx-pchip" data-engx="'+i+'">'+esc(e[0])+'</button>'; }).join('');
@@ -7283,10 +7285,81 @@ var PIE=(function(){
       else { try{ window.prompt('Copy this link:',url); }catch(e3){} }
     }catch(e){ toast('Share failed'); } }
   try{ if(location.hash.indexOf('#u=')===0){ window.__peqShare=JSON.parse(decodeURIComponent(escape(atob(location.hash.slice(3))))); try{ history.replaceState(null,'',location.pathname+location.search); }catch(e2){} } }catch(e){ window.__peqShare=null; }
+  /* ===== Pass 82 — challenges: prove it with your own hands ===== */
+  var chal={active:null,done:{},mem:{},msg:'',tk:0};
+  try{ chal.done=JSON.parse(localStorage.getItem('peq_sbx_chal')||'{}')||{}; }catch(e){ chal.done={}; }
+  function heavyStar(){ var i,b=null; for(i=0;i<B.length;i++){ if(B[i].fixed&&B[i].m>=1000&&(!b||B[i].m>b.m)) b=B[i]; } return b; }
+  var CHAL=[
+    {id:'orbit20',n:'Stable orbit',goal:'Drag out a planet around the star and keep its orbit alive for 20 s \u2014 at least one full lap.',
+     setup:function(){ reset(); P.useG=true; P.g=0; P.walls=false; addBody(0,0,{m:4000,fixed:true,kind:'star',c:'#fbbf24',r:20}); cam.s=0.9; },
+     check:function(dt){ var st=heavyStar(); if(!st){ chal.msg='It needs a heavy pinned star \u2014 press Restart.'; return 0; }
+       var best=0,i; for(i=0;i<B.length;i++){ var b=B[i]; if(b.fixed)continue; var dx=b.x-st.x,dy=b.y-st.y,r=Math.hypot(dx,dy);
+         var m=chal.mem['o'+b.id]; if(!m){ m=chal.mem['o'+b.id]={t:0,a:Math.atan2(dy,dx),acc:0}; }
+         if(r>40&&r<620){ var a2=Math.atan2(dy,dx),da=a2-m.a; if(da>3.1416)da-=6.2832; if(da<-3.1416)da+=6.2832; m.acc+=Math.abs(da); m.a=a2; m.t+=dt; }
+         else { m.t=0; m.acc=0; m.a=Math.atan2(dy,dx); }
+         if(m.t>=20&&m.acc>=6.2832) return 1;
+         var pr=Math.min(m.t/20,1)*0.75+Math.min(m.acc/6.2832,1)*0.25;
+         if(pr>best){ best=Math.min(0.99,pr); chal.msg=m.t.toFixed(1)+' s stable \u00b7 '+(m.acc/6.2832*100).toFixed(0)+'% of a lap'; } }
+       if(!best) chal.msg='Use the Planet tool \u2014 dragging sets the launch velocity.';
+       return best; } },
+    {id:'escape',n:'Escape velocity',goal:'Fling a mass hard enough to break free of the star: total energy must go positive, then clear r > 700.',
+     setup:function(){ reset(); P.useG=true; P.g=0; P.walls=false; addBody(0,0,{m:4000,fixed:true,kind:'star',c:'#fbbf24',r:20}); cam.s=0.7; },
+     check:function(dt){ var st=heavyStar(); if(!st){ chal.msg='It needs the star \u2014 press Restart.'; return 0; }
+       var best=0,i; for(i=0;i<B.length;i++){ var b=B[i]; if(b.fixed)continue; var dx=b.x-st.x,dy=b.y-st.y,r=Math.hypot(dx,dy)||1,v2=b.vx*b.vx+b.vy*b.vy,E=0.5*v2-P.G*st.m/r;
+         if(E>0&&r>700) return 1;
+         var v=Math.sqrt(v2),vesc=Math.sqrt(2*P.G*st.m/Math.max(r,30));
+         var pr=Math.min(0.55,v/vesc*0.55)+(E>0?0.15:0)+Math.min(0.3,r/700*0.3);
+         if(pr>best){ best=Math.min(0.99,pr); chal.msg='v = '+(v|0)+' \u00b7 v_esc here = '+(vesc|0)+(E>0?' \u2014 unbound! now clear r > 700':' \u2014 still bound'); } }
+       if(!best) chal.msg='Fling a mass \u2014 the drag is the launch.';
+       return best; } },
+    {id:'juggle',n:'Three-body juggle',goal:'No pins allowed: keep three or more free bodies gravitationally bound together for 15 s. Chaos is the opponent.',
+     setup:function(){ reset(); P.useG=true; P.g=0; P.walls=false; cam.s=0.8; },
+     check:function(dt){ var free=[],i,anyFixed=false; for(i=0;i<B.length;i++){ if(B[i].fixed)anyFixed=true; else free.push(B[i]); }
+       if(anyFixed){ chal.msg='Unpin everything \u2014 the juggle allows no anchors.'; chal.mem.j=0; return 0; }
+       if(free.length<3){ chal.msg=free.length+'/3 bodies \u2014 add more masses.'; chal.mem.j=0; return 0; }
+       var cx=0,cy=0; free.forEach(function(b){ cx+=b.x; cy+=b.y; }); cx/=free.length; cy/=free.length;
+       var ok=true; free.forEach(function(b){ if(Math.hypot(b.x-cx,b.y-cy)>560) ok=false; });
+       if(!ok){ chal.mem.j=0; chal.msg='One escaped \u2014 the clock resets.'; return 0.05; }
+       chal.mem.j=(chal.mem.j||0)+dt; if(chal.mem.j>=15) return 1;
+       chal.msg=chal.mem.j.toFixed(1)+' s bound \u00b7 '+free.length+' bodies'; return Math.min(0.99,chal.mem.j/15); } },
+    {id:'gyro',n:'Tune the cyclotron',goal:'r = mv/qB. Tune the field, mass or speed until the gyroradius sits at 150 \u00b1 15, and hold it for 5 s.',
+     setup:function(){ reset(); P.useG=false; P.useC=false; P.g=0; P.walls=false; P.Bz=0.55; showField=true; addBody(-80,0,{m:10,q:60,vy:200,kind:'charge',c:'#f87171',r:9}); cam.s=1; },
+     check:function(dt){ if(!P.Bz){ chal.msg='B is zero \u2014 raise it in Advanced controls.'; return 0; }
+       var i; for(i=0;i<B.length;i++){ var b=B[i]; if(b.fixed||!b.q)continue; var v=Math.hypot(b.vx,b.vy),rg=b.m*v/(Math.abs(b.q)*Math.abs(P.Bz));
+         chal.msg='r = mv/qB = '+rg.toFixed(0)+'   (target 150 \u00b1 15)';
+         if(Math.abs(rg-150)<=15){ chal.mem.g=(chal.mem.g||0)+dt; if(chal.mem.g>=5) return 1; return Math.min(0.99,0.5+chal.mem.g/10); }
+         chal.mem.g=0; return Math.max(0.05,Math.min(0.45,1-Math.abs(rg-150)/300)); }
+       chal.msg='It needs a moving charge \u2014 press Restart.'; return 0; } },
+    {id:'ropecatch',n:'Rope catch',goal:'Lay a rope, then drop a mass onto it. Land it gently \u2014 the rope must cradle it for 5 s without passing 12% stretch.',
+     setup:function(){ reset(); P.useG=false; P.useC=false; P.g=220; P.walls=false; cam.s=1; },
+     check:function(dt){ if(chains.length<3){ chal.msg='Lay a rope first (Rope tool \u2014 drag across space).'; chal.mem.r=0; return 0; }
+       if(xrayStats.mx>0.12){ chal.mem.r=0; chal.msg='Past 12% stretch \u2014 softer landing.'; return 0.2; }
+       var i,rest=null; for(i=0;i<B.length;i++){ var b=B[i]; if(b.fixed||b.m<6)continue; var near=false,ci;
+         for(ci=0;ci<chains.length;ci++){ var ca=B[chains[ci].a],cb=B[chains[ci].b]; if(!ca||!cb)continue; var cp=segCP(ca.x,ca.y,cb.x,cb.y,b.x,b.y); if(Math.hypot(cp.x-b.x,cp.y-b.y)<b.r+16){ near=true; break; } }
+         if(near&&Math.hypot(b.vx,b.vy)<34){ rest=b; break; } }
+       if(!rest){ chal.msg='Drop a mass (m \u2265 6) onto the rope \u2014 it must come to rest there.'; chal.mem.r=0; return 0.3; }
+       chal.mem.r=(chal.mem.r||0)+dt; if(chal.mem.r>=5) return 1;
+       chal.msg='Cradled '+chal.mem.r.toFixed(1)+' s \u00b7 peak stretch '+(xrayStats.mx*100).toFixed(1)+'%'; return Math.min(0.99,0.4+chal.mem.r/8.4); } }
+  ];
+  function chalById(id){ for(var i=0;i<CHAL.length;i++)if(CHAL[i].id===id)return CHAL[i]; return null; }
+  function chalStart(id){ var c=chalById(id); if(!c)return; chal.active=id; chal.mem={}; chal.msg='';
+    try{ c.setup(); }catch(e){} syncForceUI(); refreshInspect(); chalRender(); toast(c.goal,'\u25b8'); if(STILL)draw(); }
+  function chalRender(){ var host=$('#sbx-chgame'); if(!host)return; var H2='';
+    CHAL.forEach(function(c){ var dn=!!chal.done[c.id],act=chal.active===c.id;
+      H2+='<div style="padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05)">'+
+        '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span style="font-size:12.5px;color:'+(dn?'#34d399':'var(--ink)')+'">'+(dn?'\u2713 ':'')+c.n+'</span><button class="mini-b" data-chal="'+c.id+'">'+(act?'Restart':(dn?'Again':'Start'))+'</button></div>'+
+        (act?('<div class="sbx-muted" style="margin-top:5px">'+c.goal+'</div><div style="height:6px;border-radius:4px;background:#16213a;margin-top:6px;overflow:hidden"><i id="sbx-chbar" style="display:block;height:100%;width:0;background:linear-gradient(90deg,#22d3ee,#34d399)"></i></div><div class="sbx-muted" id="sbx-chmsg" style="margin-top:4px"></div>'):'')+
+      '</div>'; });
+    host.innerHTML=H2; }
+  function chalTick(dt){ if(!chal.active)return; var c=chalById(chal.active); if(!c)return; var p=0;
+    try{ p=c.check(dt); }catch(e){ p=0; }
+    if(p>=1){ chal.done[c.id]=1; try{ localStorage.setItem('peq_sbx_chal',JSON.stringify(chal.done)); }catch(e2){}
+      chal.active=null; chalRender(); toast('Challenge complete \u2014 '+c.n+'. That was real physics you just aimed.','+25 XP'); try{ Me.award(25,'Challenge: '+c.n); }catch(e3){} return; }
+    if(++chal.tk%10===0){ var bar=$('#sbx-chbar'); if(bar)bar.style.width=(p*100).toFixed(0)+'%'; var ms=$('#sbx-chmsg'); if(ms)ms.textContent=chal.msg; } }
   function loop(){ cancelAnimationFrame(raf); function fr(){
     if(rwd.on){ drawRewindFrame(); if(!STILL&&curView==='sandbox') raf=requestAnimationFrame(fr); return; }
     if(replay.on){ drawReplayFrame(); if(!STILL&&curView==='sandbox') raf=requestAnimationFrame(fr); return; }
-    if(running){ stAcc+=2*speed*(slowmo?0.12:1); var steps=Math.floor(stAcc); if(steps>0)stAcc-=steps; for(var k=0;k<steps;k++){ step(1/120); } simT+=steps/120; if(steps>0)probeSample(); B.forEach(function(b){ if(showTrails&&!b.fixed){ (trail[b.id]=trail[b.id]||[]).push([b.x,b.y]); if(trail[b.id].length>90)trail[b.id].shift(); } });
+    if(running){ stAcc+=2*speed*(slowmo?0.12:1); var steps=Math.floor(stAcc); if(steps>0)stAcc-=steps; for(var k=0;k<steps;k++){ step(1/120); } simT+=steps/120; if(steps>0){ probeSample(); chalTick(steps/120); } B.forEach(function(b){ if(showTrails&&!b.fixed){ (trail[b.id]=trail[b.id]||[]).push([b.x,b.y]); if(trail[b.id].length>90)trail[b.id].shift(); } });
       if(++rec.skip%2===0){ var fb=[],fs=[],fv=[],bi3,ci3; for(bi3=0;bi3<B.length;bi3++){ var b3=B[bi3]; fb.push(b3.x,b3.y,b3.r,b3.c,b3.fixed?1:0); fv.push(b3.vx,b3.vy); } for(ci3=0;ci3<chains.length;ci3++){ var cA3=B[chains[ci3].a],cB3=B[chains[ci3].b]; if(cA3&&cB3) fs.push(cA3.x,cA3.y,cB3.x,cB3.y); } rec.frames.push({b:fb,s:fs,v:fv,t:simT,n:B.length}); if(rec.frames.length>rec.cap) rec.frames.shift(); } }
     draw(); if(!STILL&&curView==='sandbox') raf=requestAnimationFrame(fr); } raf=requestAnimationFrame(fr); }
   function stop(){ running=false; cancelAnimationFrame(raf); if(typeof Hand!=='undefined'&&Hand.stop) Hand.stop(); }

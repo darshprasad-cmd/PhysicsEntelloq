@@ -6048,7 +6048,7 @@ var Sandbox=(function(){
       cradleNodes=[]; [0,(N/4|0),(N/2|0),(3*N/4|0)].forEach(function(k){ var bd=B[ids[k]]; bd.fixed=true; bd.r=7; bd.c='#fbbf24'; cradleNodes.push({id:ids[k],hx:bd.x,hy:bd.y}); }); cradleOn=true; cradleLive=false; cam.s=1; },
     clear:function(){ reset(); P.useG=true;P.useC=false;P.g=0; }
   };
-  function reset(){ B=[];springs=[];rods=[];pulleys=[];chains=[];bends=[];sel=null;trail={};Ehist=[];simT=0; P.G=600;P.kc=6000;P.g=0;P.soft=25;P.walls=false;P.rest=1;P.useG=true;P.useC=false;P.Bz=0;P.Ex=0;P.Ey=0; cradleOn=false; cradleNodes=[]; cradleLive=false; rec.frames.length=0; replay.on=false; }
+  function reset(){ B=[];springs=[];rods=[];pulleys=[];chains=[];bends=[];sel=null;trail={};Ehist=[];simT=0; P.G=600;P.kc=6000;P.g=0;P.soft=25;P.walls=false;P.rest=1;P.useG=true;P.useC=false;P.Bz=0;P.Ex=0;P.Ey=0; cradleOn=false; cradleNodes=[]; cradleLive=false; rec.frames.length=0; replay.on=false; if(rwd&&rwd.on)rwd.on=false; if(probe){ probe.id=null; probe.d.length=0; } meas=null; var pcr=$('#sbx-probe-card'); if(pcr)pcr.style.display='none'; }
   function loadPreset(id){ (PRESETS[id]||PRESETS.clear)(); if(window.PeqSbxUX)PeqSbxUX.push('preset'); }
 
   /* ===== view transform ===== */
@@ -6128,9 +6128,15 @@ var Sandbox=(function(){
       if(b.q){ ctx.fillStyle='rgba(0,0,0,.7)'; ctx.font='bold '+Math.max(9,R*.9)+'px JetBrains Mono'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(b.q>0?'+':'−',X,Y); ctx.textAlign='left'; ctx.textBaseline='alphabetic'; }
       if(showVec&&!b.fixed){ var vs=0.25; ctx.strokeStyle='rgba(251,191,36,.8)'; ctx.lineWidth=1.5; arrow(X,Y,X+b.vx*vs*cam.s,Y+b.vy*vs*cam.s); }
       if(i===sel){ ctx.strokeStyle='#34d399'; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(X,Y,R+6,0,7); ctx.stroke(); } });
+    if(meas) drawMeasure();
+    if(probe.id!=null) drawProbeMark();
+    if(slowmo&&running){ var btx='BULLET TIME \u00b7 \u00d70.12 \u2014 release Shift for full speed'; ctx.font='10px JetBrains Mono'; var btw=ctx.measureText(btx).width;
+      ctx.fillStyle='rgba(6,9,18,.8)'; ctx.fillRect(Wd/2-btw/2-12,12,btw+24,24);
+      ctx.strokeStyle='rgba(125,211,252,.5)'; ctx.lineWidth=1; ctx.strokeRect(Wd/2-btw/2-12,12,btw+24,24);
+      ctx.fillStyle='#7dd3fc'; ctx.textAlign='center'; ctx.fillText(btx,Wd/2,27); ctx.textAlign='left'; }
     if(typeof Hand!=='undefined'&&Hand.draw) Hand.draw(ctx,Wd,Hd);
     if(cradleLive) drawCradleLoads();
-    var el=$('#sbx-stat'); if(el) updateTelemetry(); }
+    var el=$('#sbx-stat'); if(el) updateTelemetry(); if(probe.id!=null&&(++probe.tk%3===0)) updateProbeCard(); }
   function shade(c){ return c; }
   /* on-canvas per-finger force readout: a reaction arrow + Newton label at each anchored fingertip */
   function drawCradleLoads(){ if(!cradleNodes.length)return; var tot=0,peak=0; ctx.shadowBlur=0;
@@ -6161,6 +6167,9 @@ var Sandbox=(function(){
   var drag=null,pend=null,pmx=0,pmy=0,fling=null;
   function onDown(ev){ var r=canvas.getBoundingClientRect(),px=ev.clientX-r.left,py=ev.clientY-r.top,ix=bodyAt(wx(px),wy(py));
     ropeInfoHide();
+    if(rwd.on){ rwdScrub(px); drag={rwds:true}; return; }
+    if(tool==='probe'){ if(ix>=0){ probe.id=B[ix].id; probe.d.length=0; probe.tk=0; var pc9=$('#sbx-probe-card'); if(pc9)pc9.style.display='block'; toast('Probe attached \u2014 live graphs are streaming in the panel','\u25ce'); } else { probe.id=null; probe.d.length=0; var pc8=$('#sbx-probe-card'); if(pc8)pc8.style.display='none'; } if(STILL)draw(); return; }
+    if(tool==='measure'){ meas={ax:wx(px),ay:wy(py),bx:wx(px),by:wy(py)}; drag={meas:true}; if(STILL)draw(); return; }
     if(P.xray&&chains.length){ var bwx=wx(px),bwy=wy(py),bestD=1e9,bestI=-1;
       for(var rci=0;rci<chains.length;rci++){ var rA=B[chains[rci].a],rB=B[chains[rci].b]; if(!rA||!rB)continue;
         var vx2=rB.x-rA.x,vy2=rB.y-rA.y,L2=vx2*vx2+vy2*vy2||1e-9,tt=Math.max(0,Math.min(1,((bwx-rA.x)*vx2+(bwy-rA.y)*vy2)/L2));
@@ -6176,11 +6185,15 @@ var Sandbox=(function(){
     else if(tool==='rope'){ drag={rope:true,px:px,py:py}; pmx=px; pmy=py; }
     else { drag={place:tool,px:px,py:py}; pmx=px; pmy=py; } }
   function onMove(ev){ var r=canvas.getBoundingClientRect(),px=ev.clientX-r.left,py=ev.clientY-r.top; pmx=px; pmy=py;
+    if(drag&&drag.rwds){ rwdScrub(px); return; }
+    if(drag&&drag.meas){ meas.bx=wx(px); meas.by=wy(py); if(STILL)draw(); return; }
     if(drag&&drag.pan){ cam.x=drag.cx+(px-drag.px); cam.y=drag.cy+(py-drag.py); if(STILL)draw(); return; }
     if(drag&&drag.mgrab){ PIE.mouseMove(wx(px),wy(py)); if(STILL)draw(); return; }
     if(drag&&drag.i!=null){ var b=B[drag.i]; b.x=wx(px); b.y=wy(py); b.vx=b.vy=0; fling.push([b.x,b.y,now()]); if(fling.length>5)fling.shift(); if(STILL)draw(); }
     if(STILL&&(pend||(drag&&(drag.place||drag.rope))))draw(); }
   function onUp(ev){ var r=canvas.getBoundingClientRect(),px=ev.clientX-r.left,py=ev.clientY-r.top;
+    if(drag&&drag.rwds){ drag=null; return; }
+    if(drag&&drag.meas){ meas.bx=wx(px); meas.by=wy(py); if(Math.hypot(meas.bx-meas.ax,meas.by-meas.ay)<6)meas=null; drag=null; if(STILL)draw(); return; }
     if(drag&&drag.mgrab){ PIE.mouseRelease(); drag=null; if(STILL)draw(); return; }
     if(drag&&drag.i!=null){ B[drag.i].fixed=drag.fix; if(fling.length>1){ var a=fling[0],b=fling[fling.length-1],dt=(b[2]-a[2])/1000||0.016; B[drag.i].vx=(b[0]-a[0])/dt; B[drag.i].vy=(b[1]-a[1])/dt; } }
     else if(drag&&drag.place){ var vx=(px-drag.px)*2.4,vy=(py-drag.py)*2.4,o={kind:drag.place,vx:vx/cam.s,vy:vy/cam.s};
@@ -6719,7 +6732,7 @@ var PIE=(function(){
       cfg:cfg, set:set, mouseGrab:mouseGrab, mouseMove:mouseMove, mouseRelease:mouseRelease, fingerTips:fingerTips, anchors:anchors, __inject:function(res){ on=true; onResults(res); } };
   })();
   var Hand=PIE;   // back-compat alias for the existing accel / draw / stop / button hooks
-  var TOOLS=[['select','✥','Move / fling / pan'],['mass','●','Mass'],['planet','☉','Planet'],['star','✶','Heavy star'],['charge+','⊕','Positive charge'],['charge-','⊖','Negative charge'],['spring','∿','Spring link'],['rod','▬','Rigid rod'],['rope','⌇','Rope / string — drag out'],['pin','†','Pin / unpin'],['delete','✕','Delete']];
+  var TOOLS=[['select','✥','Move / fling / pan'],['mass','●','Mass'],['planet','☉','Planet'],['star','✶','Heavy star'],['charge+','⊕','Positive charge'],['charge-','⊖','Negative charge'],['spring','∿','Spring link'],['rod','▬','Rigid rod'],['rope','⌇','Rope / string — drag out'],['pin','†','Pin / unpin'],['delete','✕','Delete'],['probe','◎','Probe — click a body to graph it live'],['measure','⤢','Measure — drag a distance']];
   var PLIST=[['solar','Solar system'],['binary','Binary stars'],['figure8','3-body figure-8'],['springs','Spring chain'],['dpendulum','Double pendulum'],['cradle',"Newton's cradle"],['atwood','Atwood machine'],['wavestring','Wave string'],['hangrope','Hanging rope'],['catcradle','∾ Cat’s cradle'],['gas','Gas in a box'],['dipole','Charges & field'],['cyclotron','⊗ Cyclotron'],['velselect','Velocity selector'],['massspec','Mass spectrometer'],['cycloid','Charge in gravity+B'],['magorbit','Magnetized orbit'],['exbdrift','E×B drift'],['counter','Counterfactual G'],['clear','Clear']];
   function mount(container){ host=container; running=true;
     container.innerHTML='<div class="sbx">'+
@@ -6728,6 +6741,7 @@ var PIE=(function(){
       '<div class="sbx-side">'+
         '<div class="sbx-card"><div class="sbx-h">Forces</div>'+ck('useG','Gravity (N-body)',true)+ck('g','Uniform gravity ↓',false)+ck('useC','Coulomb (charges)',false)+ck('walls','Walls (box)',false)+'</div>'+
         '<div class="sbx-card"><div class="sbx-h">Conserved quantities</div><div class="sbx-stats" id="sbx-stat">'+st('bodies','sbx-n')+st('kinetic E','sbx-ke')+st('potential E','sbx-pe')+st('total E','sbx-e','#34d399')+st('momentum |p|','sbx-p')+st('time','sbx-t')+'</div><canvas id="sbx-spark" class="sbx-spark"></canvas></div>'+
+        '<div class="sbx-card" id="sbx-probe-card" style="display:none"><div class="sbx-h">Probe · instrument</div><div class="sbx-stats">'+st('position','sbx-pr-x','#22d3ee')+st('speed |v|','sbx-pr-v','#fbbf24')+st('kinetic E','sbx-pr-ke','#34d399')+st('mass','sbx-pr-m')+'</div><canvas id="sbx-probe" style="width:100%;height:150px;display:block;margin-top:8px"></canvas><div class="sbx-muted" style="margin-top:6px">Live x(t) · |v|(t) · KE(t) — six seconds of history. Click another body to move the probe; click empty space to detach.</div></div>'+
         '<div class="sbx-card" id="sbx-rope-card" style="display:none"><div class="sbx-h">Rope physics · X-ray</div>'+
           '<button class="mini-b" id="sbx-xray">◉ X-ray tension</button>'+
           '<div class="sbx-stats" style="margin-top:10px">'+st('max stretch','sbx-rt-max','#f87171')+st('mean stretch','sbx-rt-mean')+st('elastic PE (rel.)','sbx-rt-pe','#a78bfa')+st('state','sbx-rt-eq','#34d399')+st('hand load','sbx-rt-load','#fbbf24')+'</div>'+'<div id="sbx-rt-balwrap" style="display:none;margin-top:9px"><div class="sbx-muted" style="margin-bottom:4px">Hand balance — left vs right load</div><div style="height:9px;border-radius:6px;overflow:hidden;background:#16213a;display:flex"><div id="sbx-rt-balL" style="height:100%;background:#22d3ee;width:50%;transition:width .12s"></div><div id="sbx-rt-balR" style="height:100%;background:#f472b6;width:50%;transition:width .12s"></div></div><div id="sbx-rt-baltxt" class="sbx-muted" style="margin-top:5px"></div></div>'+
@@ -6743,10 +6757,10 @@ var PIE=(function(){
         '<div class="sbx-card sbx-adv-card"><div class="sbx-h">Interaction · mouse + hands</div>'+pieck('physicalDrag','Physical drag (spring)',true)+pieck('hands','Hand tracking (camera)',false)+pieck('webcam','Show webcam',false)+pieck('hud','Physics HUD',true)+pieck('glow','Glow effects',true)+pieck('buildMode','● Hands build objects (else force fields)',true)+piesl('grabRadius','Grab radius',30,160,5,80)+piesl('spring','Spring strength',8,80,2,28)+piesl('force','Force multiplier',0.2,3,0.1,1)+piesl('smooth','Hand responsiveness',0.15,0.85,0.05,0.45)+'</div>'+
       '</div>'+
       '<div class="sbx-foot"><div class="sbx-presets">'+PLIST.map(function(p){ return '<button class="sbx-pchip" data-preset="'+p[0]+'">'+p[1]+'</button>'; }).join('')+'</div>'+
-        '<div class="sbx-transport"><button class="sbx-play" id="sbx-play">‖</button><button class="mini-b" id="sbx-step">Step</button><button class="mini-b" id="sbx-undo" title="Undo (Ctrl+Z)" disabled>Undo</button><button class="mini-b" id="sbx-redo" title="Redo (Ctrl+Shift+Z or Ctrl+Y)" disabled>Redo</button><button class="mini-b" id="sbx-shot" title="Save a PNG snapshot of the canvas">Snapshot</button><button class="mini-b" id="sbx-camreset" title="Reset the camera view">Reset view</button><button class="mini-b" id="sbx-replay" title="Replay the last ~10 seconds at half speed">⟲ replay</button><button class="mini-b" id="sbx-hand" title="Control the physics with your hands (camera)">Hands</button><button class="mini-b" id="sbx-camtog" style="display:none" title="Show the webcam behind the simulation">Camera</button><button class="mini-b" id="sbx-rail-tg" title="Show / hide the control panel — more room for the stage">Panel</button><button class="mini-b" id="sbx-max-tg" title="Focus — hide the app sidebar for the maximum stage">Focus</button><span class="sbx-spd">speed <input class="sl" id="sbx-speed" type="range" min="0.25" max="3" step="0.25" value="1" style="width:90px"></span></div></div>'+
+        '<div class="sbx-transport"><button class="sbx-play" id="sbx-play">‖</button><button class="mini-b" id="sbx-step">Step</button><button class="mini-b" id="sbx-undo" title="Undo (Ctrl+Z)" disabled>Undo</button><button class="mini-b" id="sbx-redo" title="Redo (Ctrl+Shift+Z or Ctrl+Y)" disabled>Redo</button><button class="mini-b" id="sbx-shot" title="Save a PNG snapshot of the canvas">Snapshot</button><button class="mini-b" id="sbx-camreset" title="Reset the camera view">Reset view</button><button class="mini-b" id="sbx-replay" title="Replay the last ~10 seconds at half speed">⟲ replay</button><button class="mini-b" id="sbx-rwd" title="Freeze time, drag backward through the last ~10 seconds, and resume the physics from any moment">Rewind</button><button class="mini-b" id="sbx-hand" title="Control the physics with your hands (camera)">Hands</button><button class="mini-b" id="sbx-camtog" style="display:none" title="Show the webcam behind the simulation">Camera</button><button class="mini-b" id="sbx-rail-tg" title="Show / hide the control panel — more room for the stage">Panel</button><button class="mini-b" id="sbx-max-tg" title="Focus — hide the app sidebar for the maximum stage">Focus</button><span class="sbx-spd">speed <input class="sl" id="sbx-speed" type="range" min="0.25" max="3" step="0.25" value="1" style="width:90px"></span></div></div>'+
       '</div>';
     canvas=$('#sbx-c'); ctx=canvas.getContext('2d',{desynchronized:true})||canvas.getContext('2d'); cam.x=0;cam.y=0; // center set on first fit
-    try{ window.__peqSbx={pie:PIE,load:loadPreset,step:step,draw:draw,anchorLoad:anchorLoad,handLoads:handLoads,state:function(){return {cradleOn:cradleOn,cradleNodes:cradleNodes,B:B,chains:chains,cradleLive:cradleLive,loadTot:cradleLoadTot,loadPeak:cradleLoadPeak};}}; }catch(e){}
+    try{ window.__peqSbx={pie:PIE,load:loadPreset,step:step,draw:draw,anchorLoad:anchorLoad,handLoads:handLoads,rwdEnter:rwdEnter,rwdExit:rwdExit,rwdState:function(){return rwd;},rwdSet:function(i){rwd.i=i;},tape:function(){return rec.frames;},probeAttach:function(id){probe.id=id;probe.d.length=0;},probeN:function(){return probe.d.length;},slowmo:function(v){slowmo=!!v;},measSet:function(m){meas=m;},simT:function(){return simT;},bodies:function(){return B;},state:function(){return {cradleOn:cradleOn,cradleNodes:cradleNodes,B:B,chains:chains,cradleLive:cradleLive,loadTot:cradleLoadTot,loadPeak:cradleLoadPeak};}}; }catch(e){}
     fitc(); cam.x=W()/2; cam.y=H()/2;
     loadPreset('solar'); syncForceUI();
     if(window.PeqSbxUX){ PeqSbxUX.attach(container,{
@@ -6758,7 +6772,7 @@ var PIE=(function(){
         sel=(st.sel!=null&&st.sel>=0&&st.sel<B.length)?st.sel:null; if(st.nextId)nextId=st.nextId;
         if(st.cam){ cam.x=st.cam.x; cam.y=st.cam.y; cam.s=st.cam.s; }
         if(st.vw){ showTrails=!!st.vw.tr; showVec=!!st.vw.vec; showGrid=!!st.vw.gr; showField=!!st.vw.fl; }
-        if(replay.on){ running=replay.was; } replay.on=false; trail={}; Ehist=[]; rec.frames.length=0; try{ PIE.mouseRelease(); }catch(e){}
+        if(replay.on){ running=replay.was; } replay.on=false; if(rwd.on){ rwd.on=false; running=rwd.was; var rb9=$('#sbx-rwd'); if(rb9){ rb9.classList.remove('on'); rb9.textContent='Rewind'; } } probe.d.length=0; meas=null; trail={}; Ehist=[]; rec.frames.length=0; try{ PIE.mouseRelease(); }catch(e){}
         var xb=$('#sbx-xray'); if(xb){ xb.classList.toggle('on',!!P.xray); xb.textContent=P.xray?'◉ X-ray ON — click a strand':'◉ X-ray tension'; } if(!P.xray) ropeInfoHide();
         syncForceUI(); refreshInspect(); if(STILL)draw(); },
       sig:function(){ var f=0,i; for(i=0;i<B.length;i++){ if(B[i].fixed)f++; } return B.length+'.'+springs.length+'.'+rods.length+'.'+pulleys.length+'.'+chains.length+'.'+bends.length+'.'+f; },
@@ -6787,6 +6801,7 @@ var PIE=(function(){
       if(STILL||rec.frames.length<20){ toast('Nothing on tape yet — let the physics run a few seconds first'); return; }
       replay={on:true,t:0,was:running}; running=false; rbtn.classList.add('on');
       var unhi=setInterval(function(){ if(!replay.on){ rbtn.classList.remove('on'); clearInterval(unhi); } },400); });
+    var rwb=$('#sbx-rwd'); if(rwb) rwb.addEventListener('click',function(){ if(rwd.on) rwdExit(true); else rwdEnter(); });
     var engh=$('#sbx-eng'); if(engh){ engh.innerHTML=ENGX.map(function(e,i){ return '<button class="sbx-pchip" data-engx="'+i+'">'+esc(e[0])+'</button>'; }).join('');
       $$('#sbx-eng .sbx-pchip').forEach(function(b){ b.addEventListener('click',function(){ var o=$('#sbx-engout'); if(o){ o.style.display='block'; o.textContent=ENGX[+b.dataset.engx][1]; } }); }); }
     var rnb=$('#sbx-ropenet'); if(rnb) rnb.addEventListener('click',function(){ try{ if(Tutor.persona) Tutor.persona('research'); }catch(e){}
@@ -6805,9 +6820,10 @@ var PIE=(function(){
   function st(label,id,c){ return '<div class="sbx-st"><div class="l">'+label+'</div><div class="v" id="'+id+'"'+(c?' style="color:'+c+'"':'')+'>—</div></div>'; }
   function syncForceUI(){ if(P.g>0)P._gLast=P.g; var m={useG:P.useG,g:P.g>0,useC:P.useC,walls:P.walls}; Object.keys(m).forEach(function(k){ var c=$('#sbx-f-'+k); if(c)c.checked=m[k]; }); var v={showTrails:showTrails,showVec:showVec,showGrid:showGrid,showField:showField}; Object.keys(v).forEach(function(k){ var c=$('#sbx-v-'+k); if(c)c.checked=v[k]; });
     [['Bz',P.Bz],['Ey',P.Ey],['Ex',P.Ex],['G',P.G],['kc',P.kc],['ropeStiff',P.ropeStiff]].forEach(function(p){ var c=$('#sbx-cs-'+p[0]); if(c){ c.value=p[1]; set('sbx-cv-'+p[0],Math.round(p[1]*100)/100); } }); }
-  function tip(){ var t=$('#sbx-tip'); if(!t)return; var m={select:'Drag a body to move it — release to fling. Drag empty space to pan, scroll to zoom.',mass:'Click to drop a mass. Drag before releasing to give it velocity.',planet:'Drag out a planet with an initial velocity to set up an orbit.',star:'Click to drop a heavy star — a deep gravity well. Drag before releasing for velocity.','charge+':'Place a positive charge.','charge-':'Place a negative charge.',spring:'Press on one body and release on another to connect a spring.',rod:'Press on one body and release on another to link a rigid rod.',rope:'Drag across empty space to lay a rope/string (both ends pinned). Pluck it with gravity OFF for travelling waves, or turn gravity ON for a hanging catenary.',pin:'Click a body to pin/unpin it in place.','delete':'Click a body to remove it.'}; t.textContent=m[tool]||''; }
+  function tip(){ var t=$('#sbx-tip'); if(!t)return; var m={select:'Drag a body to move it — release to fling. Drag empty space to pan, scroll to zoom.',mass:'Click to drop a mass. Drag before releasing to give it velocity.',planet:'Drag out a planet with an initial velocity to set up an orbit.',star:'Click to drop a heavy star — a deep gravity well. Drag before releasing for velocity.','charge+':'Place a positive charge.','charge-':'Place a negative charge.',spring:'Press on one body and release on another to connect a spring.',rod:'Press on one body and release on another to link a rigid rod.',rope:'Drag across empty space to lay a rope/string (both ends pinned). Pluck it with gravity OFF for travelling waves, or turn gravity ON for a hanging catenary.',pin:'Click a body to pin/unpin it in place.','delete':'Click a body to remove it.',probe:'Click a body to attach the probe \u2014 its position, speed and kinetic energy stream into live graphs in the panel. Click empty space to detach.',measure:'Drag between two points to measure distance, components and angle. A tiny click clears it.'}; t.textContent=m[tool]||''; }
   /* replay: a rolling ~10 s tape of positions + rope segments, played back at half speed */
   var rec={frames:[],cap:300,skip:0}, replay={on:false,t:0,was:true};
+  var rwd={on:false,i:0,was:true},slowmo=false,stAcc=0,probe={id:null,d:[],tk:0},meas=null;
   function drawReplayFrame(){ fitc(); var Wd=canvas._W,Hd=canvas._H;
     ctx.fillStyle='#04060e'; ctx.fillRect(0,0,Wd,Hd);
     var i=Math.floor(replay.t), fr2=rec.frames[i];
@@ -6826,10 +6842,80 @@ var PIE=(function(){
     replay.t+=0.5;
     if(replay.t>=rec.frames.length){ replay.on=false; running=replay.was; toast('Replay finished — physics resumed'); }
   }
+  /* ===== Pass 79 — time control + instruments ===== */
+  function rwdTrim(){ var i=rec.frames.length-1; while(i>=0&&rec.frames[i].v&&rec.frames[i].n===B.length)i--; if(i>=0)rec.frames.splice(0,i+1); }
+  function drawRewindFrame(){ fitc(); var Wd=canvas._W,Hd=canvas._H;
+    ctx.fillStyle='#04060e'; ctx.fillRect(0,0,Wd,Hd);
+    var i=rwd.i,fr2=rec.frames[i]; if(!fr2){ rwdExit(false); return; }
+    ctx.globalAlpha=.13; B.forEach(function(b){ ctx.fillStyle=b.c||'#7dd3fc'; ctx.beginPath(); ctx.arc(sx(b.x),sy(b.y),Math.max(2,b.r*cam.s),0,7); ctx.fill(); }); ctx.globalAlpha=1;
+    ctx.lineCap='round'; ctx.strokeStyle='#7dd3fc'; ctx.lineWidth=Math.max(2,3*cam.s); ctx.shadowColor='#7dd3fc'; ctx.shadowBlur=6;
+    for(var s2=0;s2<fr2.s.length;s2+=4){ ctx.beginPath(); ctx.moveTo(sx(fr2.s[s2]),sy(fr2.s[s2+1])); ctx.lineTo(sx(fr2.s[s2+2]),sy(fr2.s[s2+3])); ctx.stroke(); }
+    ctx.shadowBlur=0; ctx.lineCap='butt';
+    for(var b2=0;b2<fr2.b.length;b2+=5){ ctx.fillStyle=fr2.b[b2+3]||'#7dd3fc'; ctx.beginPath(); ctx.arc(sx(fr2.b[b2]),sy(fr2.b[b2+1]),Math.max(2,fr2.b[b2+2]*cam.s),0,7); ctx.fill(); }
+    var m=14,bw=Wd-2*m,last=rec.frames.length-1,tNow=rec.frames[last].t,tHere=fr2.t;
+    ctx.fillStyle='rgba(6,9,18,.85)'; ctx.fillRect(0,Hd-46,Wd,46);
+    ctx.fillStyle='rgba(255,255,255,.14)'; ctx.fillRect(m,Hd-24,bw,5);
+    ctx.fillStyle='#7dd3fc'; ctx.fillRect(m,Hd-24,bw*(last?i/last:1),5);
+    ctx.beginPath(); ctx.arc(m+bw*(last?i/last:1),Hd-21.5,7,0,7); ctx.fill();
+    ctx.font='10px JetBrains Mono'; ctx.fillStyle='#7dd3fc';
+    ctx.fillText('REWIND \u00b7 '+(tHere-tNow).toFixed(1)+' s \u2014 drag anywhere to move through time',m,Hd-32);
+    ctx.fillStyle='rgba(159,177,208,.85)'; ctx.textAlign='right'; ctx.fillText('Rewind button again = resume from here',Wd-m,Hd-32); ctx.textAlign='left'; }
+  function rwdEnter(){ if(STILL||rec.frames.length<20){ toast('Nothing on the tape yet \u2014 let the physics run a few seconds first'); return; }
+    rwdTrim(); if(rec.frames.length<20){ toast('The world just changed \u2014 the tape is restarting from here'); return; }
+    if(replay.on){ replay.on=false; running=replay.was; }
+    rwd.on=true; rwd.was=running; rwd.i=rec.frames.length-1; running=false; try{ PIE.mouseRelease(); }catch(e){}
+    var b=$('#sbx-rwd'); if(b){ b.classList.add('on'); b.textContent='Resume here'; }
+    toast('Time is yours \u2014 drag across the stage to scrub, then resume from any moment','\u27f2'); }
+  function rwdExit(commit){ var fr3=rec.frames[rwd.i];
+    if(commit&&fr3&&fr3.v&&fr3.n===B.length){ for(var i=0;i<B.length;i++){ var b=B[i]; b.x=fr3.b[i*5]; b.y=fr3.b[i*5+1]; b.vx=fr3.v[i*2]; b.vy=fr3.v[i*2+1]; }
+      simT=fr3.t; rec.frames.length=rwd.i+1; trail={}; Ehist=[]; probe.d.length=0;
+      toast('Resumed from t = '+fr3.t.toFixed(1)+' s \u2014 the future is unwritten again'); }
+    rwd.on=false; running=rwd.was;
+    var b2=$('#sbx-rwd'); if(b2){ b2.classList.remove('on'); b2.textContent='Rewind'; } }
+  function rwdScrub(px){ var last=rec.frames.length-1,m=14,bw=Math.max(1,canvas._W-2*m);
+    rwd.i=Math.max(0,Math.min(last,Math.round((px-m)/bw*last))); }
+  function probeBody(){ if(probe.id==null)return null; for(var i=0;i<B.length;i++)if(B[i].id===probe.id)return B[i]; return null; }
+  function probeSample(){ var b=probeBody(); if(!b)return; var v=Math.hypot(b.vx,b.vy);
+    probe.d.push({t:simT,x:b.x,v:v,ke:0.5*b.m*v*v}); if(probe.d.length>360)probe.d.shift(); }
+  function drawProbeMark(){ var b=probeBody(); if(!b){ probe.id=null; probe.d.length=0; var pc=$('#sbx-probe-card'); if(pc)pc.style.display='none'; return; }
+    var X=sx(b.x),Y=sy(b.y),R=Math.max(2,b.r*cam.s)+8;
+    ctx.strokeStyle='#22d3ee'; ctx.lineWidth=1.6; ctx.setLineDash([4,4]); ctx.beginPath(); ctx.arc(X,Y,R,0,7); ctx.stroke(); ctx.setLineDash([]);
+    ctx.beginPath(); ctx.moveTo(X-R-5,Y); ctx.lineTo(X-R+3,Y); ctx.moveTo(X+R-3,Y); ctx.lineTo(X+R+5,Y); ctx.moveTo(X,Y-R-5); ctx.lineTo(X,Y-R+3); ctx.moveTo(X,Y+R-3); ctx.lineTo(X,Y+R+5); ctx.stroke();
+    ctx.fillStyle='#22d3ee'; ctx.font='9px JetBrains Mono'; ctx.fillText('PROBE',X+R+7,Y+3); }
+  function updateProbeCard(){ var card=$('#sbx-probe-card'); if(!card)return; var b=probeBody();
+    if(!b){ card.style.display='none'; return; } card.style.display='block';
+    set('sbx-pr-x',b.x.toFixed(0)+', '+b.y.toFixed(0)); set('sbx-pr-v',Math.hypot(b.vx,b.vy).toFixed(1));
+    set('sbx-pr-ke',fmt(0.5*b.m*(b.vx*b.vx+b.vy*b.vy))); set('sbx-pr-m',fmt(b.m));
+    var cvp=$('#sbx-probe'); if(!cvp||probe.d.length<2)return;
+    var c=cvp.getContext('2d'),r=cvp.getBoundingClientRect(),pr=Math.min(devicePixelRatio||1,2);
+    if(cvp.width!==Math.round(r.width*pr)){ cvp.width=Math.round(r.width*pr); cvp.height=Math.round(r.height*pr); c.setTransform(pr,0,0,pr,0,0); }
+    var w=r.width,hh=r.height; c.clearRect(0,0,w,hh);
+    var SR=[['x','x position','#7dd3fc'],['v','speed |v|','#fbbf24'],['ke','kinetic energy','#34d399']],si;
+    for(si=0;si<3;si++){ var key=SR[si][0],col=SR[si][2],y0=si*(hh/3),bh=hh/3-4,mn=1e18,mx=-1e18,i2;
+      for(i2=0;i2<probe.d.length;i2++){ var vv=probe.d[i2][key]; if(vv<mn)mn=vv; if(vv>mx)mx=vv; }
+      var rng=(mx-mn)||1;
+      c.strokeStyle='rgba(255,255,255,.07)'; c.lineWidth=1; c.beginPath(); c.moveTo(0,y0+bh); c.lineTo(w,y0+bh); c.stroke();
+      c.strokeStyle=col; c.lineWidth=1.4; c.beginPath();
+      for(i2=0;i2<probe.d.length;i2++){ var X2=i2/(probe.d.length-1)*w,Y2=y0+bh-((probe.d[i2][key]-mn)/rng)*(bh-12); i2?c.lineTo(X2,Y2):c.moveTo(X2,Y2); }
+      c.stroke(); c.fillStyle=col; c.font='8.5px JetBrains Mono'; c.fillText(SR[si][1],4,y0+10); } }
+  function drawMeasure(){ var ax=sx(meas.ax),ay=sy(meas.ay),bx=sx(meas.bx),by=sy(meas.by);
+    var d=Math.hypot(meas.bx-meas.ax,meas.by-meas.ay),ang=Math.atan2(-(meas.by-meas.ay),meas.bx-meas.ax)*180/Math.PI;
+    ctx.strokeStyle='#a78bfa'; ctx.lineWidth=1.6; ctx.beginPath(); ctx.moveTo(ax,ay); ctx.lineTo(bx,by); ctx.stroke();
+    ctx.setLineDash([3,4]); ctx.strokeStyle='rgba(167,139,250,.45)'; ctx.beginPath(); ctx.moveTo(ax,ay); ctx.lineTo(bx,ay); ctx.lineTo(bx,by); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle='#a78bfa'; ctx.beginPath(); ctx.arc(ax,ay,3,0,7); ctx.fill(); ctx.beginPath(); ctx.arc(bx,by,3,0,7); ctx.fill();
+    var lbl='d = '+d.toFixed(1)+' u \u00b7 \u03b8 = '+ang.toFixed(1)+'\u00b0 \u00b7 \u0394x '+(meas.bx-meas.ax).toFixed(0)+' \u00b7 \u0394y '+(meas.by-meas.ay).toFixed(0);
+    ctx.font='10px JetBrains Mono'; var tw=ctx.measureText(lbl).width,mx2=(ax+bx)/2,my2=(ay+by)/2;
+    ctx.fillStyle='rgba(6,9,18,.85)'; ctx.fillRect(mx2-tw/2-6,my2-24,tw+12,16);
+    ctx.fillStyle='#c4b5fd'; ctx.textAlign='center'; ctx.fillText(lbl,mx2,my2-12); ctx.textAlign='left'; }
+  document.addEventListener('keydown',function(e){ if(e.key!=='Shift'||e.repeat)return; if(typeof curView==='undefined'||curView!=='sandbox')return;
+    var t=e.target,tn=(t&&t.tagName)?t.tagName.toUpperCase():''; if(tn==='INPUT'||tn==='TEXTAREA')return; slowmo=true; });
+  document.addEventListener('keyup',function(e){ if(e.key==='Shift')slowmo=false; });
+  window.addEventListener('blur',function(){ slowmo=false; });
   function loop(){ cancelAnimationFrame(raf); function fr(){
+    if(rwd.on){ drawRewindFrame(); if(!STILL&&curView==='sandbox') raf=requestAnimationFrame(fr); return; }
     if(replay.on){ drawReplayFrame(); if(!STILL&&curView==='sandbox') raf=requestAnimationFrame(fr); return; }
-    if(running){ var steps=Math.max(1,Math.round(2*speed)); for(var k=0;k<steps;k++){ step(1/120); } simT+=steps/120; B.forEach(function(b){ if(showTrails&&!b.fixed){ (trail[b.id]=trail[b.id]||[]).push([b.x,b.y]); if(trail[b.id].length>90)trail[b.id].shift(); } });
-      if(++rec.skip%2===0){ var fb=[],fs=[],bi3,ci3; for(bi3=0;bi3<B.length;bi3++){ var b3=B[bi3]; fb.push(b3.x,b3.y,b3.r,b3.c,b3.fixed?1:0); } for(ci3=0;ci3<chains.length;ci3++){ var cA3=B[chains[ci3].a],cB3=B[chains[ci3].b]; if(cA3&&cB3) fs.push(cA3.x,cA3.y,cB3.x,cB3.y); } rec.frames.push({b:fb,s:fs}); if(rec.frames.length>rec.cap) rec.frames.shift(); } }
+    if(running){ stAcc+=2*speed*(slowmo?0.12:1); var steps=Math.floor(stAcc); if(steps>0)stAcc-=steps; for(var k=0;k<steps;k++){ step(1/120); } simT+=steps/120; if(steps>0)probeSample(); B.forEach(function(b){ if(showTrails&&!b.fixed){ (trail[b.id]=trail[b.id]||[]).push([b.x,b.y]); if(trail[b.id].length>90)trail[b.id].shift(); } });
+      if(++rec.skip%2===0){ var fb=[],fs=[],fv=[],bi3,ci3; for(bi3=0;bi3<B.length;bi3++){ var b3=B[bi3]; fb.push(b3.x,b3.y,b3.r,b3.c,b3.fixed?1:0); fv.push(b3.vx,b3.vy); } for(ci3=0;ci3<chains.length;ci3++){ var cA3=B[chains[ci3].a],cB3=B[chains[ci3].b]; if(cA3&&cB3) fs.push(cA3.x,cA3.y,cB3.x,cB3.y); } rec.frames.push({b:fb,s:fs,v:fv,t:simT,n:B.length}); if(rec.frames.length>rec.cap) rec.frames.shift(); } }
     draw(); if(!STILL&&curView==='sandbox') raf=requestAnimationFrame(fr); } raf=requestAnimationFrame(fr); }
   function stop(){ running=false; cancelAnimationFrame(raf); if(typeof Hand!=='undefined'&&Hand.stop) Hand.stop(); }
   return { mount:mount, stop:stop };

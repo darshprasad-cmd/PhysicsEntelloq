@@ -1679,6 +1679,12 @@ html[data-theme="light"] .cc-flow span,html[data-theme="light"] .lm-tag,html[dat
 .fbd-stage{position:relative;height:340px;border:1px solid var(--line-2);border-radius:14px;overflow:hidden;background:radial-gradient(120% 130% at 50% 0%,#0a1020,#04060c)}
 .fbd-stage canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:crosshair}
 @media(max-width:720px){.fbd-stage{height:260px}}
+/* — Quantum wing (Pass 88) — */
+.xg-pair{font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;color:#c084fc;padding:8px 14px 11px;border-top:1px solid rgba(192,132,252,.16);cursor:pointer}
+.xg-pair:hover{color:#e9d5ff;text-decoration:underline}
+.xg-card[data-qm="1"]{border-color:rgba(192,132,252,.3)}
+.xg-card[data-qm="1"]:hover{border-color:rgba(192,132,252,.65);box-shadow:0 16px 44px -24px rgba(0,0,0,.9),0 0 34px -14px rgba(192,132,252,.55)}
+html[data-theme="light"] .xg-pair{color:#7c3aed;border-top-color:rgba(124,58,237,.22)}
 </style>
 <script>/* THEME bootstrap — set html[data-theme] before first paint (no dark->light flash) */
 (function(){ var m='dark'; try{ m=localStorage.getItem('peq_theme')||'dark'; }catch(e){}
@@ -2494,6 +2500,213 @@ function glShaderSim(cv,frag,ctl){ var gl=null; try{ gl=cv.getContext('webgl',{a
   return { stop:function(){ alive=false; cancelAnimationFrame(raf); }, controls:ctl?function(bar){ var w=ce('div','sl-wrap'); w.innerHTML=ctl.label+' <b id="'+ctl.id+'" style="color:var(--blue)">'+ctl.val+'</b>'; var sl=ce('input'); sl.type='range'; sl.className='sl'; sl.min=ctl.min; sl.max=ctl.max; sl.value=ctl.val; sl.setAttribute('aria-label',ctl.label); sl.oninput=function(){ M=+sl.value; var bb=$('#'+ctl.id); if(bb)bb.textContent=M; if(STILL) render(); }; w.appendChild(sl); bar.appendChild(w); }:null };
 }
 var SIMS={
+  /* ===== Pass 88 — Quantum wing: four visual quantum experiments ===== */
+  superpose:function(host){
+    var cv=ce('canvas'); host.appendChild(cv); var ctx=cv.getContext('2d');
+    var th=Math.PI/4, ph=0, collapsed=0, colT=0, colSide=0, nL=0, nR=0;
+    function pL(){ var c=Math.cos(th); return c*c; }
+    function meas1(){ var left=Math.random()<pL(); if(left)nL++; else nR++; collapsed=1; colT=0; colSide=left?0:1; }
+    function draw(){ var s=fitC(cv,ctx),W=s.w,H=s.h; ctx.clearRect(0,0,W,H); ph+=.05;
+      var PL=pL(),PR=1-PL,y0=H*.52,xL=W*.3,xR=W*.7,i,k;
+      ctx.strokeStyle='rgba(255,255,255,.2)'; ctx.lineWidth=1.5;
+      ctx.beginPath(); ctx.moveTo(W*.08,y0+2); ctx.quadraticCurveTo(xL,y0+44,W*.5,y0+8); ctx.quadraticCurveTo(xR,y0+44,W*.92,y0+2); ctx.stroke();
+      var wells=[[xL,PL,'#7dd3fc','|L⟩'],[xR,PR,'#f472b6','|R⟩']];
+      for(i=0;i<2;i++){ var wl=wells[i],amp=wl[1];
+        if(collapsed){ var f=Math.min(1,colT*3); amp=wl[1]+((i===colSide?1:0)-wl[1])*f; }
+        var hh=amp*H*.34+2;
+        ctx.fillStyle=wl[2]; ctx.globalAlpha=.75; ctx.beginPath(); ctx.moveTo(wl[0]-46,y0);
+        for(k=-46;k<=46;k+=3){ var g=Math.exp(-k*k/578); ctx.lineTo(wl[0]+k,y0-g*hh*(1+(collapsed?0:.06*Math.sin(ph+i*2.1)))); }
+        ctx.lineTo(wl[0]+46,y0); ctx.closePath(); ctx.fill(); ctx.globalAlpha=1;
+        ctx.fillStyle='#fff'; ctx.font='11px JetBrains Mono'; ctx.textAlign='center';
+        ctx.fillText(wl[3]+'  P = '+(wl[1]*100).toFixed(0)+'%',wl[0],y0+22); ctx.textAlign='left'; }
+      var coh=2*Math.cos(th)*Math.sin(th)*(collapsed?Math.max(0,1-colT*5):1);
+      if(coh>0.02){ ctx.strokeStyle='rgba(192,132,252,'+(0.5*coh).toFixed(2)+')'; ctx.lineWidth=1.4; ctx.beginPath();
+        for(k=0;k<=40;k++){ var x2=xL+(xR-xL)*k/40,y2=y0-H*.12-Math.sin(k/40*Math.PI)*H*.07*Math.cos(ph*2)*coh*3; k?ctx.lineTo(x2,y2):ctx.moveTo(x2,y2); } ctx.stroke();
+        ctx.fillStyle='rgba(192,132,252,.85)'; ctx.font='10px JetBrains Mono'; ctx.textAlign='center';
+        ctx.fillText('coherent — genuinely both at once',W*.5,y0-H*.24); ctx.textAlign='left'; }
+      else if(collapsed){ ctx.fillStyle='rgba(248,113,113,.9)'; ctx.font='10px JetBrains Mono'; ctx.textAlign='center';
+        ctx.fillText('COLLAPSED — it chose '+(colSide===0?'|L⟩':'|R⟩'),W*.5,y0-H*.24); ctx.textAlign='left'; }
+      if(collapsed){ colT+=.016; if(colT>1.1) collapsed=0; }
+      var tot=nL+nR,bx=W*.08,bw2=W*.84,by=H*.92,bh=H*.16;
+      ctx.fillStyle='rgba(255,255,255,.06)'; ctx.fillRect(bx,by-bh,bw2*.45,bh); ctx.fillRect(bx+bw2*.55,by-bh,bw2*.45,bh);
+      if(tot){ ctx.fillStyle='#7dd3fc'; ctx.globalAlpha=.7; ctx.fillRect(bx,by-bh*(nL/tot),bw2*.45,bh*(nL/tot));
+        ctx.fillStyle='#f472b6'; ctx.fillRect(bx+bw2*.55,by-bh*(nR/tot),bw2*.45,bh*(nR/tot)); ctx.globalAlpha=1; }
+      ctx.strokeStyle='#fff'; ctx.setLineDash([3,3]); ctx.lineWidth=1; ctx.beginPath();
+      ctx.moveTo(bx,by-bh*PL); ctx.lineTo(bx+bw2*.45,by-bh*PL);
+      ctx.moveTo(bx+bw2*.55,by-bh*PR); ctx.lineTo(bx+bw2,by-bh*PR); ctx.stroke(); ctx.setLineDash([]);
+      ctx.fillStyle='rgba(232,237,255,.85)'; ctx.font='10px JetBrains Mono';
+      ctx.fillText(tot?('measured '+tot+'  ·  L '+(nL/tot*100).toFixed(1)+'% vs Born cos²θ = '+(PL*100).toFixed(1)+'%'):'click the stage to MEASURE — the state must choose',bx,by-bh-6);
+      ctx.fillStyle='rgba(159,177,208,.9)'; ctx.fillText('|ψ⟩ = cosθ|L⟩ + sinθ|R⟩   ·   dashed = Born-rule prediction',bx,16); }
+    cv.addEventListener('pointerdown',meas1);
+    try{ window.__peqQsup={counts:function(){ return [nL,nR]; },pL:pL,measure:meas1,batch:function(n){ var p=pL(); for(var i=0;i<n;i++){ if(Math.random()<p)nL++; else nR++; } }}; }catch(e){}
+    var stop=loop(draw);
+    return { stop:stop, controls:function(bar){
+      var w=ce('div','sl-wrap'); w.innerHTML='Mixing angle θ'; var sl=ce('input'); sl.type='range'; sl.className='sl'; sl.min=0; sl.max=90; sl.value=45; sl.setAttribute('aria-label','Mixing angle');
+      sl.oninput=function(){ th=+sl.value*Math.PI/180; nL=0; nR=0; }; w.appendChild(sl); bar.appendChild(w);
+      var b=ce('button','mini-b'); b.textContent='Measure ×100'; b.style.marginTop='8px';
+      b.addEventListener('click',function(){ var p=pL(); for(var i=0;i<100;i++){ if(Math.random()<p)nL++; else nR++; } collapsed=1; colT=0; colSide=Math.random()<p?0:1; }); bar.appendChild(b);
+      var b2=ce('button','mini-b'); b2.textContent='Reset counts'; b2.style.marginTop='8px';
+      b2.addEventListener('click',function(){ nL=0; nR=0; }); bar.appendChild(b2); } };
+  },
+  entangle:function(host){
+    var cv=ce('canvas'); host.appendChild(cv); var ctx=cv.getContext('2d');
+    var mode='quantum', rate=3, T=0, flying=[], flashes=[], acc={}, KEYS=['0_45','0_135','90_45','90_135'];
+    function resetAcc(){ for(var i=0;i<KEYS.length;i++) acc[KEYS[i]]={n:0,sum:0}; } resetAcc();
+    function sample(a,b){ var A,B;
+      if(mode==='quantum'){ A=Math.random()<.5?1:-1; var d=(a-b)*Math.PI/180,pSame=Math.sin(d/2)*Math.sin(d/2); B=(Math.random()<pSame)?A:-A; }
+      else { var lam=Math.random()*360; A=(Math.cos((lam-a)*Math.PI/180)>=0)?1:-1; B=(Math.cos((lam-b)*Math.PI/180)>=0)?-1:1; }
+      return [A,B]; }
+    function Sval(){ var E={},k; for(k in acc){ if(acc.hasOwnProperty(k)) E[k]=acc[k].n?acc[k].sum/acc[k].n:0; }
+      return E['0_45']-E['0_135']+E['90_45']+E['90_135']; }
+    function burst(n){ for(var i=0;i<n;i++){ var combo=KEYS[Math.floor(Math.random()*4)],pp=combo.split('_'),r=sample(+pp[0],+pp[1]); acc[combo].n++; acc[combo].sum+=r[0]*r[1]; } }
+    function draw(){ var s=fitC(cv,ctx),W=s.w,H=s.h; ctx.clearRect(0,0,W,H); T+=.016;
+      var cy=H*.3,sx=W*.5,dxL=W*.12,dxR=W*.88,i;
+      var g2=ctx.createRadialGradient(sx,cy,0,sx,cy,16+Math.sin(T*6)*3); g2.addColorStop(0,'rgba(192,132,252,.9)'); g2.addColorStop(1,'rgba(192,132,252,0)');
+      ctx.fillStyle=g2; ctx.beginPath(); ctx.arc(sx,cy,20,0,7); ctx.fill();
+      ctx.strokeStyle='rgba(125,211,252,.6)'; ctx.lineWidth=2;
+      ctx.strokeRect(dxL-16,cy-24,32,48); ctx.strokeRect(dxR-16,cy-24,32,48);
+      ctx.fillStyle='rgba(159,177,208,.9)'; ctx.font='10px JetBrains Mono'; ctx.textAlign='center';
+      ctx.fillText('A · 0°/90°',dxL,cy+42); ctx.fillText('B · 45°/135°',dxR,cy+42); ctx.textAlign='left';
+      if(Math.random()<rate*.016&&flying.length<8){ var combo=KEYS[Math.floor(Math.random()*4)],pp=combo.split('_'),r=sample(+pp[0],+pp[1]);
+        flying.push({p:0,A:r[0],B:r[1],combo:combo}); }
+      for(i=flying.length-1;i>=0;i--){ var f=flying[i]; f.p+=.02+rate*.002;
+        var xl=sx+(dxL-sx)*f.p,xr=sx+(dxR-sx)*f.p;
+        ctx.strokeStyle='rgba(192,132,252,'+(0.35*(1-f.p)).toFixed(2)+')'; ctx.lineWidth=1;
+        ctx.beginPath(); ctx.moveTo(xl,cy); ctx.lineTo(xr,cy); ctx.stroke();
+        ctx.fillStyle='#7dd3fc'; ctx.beginPath(); ctx.arc(xl,cy,3,0,7); ctx.fill();
+        ctx.fillStyle='#f472b6'; ctx.beginPath(); ctx.arc(xr,cy,3,0,7); ctx.fill();
+        if(f.p>=1){ acc[f.combo].n++; acc[f.combo].sum+=f.A*f.B;
+          flashes.push({side:-1,v:f.A,t:0}); flashes.push({side:1,v:f.B,t:0}); flying.splice(i,1); } }
+      for(i=flashes.length-1;i>=0;i--){ var fl=flashes[i]; fl.t+=.03; var fx=fl.side<0?dxL:dxR;
+        ctx.fillStyle=fl.v>0?'rgba(34,211,238,'+Math.max(0,1-fl.t).toFixed(2)+')':'rgba(244,114,182,'+Math.max(0,1-fl.t).toFixed(2)+')';
+        ctx.font='bold 15px JetBrains Mono'; ctx.textAlign='center'; ctx.fillText(fl.v>0?'+1':'−1',fx,cy-32-fl.t*16); ctx.textAlign='left';
+        if(fl.t>=1) flashes.splice(i,1); }
+      var Sv=Math.abs(Sval()),tot=0,k; for(k in acc){ if(acc.hasOwnProperty(k)) tot+=acc[k].n; }
+      var mx=W*.1,mw=W*.8,my=H*.68;
+      ctx.fillStyle='rgba(255,255,255,.08)'; ctx.fillRect(mx,my,mw,10);
+      ctx.fillStyle=Sv>2?'#c084fc':'#7dd3fc'; ctx.fillRect(mx,my,mw*Math.min(1,Sv/3),10);
+      var cl=mx+mw*(2/3); ctx.strokeStyle='#f87171'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(cl,my-7); ctx.lineTo(cl,my+17); ctx.stroke();
+      var ql=mx+mw*(2.828/3); ctx.strokeStyle='rgba(192,132,252,.7)'; ctx.setLineDash([3,3]); ctx.beginPath(); ctx.moveTo(ql,my-7); ctx.lineTo(ql,my+17); ctx.stroke(); ctx.setLineDash([]);
+      ctx.fillStyle='#f87171'; ctx.font='9px JetBrains Mono'; ctx.fillText('classical limit 2',cl-88,my-12);
+      ctx.fillStyle='rgba(192,132,252,.9)'; ctx.fillText('quantum max 2√2',ql-30,my+30);
+      ctx.fillStyle='#fff'; ctx.font='13px JetBrains Mono';
+      ctx.fillText('CHSH  S = '+Sv.toFixed(2)+'   ('+tot+' pairs · '+(mode==='quantum'?'entangled':'classical hidden-variable')+')',mx,my-22);
+      ctx.fillStyle='rgba(159,177,208,.9)'; ctx.font='10px JetBrains Mono';
+      ctx.fillText(Sv>2.05&&tot>200?'S > 2 — no local classical story can produce these correlations':'each pair is measured at one of four angle settings',mx,my+46); }
+    try{ window.__peqQent={S:Sval,burst:burst,setMode:function(m){ mode=m; resetAcc(); },tot:function(){ var t=0,k; for(k in acc){ if(acc.hasOwnProperty(k)) t+=acc[k].n; } return t; }}; }catch(e){}
+    var stop=loop(draw);
+    return { stop:stop, controls:function(bar){
+      var w=ce('div','sl-wrap'); w.innerHTML='Pair rate'; var sl=ce('input'); sl.type='range'; sl.className='sl'; sl.min=1; sl.max=10; sl.value=3; sl.setAttribute('aria-label','Pair rate');
+      sl.oninput=function(){ rate=+sl.value; }; w.appendChild(sl); bar.appendChild(w);
+      var b=ce('button','mini-b'); b.textContent='Burst 500 pairs'; b.style.marginTop='8px'; b.addEventListener('click',function(){ burst(500); }); bar.appendChild(b);
+      var b2=ce('button','mini-b'); b2.textContent='Mode: entangled'; b2.style.marginTop='8px';
+      b2.addEventListener('click',function(){ mode=(mode==='quantum')?'classical':'quantum'; b2.textContent='Mode: '+(mode==='quantum'?'entangled':'classical LHV'); resetAcc(); }); bar.appendChild(b2);
+      var b3=ce('button','mini-b'); b3.textContent='Reset stats'; b3.style.marginTop='8px'; b3.addEventListener('click',resetAcc); bar.appendChild(b3); } };
+  },
+  photonslit:function(host){
+    var cv=ce('canvas'); host.appendChild(cv); var ctx=cv.getContext('2d');
+    var dS=30, det=false, rate=4, T=0, flying=[], dots=[], bins=new Float32Array(96), N=0, binMax=1;
+    function inten(u){ var env=Math.exp(-u*u/0.6);
+      if(det){ var c2=dS/160; return Math.exp(-(u-c2)*(u-c2)/0.05)+Math.exp(-(u+c2)*(u+c2)/0.05); }
+      return env*Math.pow(Math.cos(u*(dS*0.14+1.5)),2); }
+    function sampleU(){ for(var i=0;i<80;i++){ var u=Math.random()*2-1; if(Math.random()*1.02<inten(u)) return u; } return 0; }
+    function resetScreen(){ dots=[]; N=0; binMax=1; for(var i=0;i<96;i++)bins[i]=0; }
+    function draw(){ var s=fitC(cv,ctx),W=s.w,H=s.h; ctx.clearRect(0,0,W,H); T+=.016;
+      var cy=H*.5,bx=W*.4,sx2=W*.86,slitGap=Math.max(9,dS*(H/340)*.5),s1=cy-slitGap,s2=cy+slitGap,i;
+      ctx.fillStyle='rgba(125,211,252,.9)'; ctx.fillRect(W*.05,cy-8,9,16);
+      ctx.fillStyle='rgba(159,177,208,.5)';
+      ctx.fillRect(bx-3,6,6,Math.max(2,s1-6-8)); ctx.fillRect(bx-3,s1+7,6,Math.max(2,s2-s1-14)); ctx.fillRect(bx-3,s2+7,6,Math.max(2,H-s2-13));
+      if(det){ ctx.strokeStyle='#f87171'; ctx.lineWidth=1.5;
+        ctx.beginPath(); ctx.arc(bx+11,s1,5,0,7); ctx.stroke(); ctx.beginPath(); ctx.arc(bx+11,s2,5,0,7); ctx.stroke();
+        ctx.fillStyle='rgba(248,113,113,.9)'; ctx.font='9px JetBrains Mono'; ctx.fillText('watching',bx+20,s1+3); }
+      ctx.fillStyle='rgba(255,255,255,.12)'; ctx.fillRect(sx2,6,3,H-12);
+      if(Math.random()<rate*.016&&flying.length<9) flying.push({p:0,u:sampleU(),slit:det?(Math.random()<.5?0:1):-1,j:Math.random()*5});
+      for(i=flying.length-1;i>=0;i--){ var f=flying[i]; f.p+=.025;
+        if(f.p<.4){ var x3=W*.06+(bx-W*.06)*(f.p/.4);
+          ctx.fillStyle='rgba(125,211,252,.85)'; ctx.beginPath(); ctx.arc(x3,cy,2.4,0,7); ctx.fill(); }
+        else { var q=(f.p-.4)/.6;
+          if(f.slit<0){ var rr=Math.max(1,q*(sx2-bx));
+            ctx.strokeStyle='rgba(125,211,252,'+(0.32*(1-q)).toFixed(2)+')'; ctx.lineWidth=1;
+            ctx.beginPath(); ctx.arc(bx,s1,rr,-1.15,1.15); ctx.stroke();
+            ctx.beginPath(); ctx.arc(bx,s2,rr,-1.15,1.15); ctx.stroke(); }
+          else { var sy3=f.slit===0?s1:s2,xx=bx+(sx2-bx)*q,yy=sy3+((cy+f.u*H*.42)-sy3)*q;
+            ctx.fillStyle='rgba(248,113,113,.85)'; ctx.beginPath(); ctx.arc(xx,yy,2.4,0,7); ctx.fill(); } }
+        if(f.p>=1){ N++; dots.push({u:f.u,j:f.j}); if(dots.length>2600)dots.shift();
+          var bi=Math.floor((f.u+1)/2*95); bins[bi]+=1; if(bins[bi]>binMax)binMax=bins[bi];
+          flying.splice(i,1); } }
+      for(i=0;i<96;i++){ var v=bins[i]/binMax; if(v>0.01){ var y3=6+(i/95)*(H-12);
+        ctx.fillStyle='rgba(125,211,252,'+(0.08+v*.3).toFixed(2)+')'; ctx.fillRect(sx2-v*W*.15,y3-2,v*W*.15,Math.max(2,(H-12)/96)); } }
+      ctx.fillStyle='rgba(232,237,255,.85)';
+      for(i=0;i<dots.length;i++){ var d2=dots[i]; ctx.fillRect(sx2-1-d2.j,6+((d2.u+1)/2)*(H-14),1.8,1.8); }
+      ctx.fillStyle='#fff'; ctx.font='11px JetBrains Mono'; ctx.fillText(N+' photons · one at a time',W*.05,16);
+      ctx.fillStyle='rgba(159,177,208,.9)'; ctx.font='10px JetBrains Mono';
+      ctx.fillText(det?'watched: which-path known → two lumps, fringes GONE':'unwatched: each photon takes BOTH slits → chance builds fringes',W*.05,H-8); }
+    try{ window.__peqQslit={N:function(){ return N; },bins:function(){ return bins; },setDet:function(v){ det=!!v; resetScreen(); },burst:function(n){ for(var i=0;i<n;i++){ var u=sampleU(); N++; var bi=Math.floor((u+1)/2*95); bins[bi]+=1; if(bins[bi]>binMax)binMax=bins[bi]; dots.push({u:u,j:Math.random()*5}); if(dots.length>2600)dots.shift(); } }}; }catch(e){}
+    var stop=loop(draw);
+    return { stop:stop, controls:function(bar){
+      var w=ce('div','sl-wrap'); w.innerHTML='Slit separation'; var sl=ce('input'); sl.type='range'; sl.className='sl'; sl.min=12; sl.max=60; sl.value=30; sl.setAttribute('aria-label','Slit separation');
+      sl.oninput=function(){ dS=+sl.value; resetScreen(); }; w.appendChild(sl); bar.appendChild(w);
+      var w2=ce('div','sl-wrap'); w2.innerHTML='Photon rate'; var sl2=ce('input'); sl2.type='range'; sl2.className='sl'; sl2.min=1; sl2.max=10; sl2.value=4; sl2.setAttribute('aria-label','Photon rate');
+      sl2.oninput=function(){ rate=+sl2.value; }; w2.appendChild(sl2); bar.appendChild(w2);
+      var b=ce('button','mini-b'); b.textContent='Detector: off'; b.style.marginTop='8px';
+      b.addEventListener('click',function(){ det=!det; resetScreen(); b.textContent='Detector: '+(det?'ON — watching the slits':'off'); }); bar.appendChild(b);
+      var b2=ce('button','mini-b'); b2.textContent='Burst 800 photons'; b2.style.marginTop='8px';
+      b2.addEventListener('click',function(){ if(window.__peqQslit)__peqQslit.burst(800); }); bar.appendChild(b2);
+      var b3=ce('button','mini-b'); b3.textContent='Clear screen'; b3.style.marginTop='8px'; b3.addEventListener('click',resetScreen); bar.appendChild(b3); } };
+  },
+  sterngerlach:function(host){
+    var cv=ce('canvas'); host.appendChild(cv); var ctx=cv.getContext('2d');
+    var midAxis='x', rate=4, parts=[], c1u=0,c1d=0,c2a=0,c2b=0,c3u=0,c3d=0;
+    function resetCounts(){ c1u=0;c1d=0;c2a=0;c2b=0;c3u=0;c3d=0; parts=[]; }
+    function draw(){ var s=fitC(cv,ctx),W=s.w,H=s.h; ctx.clearRect(0,0,W,H);
+      var cy=H*.5,m1=W*.22,m2=W*.5,m3=W*.76,dv=H*.15,dv2=H*.08,i;
+      function mag(x2,lab,col){ ctx.strokeStyle=col; ctx.lineWidth=2; ctx.strokeRect(x2-13,cy-H*.32,26,H*.64);
+        ctx.fillStyle=col; ctx.font='bold 11px JetBrains Mono'; ctx.textAlign='center'; ctx.fillText(lab,x2,cy-H*.32-7); ctx.textAlign='left'; }
+      mag(m1,'SG-Z','#60a5fa'); mag(m2,'SG-'+midAxis.toUpperCase(),midAxis==='x'?'#fbbf24':'#60a5fa'); mag(m3,'SG-Z','#60a5fa');
+      ctx.fillStyle='rgba(232,237,255,.85)'; ctx.fillRect(W*.03,cy-7,10,14);
+      /* dumps */
+      ctx.fillStyle='rgba(255,255,255,.14)'; ctx.fillRect(m2-40,cy+dv-5,8,10); ctx.fillRect(m3-40,cy-dv+dv2-5,8,10);
+      if(Math.random()<rate*.02) parts.push({x:W*.045,y:cy,ty:cy,st:'o',c:'#e8edff',m2:0,m3:0});
+      for(i=parts.length-1;i>=0;i--){ var p=parts[i]; p.x+=2.4; p.y+=(p.ty-p.y)*.14;
+        if(p.st==='o'&&p.x>=m1){ if(Math.random()<.5){ p.st='z+'; p.ty=cy-dv; p.c='#22d3ee'; c1u++; } else { p.st='z-'; p.ty=cy+dv; p.c='#f472b6'; c1d++; } }
+        if(p.st==='z-'&&p.x>=m2-40){ parts.splice(i,1); continue; }
+        if(p.st==='z+'&&!p.m2&&p.x>=m2){ p.m2=1;
+          if(midAxis==='x'){ if(Math.random()<.5){ p.st='x+'; p.ty=cy-dv-dv2; p.c='#fbbf24'; c2a++; } else { p.st='x-'; p.ty=cy-dv+dv2; p.c='#a78bfa'; c2b++; } }
+          else { c2a++; } }
+        if(p.st==='x-'&&p.x>=m3-40){ parts.splice(i,1); continue; }
+        if(!p.m3&&p.x>=m3&&(p.st==='x+'||p.st==='z+')){ p.m3=1;
+          if(p.st==='x+'){ if(Math.random()<.5){ p.ty=cy-dv-dv2-H*.06; p.c='#22d3ee'; c3u++; } else { p.ty=cy-dv-dv2+H*.06; p.c='#f472b6'; c3d++; } }
+          else { p.ty=cy-dv-H*.06; c3u++; } }
+        if(p.x>W+8){ parts.splice(i,1); continue; }
+        var gl=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,7); gl.addColorStop(0,p.c); gl.addColorStop(1,'rgba(0,0,0,0)');
+        ctx.fillStyle=gl; ctx.beginPath(); ctx.arc(p.x,p.y,7,0,7); ctx.fill();
+        ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(p.x,p.y,1.8,0,7); ctx.fill(); }
+      ctx.font='10px JetBrains Mono';
+      var t1=c1u+c1d; ctx.fillStyle='#22d3ee'; ctx.fillText('Z: ↑ '+(t1?(c1u/t1*100).toFixed(0):'–')+'%',m1+18,cy-dv-10);
+      ctx.fillStyle='#f472b6'; ctx.fillText('↓ '+(t1?(c1d/t1*100).toFixed(0):'–')+'% (dumped)',m1+18,cy+dv+18);
+      var t2=c2a+c2b;
+      if(midAxis==='x'){ ctx.fillStyle='#fbbf24'; ctx.fillText('X: → '+(t2?(c2a/t2*100).toFixed(0):'–')+'%',m2+16,cy-dv-dv2-8);
+        ctx.fillStyle='#a78bfa'; ctx.fillText('← '+(t2?(c2b/t2*100).toFixed(0):'–')+'% (dumped)',m2+16,cy-dv+dv2+16); }
+      else { ctx.fillStyle='#22d3ee'; ctx.fillText('Z again: 100% ↑ (nothing changed it)',m2+16,cy-dv-10); }
+      var t3=c3u+c3d;
+      ctx.fillStyle='#fff'; ctx.font='11px JetBrains Mono';
+      if(midAxis==='x'){ ctx.fillText('final Z: ↑ '+(t3?(c3u/t3*100).toFixed(0):'–')+'%  ↓ '+(t3?(c3d/t3*100).toFixed(0):'–')+'%',m3+16,cy-dv-dv2-H*.06-8);
+        if(t3>30){ ctx.fillStyle='#c084fc'; ctx.font='10px JetBrains Mono';
+          ctx.fillText('the X measurement ERASED the Z answer — 50/50 is back',W*.08,H-10); } }
+      else { ctx.fillText('final Z: ↑ '+(t3?(c3u/t3*100).toFixed(0):'–')+'%',m3+16,cy-dv-H*.06-8);
+        ctx.fillStyle='rgba(159,177,208,.9)'; ctx.font='10px JetBrains Mono';
+        ctx.fillText('unmeasured in between → the Z answer is remembered: 100% ↑',W*.08,H-10); }
+      ctx.fillStyle='rgba(159,177,208,.9)'; ctx.font='10px JetBrains Mono';
+      ctx.fillText('atoms → SG-Z → keep ↑ → SG-'+midAxis.toUpperCase()+' → keep '+(midAxis==='x'?'→':'↑')+' → SG-Z',W*.05,16); }
+    try{ window.__peqQsg={counts:function(){ return {c1u:c1u,c1d:c1d,c2a:c2a,c2b:c2b,c3u:c3u,c3d:c3d,axis:midAxis}; },setAxis:function(a){ midAxis=a; resetCounts(); },run:function(n){ for(var i=0;i<n;i++){ var up=Math.random()<.5; if(up)c1u++; else { c1d++; continue; } if(midAxis==='x'){ var xp=Math.random()<.5; if(xp)c2a++; else { c2b++; continue; } if(Math.random()<.5)c3u++; else c3d++; } else { c2a++; c3u++; } } }}; }catch(e){}
+    var stop=loop(draw);
+    return { stop:stop, controls:function(bar){
+      var b=ce('button','mini-b'); b.textContent='Middle magnet: X (erases Z)';
+      b.addEventListener('click',function(){ midAxis=(midAxis==='x')?'z':'x'; resetCounts(); b.textContent='Middle magnet: '+(midAxis==='x'?'X (erases Z)':'Z (keeps the answer)'); }); bar.appendChild(b);
+      var w=ce('div','sl-wrap'); w.style.marginTop='8px'; w.innerHTML='Atom rate'; var sl=ce('input'); sl.type='range'; sl.className='sl'; sl.min=1; sl.max=10; sl.value=4; sl.setAttribute('aria-label','Atom rate');
+      sl.oninput=function(){ rate=+sl.value; }; w.appendChild(sl); bar.appendChild(w);
+      var b2=ce('button','mini-b'); b2.textContent='Reset counts'; b2.style.marginTop='8px'; b2.addEventListener('click',resetCounts); bar.appendChild(b2); } };
+  },
   orbit:function(host,opts){
     var cv=ce('canvas'); host.appendChild(cv); var ctx=cv.getContext('2d'); var ecc=(opts&&opts.ecc)||.42, th=0, trail=[];
     function draw(){ var s=fitC(cv,ctx),W=s.w,H=s.h; th+=.013; ctx.clearRect(0,0,W,H);
@@ -2796,7 +3009,7 @@ var SIMS={
     return { stop:stop, controls:function(bar){ var w=ce('div','sl-wrap'); w.innerHTML='Object dist'; var sl=ce('input'); sl.type='range'; sl.className='sl'; sl.min=40; sl.max=400; sl.value=220; sl.oninput=function(){ u=+sl.value/100; if(STILL) draw(); }; w.appendChild(sl); bar.appendChild(w); } };
   }
 };
-var SIM_META={ orbit3d:{n:'Orbital Mechanics 3D',d:'A glowing star, a tilted orbit and a planet sweeping past — real-time WebGL.'}, fields3d:{n:'EM Field 3D',d:'Two charges and their living electric field — flowing field lines in real-time WebGL.'}, orbit:{n:'Orbital Mechanics',d:'Watch a planet trace an ellipse — fast at perihelion, slow at aphelion.'},
+var SIM_META={ superpose:{n:'Quantum Superposition',d:'A state living in both wells at once — click to force the choice; your own clicks build the Born rule.'}, entangle:{n:'Entanglement · CHSH',d:'Spin pairs fly apart; correlations pile past the classical bound S = 2 — no local story survives.'}, photonslit:{n:'Single-Photon Double Slit',d:'One photon at a time; pure chance builds interference — until you watch the slits.'}, sterngerlach:{n:'Stern–Gerlach Chain',d:'Measure Z, then X, then Z — and watch the X measurement erase the first answer.'}, orbit3d:{n:'Orbital Mechanics 3D',d:'A glowing star, a tilted orbit and a planet sweeping past — real-time WebGL.'}, fields3d:{n:'EM Field 3D',d:'Two charges and their living electric field — flowing field lines in real-time WebGL.'}, orbit:{n:'Orbital Mechanics',d:'Watch a planet trace an ellipse — fast at perihelion, slow at aphelion.'},
   blackhole:{n:'Black Hole',d:'Gravitational lensing, an accretion disk and the photon ring. Drag the mass.'},
   sandbox:{n:'Universe Sandbox',d:'Slingshot bodies into orbit and watch gravity choreograph the rest.'},
   wave:{n:'Wave Interference',d:'Two coherent sources — change the frequency and watch the pattern shift.'},
@@ -4420,6 +4633,9 @@ var Lens=(function(){
       var stage2=ce('div','lx-stage'); panel.appendChild(stage2); mountViz(stage2,t,panel);
       var cap2=ce('div','lx-q'); cap2.textContent='The hidden structure of '+t.name+', drawn from its real equations \u2014 drag to explore.'; panel.appendChild(cap2);
     }
+    var qk={wavefunction:'superpose',entanglement:'entangle','matter-waves':'photonslit',uncertainty:'sterngerlach',tunneling:'tunneling','particle-physics':'bloch'}[t.id];
+    if(qk&&typeof SIMS!=='undefined'&&SIMS[qk]){ var qb=ce('button','mini-b'); qb.textContent='Open the full experiment in Labs ▸'; qb.style.margin='10px 0 0';
+      qb.addEventListener('click',function(){ try{ openLabFull(qk); }catch(e){} }); panel.appendChild(qb); }
     (t.points||[]).slice(0,3).forEach(function(p){ var c=ce('div','lx-card'); c.innerHTML='<span class="k2" style="color:'+lens.c+'">watch for</span><div class="b2">'+esc(p)+'</div>'; panel.appendChild(c); });
     deepenBtn(panel,t,lens,'✦ What exactly am I seeing?');
   }
@@ -9511,6 +9727,13 @@ var Expt=(function(){
       {n:'Franck–Hertz',ob:'Watch atoms swallow energy only in quantized lumps.',rel:'ΔE = eΔV ≈ 4.9 eV (mercury)',dv:['V accel (V)','I (nA)'],m:['Accelerate electrons through mercury vapor; sweep the voltage.','Record collector current vs V.','Measure the spacing of the current dips.'],pl:'Current dips every ~4.9 V: electrons can only hand atoms exactly one quantum. Energy levels, seen directly in a current.',u:'Tube temperature sets the vapor density — too cold and the dips vanish.'},
       {n:'Electron Diffraction',ob:'Measure the de Broglie wavelength of an electron.',rel:'λ = h/√(2m_e eV)',dv:['1/√V (V^-½)','ring D (mm)'],m:['Accelerate electrons through V onto a graphite film.','Measure the diffraction ring diameters on the screen.','Repeat across several voltages.'],pl:'Plot ring diameter vs 1/√V — a straight line: matter is a wave, and you just measured its wavelength.',u:'Two rings = two lattice spacings in graphite; keep them straight.'},
       {n:'Quantum Tunneling',s:'tunneling',ob:'Launch a wave-packet at a barrier taller than its own energy and watch part of it leak through anyway. Vary the width and height — transmission dies exponentially, exactly as the Schrödinger equation demands, and exactly how the Sun fuses.'}
+    ]},
+    {h:'Quantum Mechanics',c:'#c084fc',pers:'quanta',items:[
+      {n:'Quantum Superposition — force the choice',s:'superpose',pair:'wavefunction',ob:'A state living in both wells at once. Click the stage to MEASURE — it must choose, the coherence dies, and your own clicks accumulate into the Born rule.'},
+      {n:'Quantum Entanglement — break the classical bound',s:'entangle',pair:'entanglement',ob:'Spin pairs fly apart and get measured at four angle settings. Watch CHSH S climb past 2 — then flip to the classical hidden-variable mode and watch it pin at exactly 2.'},
+      {n:'Single Photons — double slit, one dot at a time',s:'photonslit',pair:'matter-waves',ob:'Photons arrive one at a time as pure chance — and chance builds interference fringes. Turn on the which-path detector and the fringes die.'},
+      {n:'Stern–Gerlach — measurement erases memory',s:'sterngerlach',pair:'uncertainty',ob:'Measure spin along Z, keep the ups, measure X, keep those — then measure Z again. The middle measurement destroyed the first answer: 50/50 is back.'},
+      {n:'Spin & the Bloch Sphere',s:'bloch',pair:'particle-physics',ob:'Every two-level quantum state is a point on a sphere. Rotate it, measure it, and watch amplitudes become probabilities.'}
     ]}
   ];
   var DISC=[
@@ -9536,14 +9759,14 @@ var Expt=(function(){
     if(last&&SEC[last.si]&&SEC[last.si].items[last.ii]){ var lit=SEC[last.si].items[last.ii];
       H+='<div class="xg-cont" data-xsec="'+last.si+'" data-xit="'+last.ii+'"><span class="ic">'+(lit.s?'▸':'▤')+'</span><span class="tx"><b>Continue</b> — '+esc2(lit.n)+'</span><span class="go">RESUME →</span></div>'; }
     H+='<div class="xg-bar"><span class="xg-sig">LAB INDEX · '+flat.length+' EXPT · '+nLive+' LIVE</span>'+
-       [['all','ALL'],['live','▸ LIVE'],['bench','▤ BENCH']].map(function(f){ return '<button class="xg-chip'+(filt===f[0]?' on':'')+'" data-xf="'+f[0]+'">'+f[1]+'</button>'; }).join('')+
+       [['all','ALL'],['live','▸ LIVE'],['bench','▤ BENCH'],['quantum','⚛ QUANTUM']].map(function(f){ return '<button class="xg-chip'+(filt===f[0]?' on':'')+'" data-xf="'+f[0]+'">'+f[1]+'</button>'; }).join('')+
        '<span class="sp"></span><span class="xg-find"><input id="xg-q" type="text" autocomplete="off" spellcheck="false" placeholder="SEARCH EXPERIMENTS"></span></div>';
     H+='<div class="xg-grid">';
     flat.forEach(function(o,k){ var live=!!o.it.s;
-      H+='<div class="xg-card" data-xsec="'+o.si+'" data-xit="'+o.ii+'" data-live="'+(live?1:0)+'" data-nm="'+esc2(o.it.n.toLowerCase())+'" style="--gi:'+Math.min(k,18)+'">'+
+      H+='<div class="xg-card" data-xsec="'+o.si+'" data-xit="'+o.ii+'" data-live="'+(live?1:0)+'" data-qm="'+(o.sec.h==='Quantum Mechanics'?1:0)+'" data-nm="'+esc2(o.it.n.toLowerCase())+'" style="--gi:'+Math.min(k,18)+'">'+
         '<i class="xg-c c1"></i><i class="xg-c c2"></i><i class="xg-c c3"></i><i class="xg-c c4"></i>'+
         '<div class="xg-thumb" id="xg-th-'+o.si+'-'+o.ii+'"><span class="xg-badge">'+(live?'▸ LIVE':'▤ BENCH')+'</span></div>'+
-        '<div class="xg-b"><h4>'+esc2(o.it.n)+'</h4><div class="xg-meta"><span>'+(live?'▸ SIM':'▤ PROTOCOL')+'</span><span class="tag">'+esc2(o.sec.h)+'</span></div></div></div>';
+        '<div class="xg-b"><h4>'+esc2(o.it.n)+'</h4><div class="xg-meta"><span>'+(live?'▸ SIM':'▤ PROTOCOL')+'</span><span class="tag">'+esc2(o.sec.h)+'</span></div></div>'+(o.it.pair?'<div class="xg-pair" data-pairid="'+o.it.pair+'">⤷ paired lesson · '+esc2((topicById(o.it.pair)||{name:o.it.pair}).name)+'</div>':'')+'</div>';
     });
     H+='</div><div class="xg-empty" style="display:none">NO MATCH — ADJUST SEARCH OR FILTER</div><div id="xp-work"></div></div>';
     main.innerHTML=H; wireToggle();
@@ -9554,12 +9777,14 @@ var Expt=(function(){
         var ok=true, j, nm;
         if(hub._f==='live'&&c.getAttribute('data-live')!=='1') ok=false;
         if(hub._f==='bench'&&c.getAttribute('data-live')==='1') ok=false;
+        if(hub._f==='quantum'&&c.getAttribute('data-qm')!=='1') ok=false;
         if(ok&&toks.length){ nm=c.getAttribute('data-nm')||''; for(j=0;j<toks.length;j++){ if(nm.indexOf(toks[j])<0){ ok=false; break; } } }
         c.style.display=ok?'':'none'; if(ok) vis++;
       });
       em=$('.xg-empty',main); if(em) em.style.display=vis?'none':'';
     }
-    $$('.xg-card,.xg-cont',main).forEach(function(b){ b.addEventListener('click',function(){
+    $$('.xg-card,.xg-cont',main).forEach(function(b){ b.addEventListener('click',function(ev){
+      var pt=ev&&ev.target; while(pt&&pt!==b){ if(pt.getAttribute&&pt.getAttribute('data-pairid')){ go('lesson',pt.getAttribute('data-pairid')); return; } pt=pt.parentNode; }
       var si=+b.getAttribute('data-xsec'), ii=+b.getAttribute('data-xit');
       var sec=SEC[si], it=sec&&sec.items[ii]; if(!sec||!it) return;
       try{ localStorage.setItem('peq_lab_last',JSON.stringify({si:si,ii:ii})); }catch(e){}
@@ -9781,12 +10006,12 @@ function viewLab(){
   $$('.lab-card').forEach(function(card){ card.addEventListener('click',function(){ openLabFull(card.dataset.sim); }); });
 }
 var labFullInst=null;
-var SIM_THEME={orbit3d:'#fbbf24',fields3d:'#facc15',orbit:'#fbbf24',blackhole:'#f87171',sandbox:'#a78bfa',projectile:'#7dd3fc',gas:'#fb923c',magnetic:'#60a5fa',spring:'#7dd3fc',wave:'#22d3ee',standing:'#f472b6',fields:'#facc15',refraction:'#a78bfa',pendulum:'#f472b6',fourier:'#34d399',tunneling:'#a78bfa',doubleslit:'#7dd3fc',bloch:'#c084fc',rlc:'#34d399',carnot:'#fb923c',lens:'#22d3ee'};
+var SIM_THEME={superpose:'#c084fc',entangle:'#c084fc',photonslit:'#c084fc',sterngerlach:'#c084fc',orbit3d:'#fbbf24',fields3d:'#facc15',orbit:'#fbbf24',blackhole:'#f87171',sandbox:'#a78bfa',projectile:'#7dd3fc',gas:'#fb923c',magnetic:'#60a5fa',spring:'#7dd3fc',wave:'#22d3ee',standing:'#f472b6',fields:'#facc15',refraction:'#a78bfa',pendulum:'#f472b6',fourier:'#34d399',tunneling:'#a78bfa',doubleslit:'#7dd3fc',bloch:'#c084fc',rlc:'#34d399',carnot:'#fb923c',lens:'#22d3ee'};
 /* ===== LAB INVESTIGATION — every lab is one Aetheris-style scientific investigation =====
    ONE lab-open experience. Opening any simulation wraps it in a cinematic shell (specialist
    mentor + live stage + control panel) and a 9-stage investigation flow:
    Predict → Hypothesis → Setup → Collect → Analyze → Reason → Reflect → Extend → Research. */
-var SIM_PERSONA={orbit:'gravitas',orbit3d:'gravitas',blackhole:'relativa',projectile:'gravitas',pendulum:'gravitas',spring:'wavelet',sandbox:'research',fields:'flux',fields3d:'flux',magnetic:'ampere',rlc:'volta',wave:'wavelet',standing:'wavelet',fourier:'wavelet',lens:'prism',refraction:'prism',gas:'calor',carnot:'calor',tunneling:'quanta',doubleslit:'quanta',bloch:'quanta'};
+var SIM_PERSONA={orbit:'gravitas',orbit3d:'gravitas',blackhole:'relativa',projectile:'gravitas',pendulum:'gravitas',spring:'wavelet',sandbox:'research',fields:'flux',fields3d:'flux',magnetic:'ampere',rlc:'volta',wave:'wavelet',standing:'wavelet',fourier:'wavelet',lens:'prism',refraction:'prism',gas:'calor',carnot:'calor',tunneling:'quanta',doubleslit:'quanta',bloch:'quanta',superpose:'quanta',entangle:'quanta',photonslit:'quanta',sterngerlach:'quanta'};
 var INV_GENERIC={
   predict:{q:'Before you touch anything — what do you expect to happen as you change the main control?',opts:['It changes smoothly and predictably','Nothing changes','It jumps suddenly at some threshold'],a:0,why:'Commit to a prediction first — then let the simulation be the judge. A physicist always predicts before measuring.'},
   hypothesis:'State the relationship you expect between the variable you will change (independent) and what you observe (dependent).',

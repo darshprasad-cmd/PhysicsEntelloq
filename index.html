@@ -1692,6 +1692,23 @@ html[data-theme="light"] .xg-pair{color:#7c3aed;border-top-color:rgba(124,58,237
 .style-line .ic{color:var(--sc);font-size:15px;flex:none}
 .style-line .edit{margin-left:auto;font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--ink-faint);cursor:pointer;text-transform:uppercase;flex:none}
 .style-line .edit:hover{color:var(--blue)}
+/* — deeper personalisation (Pass 90) — */
+html[data-style] .l-main{display:flex;flex-direction:column}
+html[data-style] .l-main>.l-tag,html[data-style] .l-main>.l-diff,html[data-style] .l-main>h1,html[data-style] .l-main>.chips,html[data-style] .l-main>.intuition{order:-100}
+html[data-style] .l-main>.l-style-note{order:-90}
+html[data-style="visual"] .l-main>#lens-host{order:-70}
+html[data-style="visual"] .l-main>.l-sim{order:-60}
+html[data-style="mathematical"] .l-main>#eqviz-host{order:-70}
+html[data-style="mathematical"] .l-main>.l-eqs{order:-60}
+html[data-style="textual"] .l-main>.l-pts{order:-70}
+html[data-style="textual"] .l-main>.l-exam{order:-60}
+html[data-style="experimental"] .l-main>.l-sim{order:-70}
+html[data-style="experimental"] .l-main>#lens-host{order:-60}
+.l-style-note{display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--sc,#7dd3fc);margin:2px 0 8px}
+html[data-style="visual"] .home-feat[data-feat="theory"]{order:-1}
+html[data-style="experimental"] .home-feat[data-feat="sandbox"]{order:-1}
+html[data-style="mathematical"] .home-feat[data-feat="research"]{order:-1}
+html[data-style="textual"] .home-feat[data-feat="deeps"]{order:-1}
 </style>
 <script>/* THEME bootstrap — set html[data-theme] before first paint (no dark->light flash) */
 (function(){ var m='dark'; try{ m=localStorage.getItem('peq_theme')||'dark'; }catch(e){}
@@ -2401,7 +2418,8 @@ var Style=(function(){
     cur={B:'experimental',C:'visual',D:'mathematical',F:'textual'}[pr.lens]||null;
     if(cur) localStorage.setItem(KEY,cur); }catch(e2){} }
   function def(){ return DEF[cur]||null; }
-  function apply(){ var d=def(); window.__lensDefault=d?d.lens:null; }
+  function apply(){ var d=def(); window.__lensDefault=d?d.lens:null;
+    try{ if(d)document.documentElement.setAttribute('data-style',d.k); else document.documentElement.removeAttribute('data-style'); }catch(eA){} }
   function set(s){ cur=DEF[s]?s:null;
     try{ if(cur)localStorage.setItem(KEY,cur); else localStorage.removeItem(KEY); }catch(e){}
     apply(); try{ if(typeof labMode!=='undefined'&&cur) labMode=DEF[cur].lab; }catch(e3){} }
@@ -9509,13 +9527,14 @@ function viewLesson(id){
     '<h1>'+esc(t.name)+'</h1>'+
     '<div class="chips">'+(t.tags||[]).map(function(x){ return '<span class="chip">'+esc(x)+'</span>'; }).join('')+'</div>'+
     '<p class="intuition">'+esc(t.summary)+'</p>'+
+    ((typeof Style!=='undefined'&&Style.def())?('<div class="l-style-note" style="--sc:'+Style.def().c+'">'+Style.def().ic+' this page is arranged for the '+Style.def().n.toLowerCase()+' learner in you</div>'):'')+
     '<div id="lens-host"></div>'+
     '<div id="mrep-host"></div>'+
     (simType?'<div class="l-sim"><div class="sim-stage" id="lesson-sim"></div><div class="sim-foot"><div class="cap">'+esc(SIM_META[simType].d)+'</div><div class="ctl" id="lesson-ctl"></div></div></div>':'')+
     (IEQ[t.id]?'<div id="eqviz-host"></div>':'')+
-    ((t.eqs&&t.eqs.length)?('<div class="l-sec"><h3>Key equations</h3>'+t.eqs.map(function(e){ return '<div class="eq"><span class="f">'+esc(e[0])+'</span><span class="d">'+esc(e[1])+'</span></div>'; }).join('')+'</div>'):'')+
-    ((t.points&&t.points.length)?('<div class="l-sec"><h3>Core concepts</h3>'+t.points.map(function(p){ return '<div class="pt"><span class="b">●</span><span>'+esc(p)+'</span></div>'; }).join('')+'</div>'):'')+
-    ((t.exam&&t.exam.length)?('<div class="callout"><div class="h">★ Exam focus</div>'+t.exam.map(function(p){ return '<div class="pt"><span class="b">●</span><span>'+esc(p)+'</span></div>'; }).join('')+'</div>'):'')+
+    ((t.eqs&&t.eqs.length)?('<div class="l-sec l-eqs"><h3>Key equations</h3>'+t.eqs.map(function(e){ return '<div class="eq"><span class="f">'+esc(e[0])+'</span><span class="d">'+esc(e[1])+'</span></div>'; }).join('')+'</div>'):'')+
+    ((t.points&&t.points.length)?('<div class="l-sec l-pts"><h3>Core concepts</h3>'+t.points.map(function(p){ return '<div class="pt"><span class="b">●</span><span>'+esc(p)+'</span></div>'; }).join('')+'</div>'):'')+
+    ((t.exam&&t.exam.length)?('<div class="callout l-exam"><div class="h">★ Exam focus</div>'+t.exam.map(function(p){ return '<div class="pt"><span class="b">●</span><span>'+esc(p)+'</span></div>'; }).join('')+'</div>'):'')+
     '<div id="conn-host"></div>'+'<div class="l-sec"><h3>Keep the flow — never a dead end</h3><div class="flow-rail">'+
       '<button class="btn btn-ghost btn-sm" data-flowx="sandbox">⊙ Build it in the Sandbox</button>'+
       (simType?'<button class="btn btn-ghost btn-sm" data-flowx="lab">▸ Run the '+esc(SIM_META[simType].n)+' investigation</button>':'')+
@@ -9796,6 +9815,9 @@ var Expt=(function(){
     var filt=hub._f||'all';
     var last=null; try{ last=JSON.parse(localStorage.getItem('peq_lab_last')||'null'); }catch(e){}
     var flat=[]; SEC.forEach(function(sec,si){ sec.items.forEach(function(it,ii){ flat.push({si:si,ii:ii,it:it,sec:sec}); }); });
+    (function(){ var st=(typeof Style!=='undefined')?Style.get():null; if(!st) return;
+      var liveFirst=(st==='visual'||st==='experimental');
+      flat.sort(function(a,b){ var av=a.it.s?1:0,bv=b.it.s?1:0; return liveFirst?(bv-av):(av-bv); }); })();
     var nLive=0,i; for(i=0;i<flat.length;i++){ if(flat[i].it.s) nLive++; }
     var H='<div class="wrap fade"><div class="eyebrow">Structured experiments</div><h1 class="h-hello" style="font-size:30px">Work like an experimentalist</h1>'+toggle;
     if(last&&SEC[last.si]&&SEC[last.si].items[last.ii]){ var lit=SEC[last.si].items[last.ii];
@@ -9956,7 +9978,9 @@ var Expt=(function(){
 function viewLab(){
   stopSim(); CompareDeck.stop(); setCrumb([{t:'Lab'}]);
   var MODES=[['labs','∇ Labs'],['graphs','∿ Graphs'],['play','⊚ Playground'],['theory','∮ Theory Lab'],['research','∴ Research Lab'],['investigate','∫ Investigate'],['design','⧉ Design'],['compare','⇄ Compare'],['discover','✦ Discover']];
-  var toggle='<div class="lm-bar"><span class="lm-tag">MODE</span>'+MODES.map(function(md){ var _sl=(typeof Style!=='undefined'&&Style.def())?Style.def().lab:null; return '<button class="lm-seg'+(labMode===md[0]?' on':'')+'" data-lm="'+md[0]+'" '+(md[0]===_sl?'title="matched to how you learn"':'')+'>'+md[1]+(md[0]===_sl?'<i class="lm-you"></i>':'')+'</button>'; }).join('')+'</div>';
+  var _MO=(function(){ var sl=(typeof Style!=='undefined'&&Style.def())?Style.def().lab:null; if(!sl) return MODES;
+    return MODES.filter(function(m){ return m[0]===sl; }).concat(MODES.filter(function(m){ return m[0]!==sl; })); })();
+  var toggle='<div class="lm-bar"><span class="lm-tag">MODE</span>'+_MO.map(function(md){ var _sl=(typeof Style!=='undefined'&&Style.def())?Style.def().lab:null; return '<button class="lm-seg'+(labMode===md[0]?' on':'')+'" data-lm="'+md[0]+'" '+(md[0]===_sl?'title="matched to how you learn"':'')+'>'+md[1]+(md[0]===_sl?'<i class="lm-you"></i>':'')+'</button>'; }).join('')+'</div>';
   function wireToggle(){ try{ var fw=main.firstElementChild; if(fw) fw.classList.add('lab-blue'); LabVig.decorate(main); }catch(e){} $$('[data-lm]').forEach(function(b){ b.addEventListener('click',function(){ labMode=b.dataset.lm; viewLab(); }); }); }
   if(labMode==='graphs'){ main.innerHTML='<div class="wrap fade"><div class="eyebrow">Direct manipulation</div><h1 class="h-hello" style="font-size:30px">Sketch the mathematics</h1>'+toggle+'<div id="gx-host"></div></div>'; wireToggle(); try{ Grapher.mount($('#gx-host')); }catch(e){} return; }
   if(labMode==='labs'){ Expt.hub(main,toggle,wireToggle); return; }
@@ -10267,12 +10291,13 @@ function invCSS(){ if(document.getElementById('inv-css'))return; var st=ce('styl
 function renderFlow(s,host){
   var d=invData(s),pid=SIM_PERSONA[s]||'edge',P=Personas.byId(pid)||Personas.byId('edge'),labName=SIM_META[s].n;
   var stages=[['predict','◌','Predict'],['hypothesis','⊚','Hypothesis'],['setup','☰','Experiment setup'],['collect','▦','Collect data'],['analyze','↗','Graph & analyze'],['reason','Ψ','Reasoning'],['reflect','∵','Reflection'],['extend','↑','Advanced extensions'],['research','⇔','Research connections']];
+  var _oi={visual:3,experimental:0,mathematical:4,textual:5}[(typeof Style!=='undefined'&&Style.get())||'x']||0;
   var html='<div class="inv-flow-h">Investigation · think like a physicist</div>';
   stages.forEach(function(st,i){ var k=st[0],body;
     if(k==='predict'){ body='<div>'+esc(d.predict.q)+'</div><div class="inv-opts">'+d.predict.opts.map(function(o,oi){ return '<button class="inv-opt" data-oi="'+oi+'">'+esc(o)+'</button>'; }).join('')+'</div><div class="inv-why" style="display:none"></div>'; }
     else { body='<div>'+(d[k]||INV_GENERIC[k])+'</div>'; if(k==='collect') body+='<button class="inv-go" data-nb="1">∫ Take real measurements in the Notebook →</button>'; }
     body+='<button class="inv-ask" data-ask="'+k+'">✦ Ask '+esc(P.name)+'</button>';
-    html+='<div class="inv-step'+(i===0?' open':'')+'" data-k="'+k+'"><div class="inv-sh"><span class="ic">'+st[1]+'</span><span class="t">'+st[2]+'</span><span class="ch">›</span></div><div class="inv-bd">'+body+'</div></div>';
+    html+='<div class="inv-step'+(i===_oi?' open':'')+'" data-k="'+k+'"><div class="inv-sh"><span class="ic">'+st[1]+'</span><span class="t">'+st[2]+'</span><span class="ch">›</span></div><div class="inv-bd">'+body+'</div></div>';
   });
   host.innerHTML=html;
   $$('.inv-sh',host).forEach(function(sh){ sh.addEventListener('click',function(){ var step=sh.parentNode,was=step.classList.contains('open'); $$('.inv-step',host).forEach(function(x){ x.classList.remove('open'); }); if(!was) step.classList.add('open'); }); });

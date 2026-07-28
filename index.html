@@ -1831,6 +1831,7 @@ html[data-style="textual"] .home-feat[data-feat="deeps"]{order:-1}
 (function(){
 "use strict";
 var AI_PROXY="https://groq-proxy.physicsedge.workers.dev";/* Cloudflare Worker holding the shared Groq key -> keyless AI for every visitor (same proxy quant.entelloq.com uses). */
+var CLARITY_PROJECT_ID="";  /* Microsoft Clarity project id (clarity.microsoft.com > project > Settings > Overview) — public, set to enable analytics; or localStorage peq_clarity_id */
 var GOOGLE_CLIENT_ID="939725315910-jkgb2qsde0q5us6r4j8raoe1aff3dq32.apps.googleusercontent.com";  /* public OAuth Web client id — set it (or localStorage peq_gid_client) to switch on Continue with Google; origins must include https://physics.entelloq.com */
 var GROQ_KEY="", GROQ_URL="https://api.groq.com/openai/v1/chat/completions", GROQ_MODEL="llama-3.3-70b-versatile";
 function aiURL(){ if(navigator.onLine===false){ try{ toast('Offline — the AI faculty needs a connection','⌁'); }catch(e){} throw new Error('offline'); } var k=''; try{k=(localStorage.getItem('peq_groq_key')||'').trim();}catch(e){} return (!k&&AI_PROXY)?(AI_PROXY.replace(/\/+$/,'')+'/v1/chat/completions'):GROQ_URL; }
@@ -2419,6 +2420,7 @@ var GAuth=(function(){
     save({n:p.name||p.email.split('@')[0],e:p.email,g:1,pic:p.picture||''});
     try{ toast('Welcome, '+(p.given_name||p.name||'physicist')+' \u2014 signed in with Google','\u2726'); }catch(e){}
     try{ renderAcct(); }catch(e2){}
+    try{ if(typeof Track!=='undefined'){ Track.ev('google-signin'); Track.ident(); Track.upgrade('signed-in'); } }catch(eT){}
     try{ if(window.__peqAfterGoogle){ var f=window.__peqAfterGoogle; window.__peqAfterGoogle=null; f(); } }catch(e3){} }
   function load(fn){ if(!enabled())return; if(ready){ if(fn)fn(); return; } if(fn)pend.push(fn); if(loading)return; loading=true;
     var s=document.createElement('script'); s.src='https://accounts.google.com/gsi/client'; s.async=true; s.defer=true;
@@ -2441,6 +2443,36 @@ var GAuth=(function(){
 function renderAcct(){ var el=$('#nav-acct'); if(!el)return; var u=GAuth.user();
   if(u){ el.innerHTML=(u.pic?'<img src="'+u.pic+'" alt="" onerror="this.style.display=\'none\'">':'<span class="ic">\u25cf</span>')+'<span>'+esc(u.n.split(' ')[0])+'</span>'+(u.g?'<i class="gd">G</i>':''); el.classList.add('on'); }
   else { el.innerHTML='<span class="ic">\u25cb</span><span class="si">Sign in</span>'; el.classList.remove('on'); } }
+/* ===== Pass 93 — Track: Microsoft Clarity, lazy + config-gated ===== */
+var Track=(function(){
+  var loaded=false;
+  function pid(){ var v=''; try{ v=(localStorage.getItem('peq_clarity_id')||'').trim(); }catch(e){} return v||CLARITY_PROJECT_ID||''; }
+  function enabled(){ return !!pid(); }
+  function anonId(){ var a=''; try{ a=localStorage.getItem('peq_anon')||''; if(!a){ a='pe-'+Math.random().toString(36).slice(2,10)+Date.now().toString(36); localStorage.setItem('peq_anon',a); } }catch(e){} return a||'pe-anon'; }
+  function load(){ if(loaded||!enabled())return; loaded=true;
+    (function(c,l,a,r,i,t,y){ c[a]=c[a]||function(){ (c[a].q=c[a].q||[]).push(arguments); };
+      t=l.createElement(r); t.async=1; t.src='https://www.clarity.ms/tag/'+i;
+      y=l.getElementsByTagName(r)[0]; y.parentNode.insertBefore(t,y);
+    })(window,document,'clarity','script',pid());
+    ident(); tags(); }
+  function ident(pageId){ if(!loaded)return; var c=window.clarity; if(!c)return;
+    try{ var u=(typeof GAuth!=='undefined')?GAuth.user():null;
+      if(u&&u.e) c('identify',u.e,undefined,pageId||undefined,(u.n||'').split(' ')[0]);
+      else c('identify',anonId(),undefined,pageId||undefined); }catch(e){} }
+  function tags(){ if(!loaded)return; var c=window.clarity; if(!c)return;
+    try{ if(typeof Style!=='undefined'&&Style.get()) c('set','learning_style',Style.get());
+      var pr=null; try{ pr=JSON.parse(localStorage.getItem('peq_profile')||'null'); }catch(e2){}
+      if(pr&&pr.level) c('set','level',pr.level);
+      if(pr&&pr.goal) c('set','goal',pr.goal);
+      var th='dark'; try{ th=localStorage.getItem('peq_theme')||'dark'; }catch(e3){}
+      c('set','theme',th); }catch(e){} }
+  function view(v){ if(!loaded)return; try{ var c=window.clarity; if(c){ c('set','view',v); ident(v); } }catch(e){} }
+  function ev(name){ if(!loaded)return; try{ var c=window.clarity; if(c)c('event',name); }catch(e){} }
+  function upgrade(r){ if(!loaded)return; try{ var c=window.clarity; if(c)c('upgrade',r); }catch(e){} }
+  try{ window.PEQ_track={enabled:enabled,loaded:function(){ return loaded; },ev:ev,view:view}; }catch(e){}
+  return { load:load,view:view,ev:ev,tags:tags,ident:ident,upgrade:upgrade,enabled:enabled };
+})();
+Track.load();
 /* ===== Pass 89 — learning-style engine: the questionnaire personalises everything ===== */
 var Style=(function(){
   var KEY='peq_style', cur=null;
@@ -8276,7 +8308,7 @@ var PIE=(function(){
   function chalTick(dt){ if(!chal.active)return; var c=chalById(chal.active); if(!c)return; var p=0;
     try{ p=c.check(dt); }catch(e){ p=0; }
     if(p>=1){ chal.done[c.id]=1; try{ localStorage.setItem('peq_sbx_chal',JSON.stringify(chal.done)); }catch(e2){}
-      chal.active=null; chalRender(); toast('Challenge complete \u2014 '+c.n+'. That was real physics you just aimed.','+25 XP'); try{ Me.award(25,'Challenge: '+c.n); }catch(e3){} return; }
+      chal.active=null; chalRender(); toast('Challenge complete \u2014 '+c.n+'. That was real physics you just aimed.','+25 XP'); try{ Me.award(25,'Challenge: '+c.n); }catch(e3){} try{ Track.ev('challenge-complete'); Track.upgrade('challenge-win'); }catch(eV){} return; }
     if(++chal.tk%10===0){ var bar=$('#sbx-chbar'); if(bar)bar.style.width=(p*100).toFixed(0)+'%'; var ms=$('#sbx-chmsg'); if(ms)ms.textContent=chal.msg; } }
   /* ===== Pass 84 — Kepler music: the sandbox as an instrument ===== */
   var sonic={on:false,ac:null,master:null,vo:{},tk:0};
@@ -9114,7 +9146,7 @@ function setCrumb(parts){ crumb.innerHTML=parts.map(function(p,i){ return (i?'<s
 var homeSim=null, labThumbs=[], labMode=(typeof Style!=='undefined'&&Style.def())?Style.def().lab:'labs';
 function stopThumbs(){ labThumbs.forEach(function(h){ if(h){ if(h._ft) clearTimeout(h._ft); if(h._inst&&h._inst.stop) h._inst.stop(); } }); labThumbs=[]; }
 function cinematicReveal(){ try{ if(window.matchMedia&&matchMedia('(prefers-reduced-motion:reduce)').matches) return; var grids=main.querySelectorAll('.dom-grid,.tlist,.lab-grid,.rs-grid,.rec-grid'); for(var g=0;g<grids.length;g++){ var kids=grids[g].children,i; for(i=0;i<kids.length;i++){ kids[i].style.setProperty('--rvd',(Math.min(i,14)*40)+'ms'); kids[i].classList.add('rvl'); } } }catch(e){} }
-function go(v,id){ stopSim();
+function go(v,id){ stopSim(); try{ Track.view(v+(id?(':'+id):'')); }catch(eT){}
   if(homeSim&&homeSim.stop){ homeSim.stop(); homeSim=null; }
   if(curView==='lab'&&v!=='lab'){ stopThumbs(); Research.stop(); Theory.stop(); Investigate.stop(); DesignLab.stop(); CompareDeck.stop(); try{ LabVig.stop(); }catch(e){} }
   if(curView==='lesson'&&v!=='lesson'){ try{ Lens.stop(); }catch(e){} }
@@ -9606,7 +9638,7 @@ function viewLesson(id){
     var wrap=cb.parentNode; if(wrap.querySelector('.mz-conf')) return;
     var box=ce('div','mz-conf'); box.innerHTML='<span class="mz-q">How solid do you feel?</span>'+[['Shaky',2,0,'#f87171'],['Getting it',3,1,'#fbbf24'],['Confident',5,2,'#34d399']].map(function(o){ return '<button class="mz-cb" data-g="'+o[1]+'" data-c="'+o[2]+'" style="--mc:'+o[3]+'">'+o[0]+'</button>'; }).join('');
     cb.style.display='none'; wrap.appendChild(box);
-    $$('.mz-cb',box).forEach(function(bb){ bb.addEventListener('click',function(){ var g=+bb.dataset.g,c=+bb.dataset.c; try{ Mastery.record(id,g,c); }catch(e){} var wasNew=Me.complete(id); if(wasNew){ toast(t.name+' complete!','+15 XP'); try{ localStorage.setItem('peq_ignite_new',id); }catch(e0){} } if(next) go('lesson',next.id); else go('domain',t.domain); }); });
+    $$('.mz-cb',box).forEach(function(bb){ bb.addEventListener('click',function(){ var g=+bb.dataset.g,c=+bb.dataset.c; try{ Mastery.record(id,g,c); }catch(e){} var wasNew=Me.complete(id); if(wasNew){ toast(t.name+' complete!','+15 XP'); try{ localStorage.setItem('peq_ignite_new',id); }catch(e0){} try{ Track.ev('lesson-complete'); }catch(eV){} } if(next) go('lesson',next.id); else go('domain',t.domain); }); });
   });
   $$('[data-flowx]').forEach(function(b){ b.addEventListener('click',function(){ var f=b.dataset.flowx;
     if(f==='sandbox'){ var _pz=SBX_TOPIC[t.id]||SBX_DOM[t.domain]||null; go('sandbox');
@@ -10369,7 +10401,7 @@ function openLabFull(s){
   renderFlow(s,$('#inv-flow'));
   $('#lf-close').addEventListener('click',closeLabFull); $('#lf-back').addEventListener('click',closeLabFull);
   $('#lf-ask').addEventListener('click',function(){ if(typeof Tutor!=='undefined'&&Tutor.persona) Tutor.persona(pid); Tutor.ask('Guide me through the '+meta.n+' investigation — what should I notice, and why does it happen?', meta.n); });
-  Me.award(3,'Started an investigation');
+  Me.award(3,'Started an investigation'); try{ Track.ev('lab-open'); }catch(eV){}
   if(Atmo&&Atmo.theme) Atmo.theme(hexRGB(pc),.9);
 }
 function closeLabFull(){ if(labFullInst&&labFullInst.stop) labFullInst.stop(); labFullInst=null; $('#lab-full').classList.remove('on'); if(Atmo&&Atmo.theme) Atmo.theme(hexRGB('#4cb8f5'),.4); }

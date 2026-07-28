@@ -1831,7 +1831,7 @@ html[data-style="textual"] .home-feat[data-feat="deeps"]{order:-1}
 (function(){
 "use strict";
 var AI_PROXY="https://groq-proxy.physicsedge.workers.dev";/* Cloudflare Worker holding the shared Groq key -> keyless AI for every visitor (same proxy quant.entelloq.com uses). */
-var CLARITY_PROJECT_ID="";  /* Microsoft Clarity project id (clarity.microsoft.com > project > Settings > Overview) — public, set to enable analytics; or localStorage peq_clarity_id */
+var CLARITY_PROJECT_ID="xtmb8q6s43";  /* Microsoft Clarity project id (clarity.microsoft.com > project > Settings > Overview) — public, set to enable analytics; or localStorage peq_clarity_id */
 var GOOGLE_CLIENT_ID="939725315910-jkgb2qsde0q5us6r4j8raoe1aff3dq32.apps.googleusercontent.com";  /* public OAuth Web client id — set it (or localStorage peq_gid_client) to switch on Continue with Google; origins must include https://physics.entelloq.com */
 var GROQ_KEY="", GROQ_URL="https://api.groq.com/openai/v1/chat/completions", GROQ_MODEL="llama-3.3-70b-versatile";
 function aiURL(){ if(navigator.onLine===false){ try{ toast('Offline — the AI faculty needs a connection','⌁'); }catch(e){} throw new Error('offline'); } var k=''; try{k=(localStorage.getItem('peq_groq_key')||'').trim();}catch(e){} return (!k&&AI_PROXY)?(AI_PROXY.replace(/\/+$/,'')+'/v1/chat/completions'):GROQ_URL; }

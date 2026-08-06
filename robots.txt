@@ -1,0 +1,10 @@
+# https://physics.entelloq.com/
+User-agent: *
+Allow: /
+
+# Single-page app: every view is client-side, so / is the only indexable URL.
+# ?landing and ?still are debug/render flags, not content — keep them out of the index.
+Disallow: /*?still=
+Disallow: /*?landing
+
+Sitemap: https://physics.entelloq.com/sitemap.xml

@@ -1742,6 +1742,57 @@ html[data-style="textual"] .home-feat[data-feat="deeps"]{order:-1}
 .eqmark-xl{width:clamp(104px,13vw,140px); height:clamp(104px,13vw,140px); margin:0 auto 22px;
   filter:drop-shadow(0 0 46px rgba(56,189,248,.34))}
 @media (max-width:720px){ .logo .eqmark,.brand .eqmark{width:34px; height:34px} }
+/* — Pass 99: the experiment shell — */
+.xlab{margin:34px 0;padding:26px 26px 22px;border:1px solid var(--line);border-radius:18px;
+  background:linear-gradient(165deg,rgba(56,189,248,.055),rgba(12,17,32,.5) 55%);position:relative}
+.xlab-top{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.xlab-eye{font-family:var(--mono);font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:var(--blue)}
+.xlab-badge{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--emerald);
+  border:1px solid rgba(52,211,153,.4);border-radius:999px;padding:2px 9px}
+.xlab-t{font-family:var(--display);font-weight:600;font-size:23px;letter-spacing:-.02em;color:var(--ink);margin:0 0 6px}
+.xlab-goal{color:var(--ink-dim);font-size:14.5px;line-height:1.6;margin:0 0 20px}
+.xlab-b{border-top:1px solid var(--line-2);padding:17px 0 3px}
+.xlab-n{display:flex;align-items:center;gap:9px;font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--ink-faint);margin-bottom:10px}
+.xlab-n i{font-style:normal;display:grid;place-items:center;width:19px;height:19px;border-radius:50%;
+  background:rgba(56,189,248,.14);color:var(--blue);font-size:10px}
+.xlab-q{color:var(--ink);font-size:15px;line-height:1.6;margin:0 0 12px}
+.xlab-opts{display:flex;flex-wrap:wrap;gap:9px}
+.xlab-o{font-family:inherit;font-size:13.5px;color:var(--ink-dim);background:rgba(255,255,255,.03);
+  border:1px solid var(--line-2);border-radius:11px;padding:10px 15px;cursor:pointer;transition:all .18s var(--ease)}
+.xlab-o:hover:not(:disabled){color:#fff;border-color:rgba(125,211,252,.45);background:rgba(56,189,248,.09)}
+.xlab-o:disabled{cursor:default;opacity:.62}
+.xlab-o.on{color:#fff;border-color:rgba(125,211,252,.6);background:rgba(56,189,248,.13);opacity:1}
+.xlab-o.ok{border-color:rgba(52,211,153,.6);color:var(--emerald);opacity:1}
+.xlab-tip{margin-top:11px;font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;color:var(--ink-ghost)}
+.xlab-rev{margin-top:13px;padding:12px 14px;border-left:2px solid var(--blue);background:rgba(56,189,248,.06);
+  border-radius:0 10px 10px 0;color:var(--ink-dim);font-size:14px;line-height:1.62}
+.xlab-rev b{color:var(--ink)}
+.xlab-st{margin:0;padding-left:20px;color:var(--ink-dim);font-size:14.5px;line-height:1.75}
+.xlab-st li{margin-bottom:5px}
+.xlab-note{width:100%;box-sizing:border-box;background:rgba(4,6,14,.55);border:1px solid var(--line-2);
+  border-radius:11px;color:var(--ink);font-family:inherit;font-size:14px;line-height:1.6;padding:11px 13px;resize:vertical}
+.xlab-note:focus{outline:none;border-color:rgba(125,211,252,.45)}
+.xlab-save{min-height:15px;margin-top:5px;font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--ink-ghost)}
+.xlab-task{color:var(--ink);font-size:14.5px;line-height:1.62;margin:0 0 12px}
+.xlab-row{display:flex;flex-wrap:wrap;gap:9px;align-items:center}
+.xlab-mini{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ink-dim);background:transparent;border:1px solid var(--line-2);border-radius:9px;
+  padding:8px 13px;cursor:pointer;transition:all .18s var(--ease)}
+.xlab-mini:hover{color:#fff;border-color:rgba(125,211,252,.4)}
+.xlab-mini.on{color:var(--emerald);border-color:rgba(52,211,153,.45)}
+.xlab-hint{margin-top:11px;padding:11px 13px;border-radius:10px;background:rgba(255,255,255,.03);
+  color:var(--ink-dim);font-size:13.5px;line-height:1.6}
+.xlab-app{border-top:1px solid var(--line-2);margin-top:17px;padding-top:15px}
+.xlab-app p{color:var(--ink-dim);font-size:14px;line-height:1.65;margin:7px 0 16px}
+.xlab-ask{font-family:inherit;font-size:13.5px;color:var(--blue);background:rgba(56,189,248,.08);
+  border:1px solid rgba(125,211,252,.28);border-radius:11px;padding:10px 17px;cursor:pointer;transition:all .2s var(--ease)}
+.xlab-ask:hover:not(:disabled){background:rgba(56,189,248,.15);color:#fff}
+.xlab-ask:disabled{opacity:.55;cursor:default}
+.xlab-exp{margin-top:13px;padding:13px 15px;border-radius:11px;background:rgba(255,255,255,.03);
+  color:var(--ink-dim);font-size:14px;line-height:1.68}
+@media (max-width:560px){ .xlab{padding:20px 17px 18px} .xlab-t{font-size:20px} .xlab-o{font-size:12.5px;padding:9px 12px} }
 </style>
 <script>/* THEME bootstrap — set html[data-theme] before first paint (no dark->light flash) */
 (function(){ var m='dark'; try{ m=localStorage.getItem('peq_theme')||'dark'; }catch(e){}
@@ -2431,6 +2482,167 @@ var Atmo=(function(){
 })();
 
 /* ===== PROGRESS ===== */
+/* ===== Pass 99 — experiment bank (seed; the rest arrives per domain) ===== */
+var EXPT_BANK={
+'projectile':{
+  title:'Launch Lab \u2014 find the angle that goes farthest',
+  goal:'Discover that maximum range sits at 45\u00b0 only in a vacuum, and watch drag move it.',
+  predict:{ q:'Fire at a fixed speed. Which launch angle travels the greatest horizontal distance through air?',
+    opts:['30\u00b0','45\u00b0','Just under 45\u00b0','60\u00b0'], answer:2,
+    why:'In a vacuum range is v\u00b2sin(2\u03b8)/g, peaking exactly at 45\u00b0. Air drag punishes the longer, slower flight of a high shot, so the real optimum drops a few degrees below 45\u00b0.' },
+  steps:['Hold the speed fixed and sweep the angle from 15\u00b0 to 75\u00b0, noting where the landing point is farthest.',
+    'Fire 30\u00b0 and 60\u00b0 one after the other and compare their ranges.',
+    'Now change the speed and check whether the best angle moved.'],
+  notice:'The 30\u00b0 and 60\u00b0 shots land in almost the same place. What do those two angles have in common?',
+  challenge:{ task:'Find two different launch angles that land within one metre of each other, then explain what links them.',
+    hint:'sin(2\u03b8) gives the same value for \u03b8 and 90\u00b0\u2212\u03b8. Complementary angles are twins for range \u2014 but not for flight time.' },
+  apply:'Artillery firing tables, the take-off ramp angle on a ski jump, water-jet cutting heads, and the arc a basketball player uses for a three-point shot.',
+  explain:'Range depends on the product of horizontal speed and hang time. A low angle gives lots of horizontal speed but little time; a high angle gives the reverse. The product peaks where the split is even, at 45\u00b0 in a vacuum. Complementary angles swap the two factors and so give the same range.'
+},
+'rotational':{
+  title:'The Balance Bench \u2014 make an awkward object hang level',
+  goal:'Discover that what balances a lever is force multiplied by distance, not force alone.',
+  predict:{ q:'A light plank rests on a pivot. A 2 kg mass sits 30 cm to the left. Where must a 1 kg mass go to balance it?',
+    opts:['15 cm right','30 cm right','60 cm right','It cannot balance a heavier mass'], answer:2,
+    why:'Balance needs equal turning effects: 2\u00d730 = 1\u00d7d, so d = 60 cm. Half the weight needs twice the lever arm.' },
+  steps:['Put a heavy mass close to the pivot and a light one far away until the plank sits level.',
+    'Slide the pivot itself off-centre and rebalance without changing either mass.',
+    'Push at an angle rather than straight down and watch how much of the turning effect survives.'],
+  notice:'When you pushed at an angle, the turning effect dropped even though your force did not. Which part of the push actually turns the lever?',
+  challenge:{ task:'Balance three masses at once on the same side of a pivot against a single mass on the other.',
+    hint:'Turning effects simply add. Total the force\u00d7distance on each side and match the two sums.' },
+  apply:'Why a door handle sits far from the hinge, why a long spanner loosens a tight bolt, the counterweight on a tower crane, and the trim tabs that balance an aircraft.',
+  explain:'Torque is force times the perpendicular distance to the pivot. A small force far out matches a large force close in, which is why the lighter mass had to sit at twice the distance. Only the component of a push perpendicular to the lever arm does any turning at all.'
+},
+'e-field':{
+  title:'Field Builder \u2014 draw the invisible with a test charge',
+  goal:'Discover that field lines are a map of the force a small positive charge would feel at every point.',
+  predict:{ q:'You place two equal positive charges side by side. What does the field look like exactly halfway between them?',
+    opts:['Strongest there, pointing left','Zero there','Strongest there, pointing right','Circular around the midpoint'], answer:1,
+    why:'The two charges push the test charge in exactly opposite directions with equal strength, so the vectors cancel and the field is zero. That point is a null, not a maximum.' },
+  steps:['Place a single positive charge and move a test charge around it, watching the arrow turn.',
+    'Add a second, equal positive charge and hunt for the point where the arrow vanishes.',
+    'Flip one charge negative and watch the pattern reorganise into a dipole.'],
+  notice:'Field lines never cross one another. Why would crossing lines be physically impossible?',
+  challenge:{ task:'Arrange three charges so that there is a point of zero field somewhere that is not on a line joining any two of them.',
+    hint:'You are adding vectors. Three arrows cancel only when they close into a triangle, which needs the charges spread in two dimensions.' },
+  apply:'Cathode-ray and electron-beam steering, inkjet printer droplet deflection, electrostatic precipitators in power-station chimneys, and the field maps used to design particle accelerator optics.',
+  explain:'The field at a point is the vector sum of the contributions from every charge. Between two equal positive charges the contributions are equal and opposite, so they cancel exactly. Field lines cannot cross because the force at a point has one direction, and two crossing lines would demand two.'
+}
+};
+/* ===== Pass 99 — ExpKit: an experiment around every lesson simulation ===== */
+var ExpKit=(function(){
+  var BANK={};
+  function K(id,k){ return 'peq_xp_'+id+'_'+k; }
+  function G(id,k){ try{ return localStorage.getItem(K(id,k)); }catch(e){ return null; } }
+  function S(id,k,v){ try{ localStorage.setItem(K(id,k),v); }catch(e){} }
+  function E(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+  /* hand the question to the existing tutor; fall back to the written explanation */
+  function ask(qs){
+    try{
+      var b=document.querySelector('[data-act="tutor"]'); if(!b) return false;
+      b.click();
+      var inp=document.getElementById('tu-q'); if(!inp) return false;
+      inp.value=qs;
+      var f=document.getElementById('tu-form'); if(!f) return false;
+      if(typeof f.requestSubmit==='function'){ f.requestSubmit(); return true; }
+      var ev; try{ ev=new Event('submit',{bubbles:true,cancelable:true}); }
+      catch(e2){ ev=document.createEvent('Event'); ev.initEvent('submit',true,true); }
+      f.dispatchEvent(ev); return true;
+    }catch(e){ return false; }
+  }
+
+  function render(host,id,t){
+    if(!host) return;
+    var e=BANK[id];
+    if(!e){ host.innerHTML=''; return; }            /* no entry -> lesson untouched */
+    var chosen=G(id,'p'), note=G(id,'n')||'', done=G(id,'d')==='1';
+    var answered=(chosen!==null&&chosen!=='');
+    var i,h='<section class="xlab">';
+    h+='<div class="xlab-top"><span class="xlab-eye">Experiment</span>'+(done?'<span class="xlab-badge">completed</span>':'')+'</div>';
+    h+='<h3 class="xlab-t">'+E(e.title)+'</h3><p class="xlab-goal">'+E(e.goal)+'</p>';
+
+    h+='<div class="xlab-b"><div class="xlab-n"><i>1</i> Predict</div><p class="xlab-q">'+E(e.predict.q)+'</p><div class="xlab-opts">';
+    for(i=0;i<e.predict.opts.length;i++){
+      var sel=answered&&(+chosen===i), right=answered&&(i===e.predict.answer);
+      h+='<button type="button" class="xlab-o'+(sel?' on':'')+(right?' ok':'')+'" data-i="'+i+'"'+(answered?' disabled':'')+
+         ' aria-pressed="'+(sel?'true':'false')+'">'+E(e.predict.opts[i])+'</button>';
+    }
+    h+='</div>';
+    h+=answered
+      ? '<div class="xlab-rev"><b>'+(+chosen===e.predict.answer?'Right.':'Not quite.')+'</b> '+E(e.predict.why)+'</div>'
+      : '<div class="xlab-tip">Commit to a guess before you touch the simulation.</div>';
+    h+='</div>';
+
+    h+='<div class="xlab-b"><div class="xlab-n"><i>2</i> Investigate</div><ol class="xlab-st">';
+    for(i=0;i<e.steps.length;i++) h+='<li>'+E(e.steps[i])+'</li>';
+    h+='</ol></div>';
+
+    h+='<div class="xlab-b"><div class="xlab-n"><i>3</i> What did you notice?</div><p class="xlab-q">'+E(e.notice)+'</p>'+
+       '<textarea class="xlab-note" rows="3" placeholder="Write what you saw..." aria-label="Your observation">'+E(note)+'</textarea>'+
+       '<div class="xlab-save" aria-live="polite"></div></div>';
+
+    h+='<div class="xlab-b"><div class="xlab-n"><i>4</i> Challenge</div><p class="xlab-task">'+E(e.challenge.task)+'</p>'+
+       '<div class="xlab-row"><button type="button" class="xlab-mini xlab-hb">Show a hint</button>'+
+       '<button type="button" class="xlab-mini xlab-db'+(done?' on':'')+'">'+(done?'Done':'I did it')+'</button></div>'+
+       '<div class="xlab-hint" hidden>'+E(e.challenge.hint)+'</div></div>';
+
+    h+='<div class="xlab-app"><span class="xlab-eye">Where this shows up</span><p>'+E(e.apply)+'</p></div>';
+    h+='<div class="xlab-row"><button type="button" class="xlab-ask">Explain what I just saw</button></div>'+
+       '<div class="xlab-exp" hidden>'+E(e.explain)+'</div>';
+    h+='</section>';
+    host.innerHTML=h;
+    wire(host,id,e,t);
+  }
+
+  function wire(host,id,e,t){
+    function q(s){ return host.querySelector(s); }
+    var opts=host.querySelectorAll('.xlab-o'),i;
+    for(i=0;i<opts.length;i++){
+      (function(b){
+        b.addEventListener('click',function(){
+          var prev=G(id,'p'); if(prev!==null&&prev!=='') return;
+          S(id,'p',b.getAttribute('data-i'));
+          try{ Me.award(4,'Prediction \u2014 '+e.title); }catch(er){}
+          render(host,id,t);
+        });
+      })(opts[i]);
+    }
+    var ta=q('.xlab-note');
+    if(ta) ta.addEventListener('input',function(){
+      S(id,'n',ta.value);
+      var s=q('.xlab-save'); if(s) s.textContent=ta.value?'saved':'';
+    });
+    var hb=q('.xlab-hb');
+    if(hb) hb.addEventListener('click',function(){
+      var hn=q('.xlab-hint'); if(!hn) return;
+      hn.hidden=!hn.hidden; hb.textContent=hn.hidden?'Show a hint':'Hide hint';
+    });
+    var db=q('.xlab-db');
+    if(db) db.addEventListener('click',function(){
+      if(G(id,'d')==='1') return;
+      S(id,'d','1');
+      try{ Me.award(12,'Experiment \u2014 '+e.title); }catch(er){}
+      try{ toast('Experiment complete','+12 XP'); }catch(er){}
+      try{ Track.ev('experiment-complete'); }catch(er){}
+      render(host,id,t);
+    });
+    var ab=q('.xlab-ask');
+    if(ab) ab.addEventListener('click',function(){
+      var nm=(t&&t.name)?t.name:id;
+      if(!ask('In the '+nm+' experiment: '+e.notice+' Explain what I should have observed, and why.')){
+        var ex=q('.xlab-exp'); if(ex) ex.hidden=false;
+        ab.disabled=true; ab.textContent='Explanation shown below';
+      }
+    });
+  }
+
+  function add(o){ if(!o) return; for(var k in o){ if(Object.prototype.hasOwnProperty.call(o,k)) BANK[k]=o[k]; } }
+  try{ window.PEQ_expt={ render:render, has:function(id){ return !!BANK[id]; }, count:function(){ var n=0,k; for(k in BANK){ if(Object.prototype.hasOwnProperty.call(BANK,k)) n++; } return n; }, ids:function(){ var a=[],k; for(k in BANK){ if(Object.prototype.hasOwnProperty.call(BANK,k)) a.push(k); } return a; } }; }catch(e){}
+  return { render:render, add:add, bank:BANK };
+})();
+ExpKit.add(EXPT_BANK);
 /* ===== Pass 91 — Continue with Google (GIS, client-side identity) ===== */
 var GAuth=(function(){
   var ready=false,loading=false,pend=[],cbs=[];
@@ -9635,6 +9847,7 @@ function viewLesson(id){
     '<div id="lens-host"></div>'+
     '<div id="mrep-host"></div>'+
     (simType?'<div class="l-sim"><div class="sim-stage" id="lesson-sim"></div><div class="sim-foot"><div class="cap">'+esc(SIM_META[simType].d)+'</div><div class="ctl" id="lesson-ctl"></div></div></div>':'')+
+    '<div id="expt-host"></div>'+
     (IEQ[t.id]?'<div id="eqviz-host"></div>':'')+
     ((t.eqs&&t.eqs.length)?('<div class="l-sec l-eqs"><h3>Key equations</h3>'+t.eqs.map(function(e){ return '<div class="eq"><span class="f">'+esc(e[0])+'</span><span class="d">'+esc(e[1])+'</span></div>'; }).join('')+'</div>'):'')+
     ((t.points&&t.points.length)?('<div class="l-sec l-pts"><h3>Core concepts</h3>'+t.points.map(function(p){ return '<div class="pt"><span class="b">●</span><span>'+esc(p)+'</span></div>'; }).join('')+'</div>'):'')+
@@ -9652,6 +9865,7 @@ function viewLesson(id){
     '</div></div></div>'+comp+'</div>';
   main.innerHTML=html;
   try{ Lens.mount($('#lens-host'),t); }catch(e){}
+  try{ ExpKit.render($('#expt-host'),id,t); }catch(e){}
   try{ if(window.ReadPref) ReadPref.mount(); }catch(e){}
   try{ MultiRep.mount($('#mrep-host'),t); }catch(e){}
   try{ Graph.renderConnections($('#conn-host'),id); }catch(e){}

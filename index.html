@@ -5606,7 +5606,7 @@ var IEQ={
   photoelectric:{eq:['KE',' = h·',{v:'f'},' − ',{v:'φ'}],vars:[{k:'f',label:'Frequency f',unit:'×10¹⁴Hz',min:0,max:20,val:10},{k:'φ',label:'Work function φ',unit:'eV',min:0,max:5,val:2}],out:{label:'Max KE',unit:'eV',fn:function(v){return Math.max(0,4.136*v.f*.1-v.φ);}},plot:{x:'f',xlabel:'frequency',ylabel:'KE (eV)',fn:function(v,x){return Math.max(0,4.136*x*.1-v.φ);}}},
   'mass-energy':{eq:['E',' = ',{v:'m'},'·c²'],vars:[{k:'m',label:'Mass m',unit:'g',min:0,max:10,val:1}],out:{label:'Energy E',unit:'J',fn:function(v){return v.m/1000*9e16;}},plot:{x:'m',xlabel:'mass (g)',ylabel:'E (J)',fn:function(v,x){return x/1000*9e16;}}},
   doppler:{eq:['f′',' = ',{v:'f'},'·v / (v − ',{v:'vs'},')'],vars:[{k:'f',label:'Source freq f',unit:'Hz',min:100,max:1000,val:440},{k:'vs',label:'Source speed vs',unit:'m/s',min:0,max:300,val:30}],out:{label:'Observed f′',unit:'Hz',fn:function(v){return v.f*343/(343-v.vs);}},plot:{x:'vs',xlabel:'source speed',ylabel:'f′ (Hz)',fn:function(v,x){return v.f*343/(343-x);}}},
-  'kinetic-theory':{eq:['v',' = √(3',{v:'T'},'k / ',{v:'m'},')'],vars:[{k:'T',label:'Temperature T',unit:'K',min:50,max:1000,val:300},{k:'m',label:'Molar mass m',unit:'g/mol',min:2,max:60,val:28}],out:{label:'rms speed',unit:'m/s',fn:function(v){return Math.sqrt(3*8.314*v.T/(v.m/1000));}},plot:{x:'T',xlabel:'temperature (K)',ylabel:'v_rms (m/s)',fn:function(v,x){return Math.sqrt(3*8.314*x/(v.m/1000));}}}
+  'kinetic-theory':{eq:['v',' = √(3',{v:'T'},'R / ',{v:'m'},')'],vars:[{k:'T',label:'Temperature T',unit:'K',min:50,max:1000,val:300},{k:'m',label:'Molar mass m',unit:'g/mol',min:2,max:60,val:28}],out:{label:'rms speed',unit:'m/s',fn:function(v){return Math.sqrt(3*8.314*v.T/(v.m/1000));}},plot:{x:'T',xlabel:'temperature (K)',ylabel:'v_rms (m/s)',fn:function(v,x){return Math.sqrt(3*8.314*x/(v.m/1000));}}}
 };
 function mountEqViz(host,ie){
   function fmt(x){ if(!isFinite(x)) return '—'; var a=Math.abs(x); if(a>=1e4||(a>0&&a<1e-2)) return x.toExponential(2); return (Math.round(x*100)/100).toString(); }
@@ -6756,7 +6756,7 @@ var Theory=(function(){
 
     /* ============ STABLE FLUIDS — real Navier–Stokes (Stam 2003) ============ */
     { id:'stable-fluids', name:'Stable Fluids — Navier–Stokes Live', tag:'semi-Lagrangian advection · pressure projection', icon:'≋', c:'#7dd3fc',
-      blurb:"Joe Stam's unconditionally stable solver — the algorithm behind every movie smoke plume. Velocity is advected along its own flow, then a pressure solve projects the field back to divergence-free (incompressible) every frame; vorticity confinement re-injects the small swirls numerics smear away. Drag to stir dye into the flow, or switch on the wind tunnel and watch a Kármán vortex street peel off the obstacle. The divergence readout is the proof: after projection it sits at ~0.",
+      blurb:"Jos Stam's unconditionally stable solver — the algorithm behind every movie smoke plume. Velocity is advected along its own flow, then a pressure solve projects the field back to divergence-free (incompressible) every frame; vorticity confinement re-injects the small swirls numerics smear away. Drag to stir dye into the flow, or switch on the wind tunnel and watch a Kármán vortex street peel off the obstacle. The divergence readout is the proof: after projection it sits at ~0.",
       init:function(stage,side){
         stage.innerHTML='<div class="th-cwrap"><canvas class="th-cv" id="sf-c" style="height:420px;cursor:crosshair;touch-action:none"></canvas><div class="th-hint">drag to inject dye + velocity · wind tunnel shows vortex shedding</div></div>';
         var NX=88,NY=56,SZ=NX*NY;
@@ -7038,7 +7038,7 @@ var Theory=(function(){
 
     /* ============ C · LORENZ ATTRACTOR ============ */
     { id:'lorenz', name:'The Lorenz Attractor', tag:'Chaos theory', icon:'∞', c:'#22d3ee',
-      blurb:"Three simple equations for convection rolls — yet they never repeat and never settle. Two states starting a ten-thousandth apart track together, then peel away into completely different futures: the butterfly effect, made literal. Slide ρ down past 24.74 and the chaos collapses into a stable orbit. This is determinism without predictability.",
+      blurb:"Three simple equations for convection rolls — yet they never repeat and never settle. Two states starting a ten-thousandth apart track together, then peel away into completely different futures: the butterfly effect, made literal. Slide ρ down past 24.74 and the chaos collapses onto a stable fixed point — the flow spirals in and settles into steady convection. This is determinism without predictability.",
       init:function(stage,side){
         stage.innerHTML='<div class="th-cwrap"><canvas class="th-cv" id="lz-c" style="height:430px"></canvas><div class="th-hint">Lorenz system projected on the x–z plane · two trajectories starting 0.0001 apart</div></div>';
         side.innerHTML='<div class="th-slider"><span>ρ (Rayleigh) = <b id="lz-rv" style="color:#22d3ee">28.0</b></span><input class="sl" id="lz-r" type="range" min="0.5" max="40" step="0.5" value="28"/></div>'+
@@ -7110,7 +7110,7 @@ var Theory=(function(){
 
   /* ============ PHASE 3 · COMPUTATIONAL: integrators ============ */
   { id:'integrators', name:'Euler vs RK4 vs Verlet', tag:'Computational physics', icon:'∿', c:'#34d399',
-    blurb:"Physics on a computer means turning calculus into arithmetic — and the method you pick decides whether the result is truth or garbage. The SAME orbit is integrated three ways. Explicit Euler secretly pumps in energy and spirals outward. Verlet is symplectic — it conserves energy and stays on a closed orbit forever. RK4 is the accurate workhorse. Watch the energy trace: the integrator's honesty is laid bare.",
+    blurb:"Physics on a computer means turning calculus into arithmetic — and the method you pick decides whether the result is truth or garbage. The SAME orbit is integrated three ways. Explicit Euler secretly pumps in energy and spirals outward. Verlet is symplectic — its energy error stays bounded, wobbling about the true value instead of drifting, so the orbit never spirals in or out. RK4 is the accurate workhorse. Watch the energy trace: the integrator's honesty is laid bare.",
     init:function(stage,side){
       stage.innerHTML='<div class="th-grid2"><div class="th-cwrap"><canvas class="th-cv" id="iz-c" style="height:380px"></canvas><div class="th-hint">one circular orbit, three integrators — Euler (red) spirals out, Verlet (blue) & RK4 (green) stay closed</div></div>'+
         '<div class="th-cwrap"><canvas class="th-cv" id="iz-e" style="height:190px"></canvas><div class="th-hint">total energy vs time — a flat line means the method is honest</div></div></div>';

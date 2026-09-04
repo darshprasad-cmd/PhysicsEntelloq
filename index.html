@@ -296,9 +296,10 @@ input[type=range].sl::-moz-range-thumb{width:14px;height:14px;border:0;border-ra
 .tu-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;text-align:center}
 .tu-empty .big{width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,var(--violet),var(--blue-2));display:grid;place-items:center;font-size:22px;box-shadow:0 0 34px -4px rgba(76,184,245,.6)}
 .tu-empty p{font-size:13px;color:var(--ink-faint);max-width:28ch}
-.tu-sugg{display:flex;flex-direction:column;gap:8px;width:100%;max-width:280px}
+.tu-sugg{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;max-width:300px}
 .tu-sugg button{padding:9px 13px;border:1px solid var(--line-2);border-radius:10px;font-size:12.5px;color:var(--ink-dim);text-align:left;transition:all .18s}
 .tu-sugg button:hover{color:#fff;border-color:rgba(125,211,252,.4);background:rgba(125,211,252,.05)}
+.tu-sugg button b{display:block;color:var(--ink);font-size:12px;margin-bottom:2px}.tu-sugg button span{display:block;color:var(--ink-faint);font-size:10.5px;line-height:1.25}
 .tu-in{display:flex;gap:9px;padding:12px;border-top:1px solid var(--line-2)}
 .tu-in input{flex:1;background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:11px;padding:11px 13px;color:var(--ink);font-size:14px;outline:none}
 .tu-in input:focus{border-color:rgba(76,184,245,.45)}
@@ -2075,10 +2076,10 @@ html[data-theme="light"] .lw-card{background:rgba(30,90,150,.026)}
     <div class="nav-i" data-go="settings" style="margin-top:6px"><span class="ic">⚙</span> Settings</div>
     <div class="side-card lv-card" data-go="progress" role="button" tabindex="0" title="Open your progress">
       <div class="lv-row">
-        <div class="lv-ring"><svg viewBox="0 0 42 42"><circle cx="21" cy="21" r="18" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="3.5"/><circle id="lv-fg" cx="21" cy="21" r="18" fill="none" stroke="url(#lg)" stroke-width="3.5" stroke-linecap="round" stroke-dasharray="113" stroke-dashoffset="113"/><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7dd3fc"/><stop offset="1" stop-color="#a78bfa"/></linearGradient></defs></svg><span class="n" id="lv-n">1</span></div>
-        <div class="lv-meta"><div class="t" id="lv-t">Level 1</div><div class="s" id="lv-xp">0 XP</div></div>
+        <div class="lv-ring"><svg viewBox="0 0 42 42"><circle cx="21" cy="21" r="18" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="3.5"/><circle id="lv-fg" cx="21" cy="21" r="18" fill="none" stroke="url(#lg)" stroke-width="3.5" stroke-linecap="round" stroke-dasharray="113" stroke-dashoffset="113"/><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7dd3fc"/><stop offset="1" stop-color="#a78bfa"/></linearGradient></defs></svg><span class="n" id="lv-n">0%</span></div>
+        <div class="lv-meta"><div class="t" id="lv-t">Observer</div><div class="s" id="lv-xp">Your Physics Map</div></div>
       </div>
-      <div class="streak"><span>≋</span> <span id="streak-n"><b>1</b></span>&nbsp;day streak · <span id="done-n">0</span>/<span id="tot-n">89</span> done</div>
+      <div class="streak"><span>◳</span> <span id="done-n">0</span>/<span id="tot-n">89</span>&nbsp;concepts explored</div>
       <div class="rank-row"><span class="rk" id="rank-name">Observer</span><span class="nx" id="rank-next"></span></div>
     </div>
   </aside>
@@ -2116,10 +2117,13 @@ html[data-theme="light"] .lw-card{background:rgba(30,90,150,.026)}
   <div class="tu-empty" id="tu-empty">
     <div class="big">✦</div>
     <p>Ask me anything in physics — a derivation, the intuition, an exam problem, or what you're studying right now.</p>
-    <div class="tu-sugg">
-      <button>Explain this like I'm 12</button>
-      <button>Give me a worked example</button>
-      <button>Why does this matter?</button>
+    <div class="tu-sugg" aria-label="Choose a way to explore">
+      <button data-prompt="Explain this through physical intuition only, without equations."><b>● Intuition</b><span>Feel what is happening</span></button>
+      <button data-prompt="Show me what is physically happening. Describe the motion, geometry, vectors, or field lines I should picture."><b>◳ Visual</b><span>See the system</span></button>
+      <button data-prompt="Derive this mathematically step by step. Define every symbol and do not skip algebra."><b>∑ Mathematical</b><span>Build the derivation</span></button>
+      <button data-prompt="Take this beyond the syllabus: connect it to a landmark experiment, current research, and an open question."><b>◆ Frontier</b><span>Go beyond the syllabus</span></button>
+      <button data-prompt="Where does this appear in real technology, nature, medicine, engineering, or everyday life?"><b>⊕ Real World</b><span>Connect it outside class</span></button>
+      <button data-prompt="Question me Socratically about this. Ask one diagnostic question at a time and do not reveal the answer until I commit."><b>Ψ Socratic</b><span>Think it through</span></button>
     </div>
   </div>
   <div class="tu-thread" id="tu-thread" style="display:none"></div>
@@ -3012,15 +3016,15 @@ var Me=(function(){
 function renderSide(){
   var l=Me.level(Me.d.xp), base=Me.floorXp(l), next=Me.floorXp(l+1);
   var frac=Math.max(0,Math.min(1,(Me.d.xp-base)/Math.max(1,next-base)));
-  if($('#lv-fg')) $('#lv-fg').style.strokeDashoffset=(113*(1-frac)).toFixed(1);
-  if($('#lv-n')) $('#lv-n').textContent=l;
-  if($('#lv-t')) $('#lv-t').textContent='Level '+l;
-  if($('#lv-xp')) $('#lv-xp').textContent=Me.d.xp+' XP';
-  if($('#streak-n')) $('#streak-n').innerHTML='<b>'+Me.d.streak+'</b>';
+  var mastery=DB.length?Me.doneCount()/DB.length:0;
+  if($('#lv-fg')) $('#lv-fg').style.strokeDashoffset=(113*(1-mastery)).toFixed(1);
+  if($('#lv-n')) $('#lv-n').textContent=Math.round(mastery*100)+'%';
   if($('#done-n')) $('#done-n').textContent=Me.doneCount();
   try{ renderAcct(); }catch(eAcct){}
   if($('#tot-n')) $('#tot-n').textContent=DB.length;
   var rk=rankFor(l), nr=nextRank(l);
+  if($('#lv-t')) $('#lv-t').textContent=rk[1];
+  if($('#lv-xp')) $('#lv-xp').textContent='Your Physics Map';
   if($('#rank-name')) $('#rank-name').textContent=rk[1];
   if($('#rank-next')) $('#rank-next').textContent=nr?('→ '+nr[1]+' · L'+nr[0]):'max rank';
 }
@@ -3730,7 +3734,7 @@ var Tutor=(function(){
   var thread,empty,form,input,busy=false,history=[],ctxNote='';
   function init(){ thread=$('#tu-thread'); empty=$('#tu-empty'); form=$('#tu-form'); input=$('#tu-q');
     form.addEventListener('submit',function(e){ e.preventDefault(); if(input.value.trim()){ ask(input.value.trim()); input.value=''; } });
-    $$('#tu-empty .tu-sugg button').forEach(function(b){ b.addEventListener('click',function(){ ask(b.textContent); }); });
+    $$('#tu-empty .tu-sugg button').forEach(function(b){ b.addEventListener('click',function(){ ask(b.dataset.prompt||b.textContent); }); });
     $('#tutor-fab').addEventListener('click',function(){ openP(); });
     $('#tu-close').addEventListener('click',closeP); $('#tutor-scrim').addEventListener('click',closeP);
     Voice.setOrb($('.tu-orb'));
@@ -9707,7 +9711,9 @@ function pgCSS(){ if(document.getElementById('pg-css')) return; var ps=ce('style
   ".pg-dtop{display:flex;align-items:center;gap:8px;margin-bottom:9px}.pg-ddot{width:9px;height:9px;border-radius:50%}"+
   ".pg-dn{font-size:13.5px;color:#fff;flex:1}.pg-dp{font-family:var(--mono,monospace);font-size:12px;font-weight:600}"+
   ".pg-bar{height:6px;border-radius:5px;background:rgba(255,255,255,.06);overflow:hidden}.pg-fill{height:100%;border-radius:5px;transition:width .6s}"+
-  ".pg-dc{font-family:var(--mono,monospace);font-size:10px;color:var(--ink-faint,#9fb1d0);margin-top:7px}";
+  ".pg-dc{font-family:var(--mono,monospace);font-size:10px;color:var(--ink-faint,#9fb1d0);margin-top:7px}"+
+  ".pg-ready{margin:18px 0 6px;padding:16px 18px;border:1px solid rgba(52,211,153,.25);border-radius:14px;background:linear-gradient(135deg,rgba(52,211,153,.08),rgba(125,211,252,.04));color:var(--ink-dim);line-height:1.5}.pg-ready b{color:#34d399}"+
+  ".pg-details{margin-top:26px;padding-top:14px;border-top:1px solid var(--line-2);font-family:var(--mono,monospace);font-size:10.5px;color:var(--ink-faint)}";
   document.head.appendChild(ps); }
 function viewProgress(){ stopSim(); setCrumb([{t:'Progress'}]); pgCSS();
   var l=Me.level(Me.d.xp), rk=rankFor(l), nr=nextRank(l), done=Me.doneCount(), tot=DB.length, streak=Me.d.streak;
@@ -9715,15 +9721,17 @@ function viewProgress(){ stopSim(); setCrumb([{t:'Progress'}]); pgCSS();
   var doms=DOMAINS.map(function(d){ var t=topicsOf(d.k).length, dn=Me.domDone(d.k); return {k:d.k,n:d.n,c:d.c,done:dn,total:t,pct:t?Math.round(dn/t*100):0}; });
   var focus=doms.filter(function(d){return d.total>0&&d.pct<100;}).sort(function(a,b){return a.pct-b.pct;}).slice(0,3);
   var rec=Me.recommend(4);
-  var H='<div class="wrap fade"><div class="eyebrow">Mastery · your journey</div>'+
-    '<h1 class="h-hello" style="font-size:30px">'+esc(rk[1])+' · Level '+l+'</h1>'+
-    '<div class="h-sub">'+done+' of '+tot+' concepts mastered · '+Me.d.xp+' XP · ≋ '+streak+'-day streak'+(nr?(' · next rank <b>'+esc(nr[1])+'</b> at Level '+nr[0]):' · top rank reached')+'</div>'+
-    '<div class="pg-xpbar"><div class="pg-xpfill" style="width:'+(frac*100).toFixed(0)+'%"></div></div><div class="pg-xpcap">'+(Me.d.xp-base)+' / '+(nx-base)+' XP to Level '+(l+1)+'</div>'+
-    '<div class="pg-sec-h">Identity ladder</div><div class="pg-ladder">'+RANKS.map(function(r){ var on=l>=r[0],cur=rk[0]===r[0]; return '<div class="pg-rank'+(on?' on':'')+(cur?' cur':'')+'"><div class="pg-rdot"></div><div class="pg-rn">'+esc(r[1])+'</div><div class="pg-rl">L'+r[0]+'</div></div>'; }).join('')+'</div>'+
-    '<div class="pg-sec-h">Mastery by field</div><div class="pg-grid">'+doms.map(function(d){ return '<div class="pg-dom" data-link="domain:'+d.k+'"><div class="pg-dtop"><span class="pg-ddot" style="background:'+d.c+'"></span><span class="pg-dn">'+esc(d.n)+'</span><span class="pg-dp" style="color:'+d.c+'">'+d.pct+'%</span></div><div class="pg-bar"><div class="pg-fill" style="width:'+d.pct+'%;background:'+d.c+'"></div></div><div class="pg-dc">'+d.done+' / '+d.total+' concepts</div></div>'; }).join('')+'</div>';
+  var ready=rec[0], readyMsg=ready?('You are ready to explore <b>'+esc(ready.name)+'</b>. Its foundations are in reach, and it is the clearest next addition to your map.'):'Your map is complete. Revisit a field to deepen or test what you know.';
+  try{ if(typeof Graph!=='undefined'&&Graph.readiness){ for(var ri=0;ri<rec.length;ri++){ var rr=Graph.readiness(rec[ri].id); if(!rr.total||rr.ready){ ready=rec[ri]; readyMsg='You are ready for <b>'+esc(ready.name)+'</b>. The prerequisite ideas on your map are already in place.'; break; } } } }catch(e){}
+  var H='<div class="wrap fade"><div class="eyebrow">Your learning model</div>'+
+    '<h1 class="h-hello" style="font-size:30px">Your Physics Map</h1>'+
+    '<div class="h-sub">'+done+' of '+tot+' concepts explored · current identity: <b>'+esc(rk[1])+'</b></div>'+
+    '<div class="pg-ready">'+readyMsg+(ready?' <a data-link="lesson:'+ready.id+'" style="cursor:pointer;color:#7dd3fc">Start it →</a>':'')+'</div>'+
+    '<div class="pg-sec-h">Mastery by field</div><div class="pg-grid">'+doms.map(function(d){ return '<div class="pg-dom" data-link="domain:'+d.k+'"><div class="pg-dtop"><span class="pg-ddot" style="background:'+d.c+'"></span><span class="pg-dn">'+esc(d.n)+'</span><span class="pg-dp" style="color:'+d.c+'">'+d.pct+'%</span></div><div class="pg-bar"><div class="pg-fill" style="width:'+d.pct+'%;background:'+d.c+'"></div></div><div class="pg-dc">'+d.done+' / '+d.total+' concepts</div></div>'; }).join('')+'</div>'+
+    '<div class="pg-sec-h">Identity ladder</div><div class="pg-ladder">'+RANKS.map(function(r){ var on=l>=r[0],cur=rk[0]===r[0]; return '<div class="pg-rank'+(on?' on':'')+(cur?' cur':'')+'"><div class="pg-rdot"></div><div class="pg-rn">'+esc(r[1])+'</div><div class="pg-rl">stage '+r[0]+'</div></div>'; }).join('')+'</div>';
   if(focus.length){ H+='<div class="pg-sec-h">Sharpen these next</div><div class="rs-grid">'+focus.map(function(d){ return '<button class="rs-card" data-link="domain:'+d.k+'"><div class="rs-cic" style="color:'+d.c+';border-color:'+d.c+'55">◎</div><div class="rs-ct"><div class="nm">'+esc(d.n)+'</div><div class="dm">'+d.pct+'% complete · '+(d.total-d.done)+' concepts to go</div></div><span class="arr">›</span></button>'; }).join('')+'</div>'; }
   if(rec.length){ H+='<div class="pg-sec-h">Recommended next</div><div class="rs-grid">'+rec.map(function(t){ var dm=DMAP[t.domain]||{n:'',c:'#7dd3fc'}; return '<button class="rs-card" data-link="lesson:'+t.id+'"><div class="rs-cic" style="color:'+dm.c+';border-color:'+dm.c+'55">›</div><div class="rs-ct"><div class="nm">'+esc(t.name)+'</div><div class="dm">'+esc(dm.n)+'</div></div><span class="arr">›</span></button>'; }).join('')+'</div>'; }
-  H+='</div>'; main.innerHTML=H;
+  H+='<div class="pg-details">Activity details · '+Me.d.xp+' learning XP · '+streak+' active-day streak · stage '+l+(nr?(' · next identity '+esc(nr[1])):'')+'</div></div>'; main.innerHTML=H;
 }
 function viewDeep(id){ stopSim(); var top=Deep.get(id); setCrumb([{t:'Deep Dives',go:'deeps'},{t:(top?top.title:'Deep dive')}]); main.innerHTML='<div class="wrap fade" id="deep-host"></div>'; Deep.open($('#deep-host'),id); }
 function viewDeeps(){ stopSim(); setCrumb([{t:'Deep Dives'}]); var ds=Deep.list();
@@ -11115,6 +11123,16 @@ function viewSolve(){
   $$('.sv-exb').forEach(function(b){ b.addEventListener('click',function(){ $('#sv-input').value=examples[+b.dataset.x][1]; fire(); }); });
   try{ FBD.mount($('#fbd-host')); }catch(e){}
 }
+function adaptiveStart(){
+  var q=[]; try{ q=(typeof Mastery!=='undefined')?Mastery.queue():[]; }catch(e){}
+  if(q.length) return {link:'review',label:'Refresh '+q.length+' fading concept'+(q.length===1?'':'s'),note:'Your memory map found the best place to begin.'};
+  var last=Me.d.lastTopic?topicById(Me.d.lastTopic):null;
+  if(last&&!Me.isDone(last.id)) return {link:'lesson:'+last.id,label:'Continue '+last.name,note:'Pick up exactly where you left off.'};
+  var recs=Me.recommend(8),pick=recs[0];
+  try{ if(typeof Graph!=='undefined'&&Graph.readiness){ for(var i=0;i<recs.length;i++){ var r=Graph.readiness(recs[i].id); if(!r.total||r.ready){ pick=recs[i]; break; } } } }catch(e){}
+  if(!Me.doneCount()) return {link:'lesson:'+pick.id,label:'Start exploring',note:'Begin with a 90-second experiment. No setup, no syllabus map required.'};
+  return {link:'lesson:'+pick.id,label:'Explore '+pick.name,note:'Your map says this is the strongest next connection.'};
+}
 function viewHome(){
   setCrumb([{t:'Home'}]);
   var hr=new Date().getHours(); var greet=hr<12?'Good morning':hr<18?'Good afternoon':'Good evening';
@@ -11123,6 +11141,7 @@ function viewHome(){
   var contDone=last&&Me.isDone(last.id);
   var contTopic=contDone?Me.recommend(1)[0]:cont;
   var recs=Me.recommend(4);
+  var start=adaptiveStart();
   var rvN=0; try{ rvN=(typeof Mastery!=='undefined')?Mastery.queue().length:0; }catch(e){}
   var html='<div class="wrap fade">'+
     '<div class="eyebrow">Physics Entelloq</div>'+
@@ -11132,10 +11151,10 @@ function viewHome(){
     '<div class="cont"><div class="inner"><div class="vis" id="home-vis"></div><div class="body">'+
       '<div class="lab">'+(last&&!contDone?'Continue learning':'Start here')+'</div>'+
       '<h2>'+esc(contTopic.name)+'</h2><p>'+esc(contTopic.summary.slice(0,120))+'…</p>'+
-      '<button class="btn btn-pri" data-link="lesson:'+contTopic.id+'">'+(last&&!contDone?'Resume lesson':'Begin lesson')+' →</button>'+
+      '<button class="btn btn-pri" data-link="'+start.link+'" style="font-size:15px;padding:12px 20px">'+esc(start.label)+' →</button><div style="margin-top:9px;font-size:11.5px;color:var(--ink-faint)">'+esc(start.note)+'</div>'+
     '</div></div></div>'+
     (rvN?'<div class="rv-nudge" data-go="review"><span class="ic">◔</span><span><b>'+rvN+' concept'+(rvN===1?'':'s')+'</b> '+(rvN===1?'is':'are')+' fading from memory — a few minutes brings '+(rvN===1?'it':'them')+' back.</span><span class="go">Review →</span></div>':'')+
-    '<div class="sec-h"><h3>Explore the platform</h3></div>'+
+    '<div class="sec-h"><h3>Or choose a space</h3></div>'+
     '<div class="home-feats">'+
       '<div class="home-feat" data-feat="journeys" style="--fc:#5eead4"><div class="hf-ic">❖</div><div class="hf-t">Learning Journeys</div><div class="hf-s">One guided path per idea — study, visualise, experiment, challenge, extend, all connected.</div></div>'+
       '<div class="home-feat" data-feat="sandbox" style="--fc:#7dd3fc"><div class="hf-ic">⊙</div><div class="hf-t">Physics Sandbox</div><div class="hf-s">Create masses, charges, springs, pulleys and ropes — the engine obeys real physics, live.</div></div>'+

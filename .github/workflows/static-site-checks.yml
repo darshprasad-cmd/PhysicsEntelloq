@@ -1,0 +1,27 @@
+name: Static site checks
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  validate:
+    name: Static site checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate published artifact
+        shell: bash
+        run: |
+          test -s index.html
+          ! grep -q 'gsk_' index.html
+          grep -q '<title>Physics Entelloq' index.html
+          grep -q 'function viewHome' index.html
+          grep -q 'function viewProgress' index.html
+          grep -q 'var Tutor=' index.html
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Parse inline scripts
+        run: node .github/validate-inline-scripts.js

@@ -1,6 +1,7 @@
 const fs = require('fs');
+const path = require('path');
 
-const html = fs.readFileSync('index.html', 'utf8');
+const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
 const scripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)];
 let parsed = 0;
 

@@ -31,3 +31,5 @@ jobs:
         run: node --test .github/test-cradle.js
       - name: Check application design contracts
         run: node --test .github/test-app-design.js
+      - name: Check founder restoration and first-account tutorial
+        run: node --test .github/test-welcome.js

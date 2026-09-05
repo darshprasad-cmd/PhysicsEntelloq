@@ -33,3 +33,5 @@ jobs:
         run: node --test .github/test-app-design.js
       - name: Check founder restoration and first-account tutorial
         run: node --test .github/test-welcome.js
+      - name: Check search, graph parsing and simulation cleanup regressions
+        run: node --test .github/test-quality.js

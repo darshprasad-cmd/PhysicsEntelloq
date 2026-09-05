@@ -22,6 +22,10 @@ const cssStart='<!-- EXPERIENCE:CSS:START -->',cssEnd='<!-- EXPERIENCE:CSS:END -
 const css=cssStart+'\n<style id="experience-css">\n'+['experience.css','app-design.css','welcome.css'].map(file=>fs.readFileSync(path.join(root,'experience',file),'utf8')).join('\n')+'\n</style>\n'+cssEnd;
 if(html.includes(cssStart)){const a=html.indexOf(cssStart),b=html.indexOf(cssEnd,a);html=html.slice(0,a)+css+html.slice(b+cssEnd.length);}
 else html=html.replace('</head>',css+'\n</head>');
+const guideStart='<!-- FEATURE-GUIDE:START -->',guideEnd='<!-- FEATURE-GUIDE:END -->';
+const guide=guideStart+'\n<style>'+fs.readFileSync(path.join(root,'assets/feature-tutorials.css'),'utf8')+'</style>\n<script data-app="physics">'+fs.readFileSync(path.join(root,'assets/feature-tutorials.js'),'utf8')+'</script>\n'+guideEnd;
+if(html.includes(guideStart)){const a=html.indexOf(guideStart),b=html.indexOf(guideEnd,a);html=html.slice(0,a)+guide+html.slice(b+guideEnd.length);}
+else html=html.replace('</body>',guide+'\n</body>');
 if(process.argv.includes('--check')){
   if(fs.readFileSync(target,'utf8').replace(/\r\n/g,'\n')!==html.replace(/\r\n/g,'\n'))throw Error('Experience sources and index.html differ. Run node .github/build-experience.js');
   console.log('Experience artifact matches its sources');

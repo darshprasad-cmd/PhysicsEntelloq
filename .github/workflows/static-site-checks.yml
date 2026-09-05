@@ -25,3 +25,7 @@ jobs:
           node-version: 22
       - name: Parse inline scripts
         run: node .github/validate-inline-scripts.js
+      - name: Verify generated experience is current
+        run: node .github/build-experience.js --check
+      - name: Check cradle physics against analytical results
+        run: node --test .github/test-cradle.js

@@ -1,0 +1,97 @@
+/* Cinematic launch: procedural canvas, no scene downloads or framework changes. */
+var Landing=(function(){
+  var el=null,frame=0,observer=null,alive=false,cleanup=[],done=null;
+  function pending(){try{return /landing/.test(location.search+location.hash)||localStorage.getItem('peq_entered')!=='1';}catch(e){return true;}}
+  function button(text,dest,cls){return '<button class="'+(cls||'pe-button')+'" data-enter="'+(dest||'home')+'">'+text+' <span aria-hidden="true">↗</span></button>';}
+  function show(callback){
+    done=callback;alive=true;el=document.createElement('div');el.id='lnd';el.className='pe-launch';
+    el.setAttribute('aria-label','Physics Entelloq');
+    el.innerHTML=`
+      <a class="pe-skip" href="#pe-main">Skip to the experiment</a>
+      <header class="pe-nav"><a href="#pe-main" class="pe-brand"><span class="pe-mark" aria-hidden="true">∿</span> Physics <strong>Entelloq</strong><small>AN OPEN LABORATORY</small></a><nav aria-label="Explore Physics Entelloq"><a href="#pe-worlds">Worlds</a><a href="#pe-loop">How you learn</a><a href="#pe-science">The science</a></nav>${button('Enter the lab','home','pe-button pe-small')}</header>
+      <main id="pe-main">
+      <section class="pe-hero" aria-labelledby="pe-title">
+        <div class="pe-hero-copy"><div class="pe-kicker"><i></i> THE UNIVERSE IS YOUR EXPERIMENT</div><h1 id="pe-title">Don’t memorise<br>the universe.<br><em>Manipulate it.</em></h1><p>Explore forces, fields, motion and energy.<br>Build an intuition you can actually feel.</p><div class="pe-actions">${button('Enter the Physics Lab','home','pe-button pe-primary')}<a class="pe-text-link" href="#pe-loop">Watch how learning works <span>↓</span></a></div><div class="pe-proof"><span>Free to explore</span><span>No account needed</span><span>Runs in your browser</span></div></div>
+        <div class="pe-orbit" aria-label="Interactive orbital experiment"><div class="pe-scene-heading"><span><i></i> LIVE EXPERIMENT / 001</span><button id="pe-pause" class="pe-icon" aria-label="Pause orbital animation">Ⅱ</button></div><div class="pe-orbit-stage"><svg class="pe-orbit-fallback" viewBox="0 0 600 440" role="img" aria-label="An elliptical satellite orbit around Earth"><ellipse cx="310" cy="225" rx="230" ry="115" fill="none" stroke="#517681" stroke-width="1" transform="rotate(-24 310 225)"/><circle cx="280" cy="240" r="54" fill="#0a2531" stroke="#61cbd8"/><circle cx="490" cy="120" r="5" fill="#f6bd76"/></svg><canvas id="pe-orbit-canvas" aria-label="Earth and a satellite with its predicted trajectory"></canvas><span class="pe-orbit-label">EARTH · LOW ORBIT</span><span class="pe-scale-note">Orbital plane tilted for display · body size exaggerated</span></div><div class="pe-orbit-controls"><div class="pe-variable"><label for="pe-velocity">LAUNCH SPEED <strong id="pe-velocity-value">7.56 <small>km/s</small></strong></label><input id="pe-velocity" type="range" min="0.65" max="1.5" value="1" step="0.01" aria-describedby="pe-orbit-insight"><div class="pe-range-labels"><span>Slower</span><span>Circular</span><span>Escape</span></div></div><div class="pe-orbit-result"><span id="pe-orbit-state">CIRCULAR ORBIT</span><p id="pe-orbit-insight" aria-live="polite">Gravity bends the path. It doesn’t have to slow the satellite down.</p></div></div></div>
+        <div class="pe-scroll-note"><span>01 / OBSERVE · CHANGE · UNDERSTAND</span><a href="#pe-worlds">Explore the worlds ↓</a></div>
+      </section>
+      <section class="pe-statement" id="pe-loop"><div class="pe-kicker">THE WAY IN IS THROUGH CURIOSITY</div><h2>A formula is a beginning.<br><span>Make something happen.</span></h2><div class="pe-loop"><article><b>01</b><h3>Predict.</h3><p>Slower satellite. Tighter rope.<br>What do you think will change?</p></article><article><b>02</b><h3>Experiment.</h3><p>Move a mass. Pull a strand.<br>The system answers immediately.</p></article><article><b>03</b><h3>Look closer.</h3><p>Follow the vectors and measurements.<br>Find the evidence for your idea.</p></article><article><b>04</b><h3>Understand.</h3><p>Connect what you saw to the equation.<br>Then try a different situation.</p></article></div></section>
+      <section class="pe-world-section" id="pe-worlds"><div class="pe-section-head"><div><div class="pe-kicker">A FEW DOORS INTO A BIG UNIVERSE</div><h2>Choose your curiosity.</h2></div>${button('Explore the concept universe','universe','pe-text-button')}</div><div class="pe-worlds">
+        <button class="pe-world pe-world-rope" data-enter="catcradle"><div class="pe-world-visual"><svg viewBox="0 0 480 280" aria-hidden="true"><path d="M60 65 Q200 110 420 220 Q440 150 420 65 Q250 170 60 220 Q25 140 60 65 M60 65 Q240 285 420 65 M60 220 Q240 -5 420 220"/><circle cx="60" cy="65" r="7"/><circle cx="420" cy="65" r="7"/><circle cx="60" cy="220" r="7"/><circle cx="420" cy="220" r="7"/></svg><span class="pe-world-badge">FEATURED INSTRUMENT</span></div><div class="pe-world-copy"><small>01 / TENSION & TOPOLOGY</small><h3>Cat’s Cradle <span>↗</span></h3><p>One thread. A thousand possibilities. Pull, pluck and watch forces find their way.</p><span class="pe-world-meta">Direct manipulation · live force readings</span></div></button>
+        <button class="pe-world pe-world-space" data-enter="sandbox"><div class="pe-world-visual"><svg viewBox="0 0 480 280" aria-hidden="true"><ellipse cx="240" cy="140" rx="185" ry="62" transform="rotate(-30 240 140)"/><ellipse cx="240" cy="140" rx="140" ry="88" transform="rotate(25 240 140)"/><circle class="pe-planet" cx="240" cy="140" r="35"/><circle cx="393" cy="66" r="5"/></svg></div><div class="pe-world-copy"><small>02 / SPACE & GRAVITATION</small><h3>Orbital Playground <span>↗</span></h3><p>Build a solar system. Change a velocity. Discover the thin line between orbit and escape.</p><span class="pe-world-meta">N-body gravity · trails · time controls</span></div></button>
+        <button class="pe-world pe-world-waves" data-enter="waves"><div class="pe-world-visual"><svg viewBox="0 0 480 280" aria-hidden="true"><path d="M0 140 Q30 35 60 140 T120 140 T180 140 T240 140 T300 140 T360 140 T420 140 T480 140 M0 140 Q60 240 120 140 T240 140 T360 140 T480 140"/><path d="M0 140H480" opacity=".25"/></svg></div><div class="pe-world-copy"><small>03 / WAVES & RESONANCE</small><h3>Waves Studio <span>↗</span></h3><p>See waves add, cancel and stand still. Hear the question behind every vibration.</p><span class="pe-world-meta">Superposition · motion · intuition</span></div></button>
+      </div></section>
+      <section class="pe-tutor-section"><div><div class="pe-kicker">THINK WITH ENTELLOQ</div><h2>“Why did<br><em>that</em> happen?”</h2><p>A good question can change the experiment. Bring your current concept or a summary of the cradle’s measured state to the tutor, and reason through it together.</p>${button('Meet your physics tutor','tutor','pe-text-button')}</div><div class="pe-conversation"><div class="pe-context"><span>∾</span> CAT’S CRADLE / EXPERIMENT CONTEXT</div><div class="pe-question">Why does the support force rise when I pull the anchors apart?</div><div class="pe-answer"><span class="pe-ai-star">✦</span><div>Look at the angle of each strand. As the rope becomes flatter, how much of its tension still points upward?<div class="pe-thought">The vertical components must still support the same weight.</div></div></div><div class="pe-context-foot">Illustrative teaching exchange · live AI answers may vary</div></div></section>
+      <section class="pe-science" id="pe-science"><div class="pe-kicker">BEAUTY NEEDS A FOUNDATION</div><h2>The model matters.</h2><div class="pe-science-grid"><article><span>∑</span><h3>Visible assumptions</h3><p>The orbit preview uses Newtonian two-body dynamics. Cat’s cradle uses a planar elastic string. Model limits belong beside the experiment.</p></article><article><span>↔</span><h3>Ideas that connect</h3><p>${DB.length} concepts, interactive lessons, experiments and research tools. Move between ways of thinking without losing the idea.</p></article><article><span>◳</span><h3>Your map, at your pace</h3><p>Explore concepts, rate your confidence, and revisit ideas through spaced review. Progress stays on this device.</p></article></div></section>
+      <section class="pe-faq"><h2>A few useful answers.</h2><details><summary>Do I need an account or a powerful computer?</summary><p>You can enter as a guest. The launch experiment is a lightweight 2D canvas, and the core simulations run in your browser. Advanced experiments and hand tracking can need more processing power.</p></details><details><summary>Can I use cat’s cradle without a camera?</summary><p>Yes. Drag the anchors or the rope with a pointer, use the sliders, or pluck a strand with a button. Camera-based hand tracking is optional and only starts when you choose it.</p></details><details><summary>Are these exact models of the real world?</summary><p>No simulation is the whole world. Each model makes assumptions. The cradle is planar, has linear elasticity and damping, and does not simulate true knots, rope failure or friction between crossing strands.</p></details><details><summary>What happens without the AI connection?</summary><p>The experiments, authored lessons and measurements still work. The tutor needs a network connection; its fallback points you to relevant learning material.</p></details></section>
+      <section class="pe-final"><div class="pe-kicker">YOUR NEXT DISCOVERY STARTS WITH A SMALL CHANGE</div><h2>The universe is open.<br><em>Go touch it.</em></h2>${button('Enter the Physics Lab','home','pe-button pe-primary')}</section>
+      </main><footer class="pe-footer"><span>Physics <b>Entelloq</b> · An Entelloq Networks laboratory</span><span>Founded & built by Darsh Prasad</span><a href="mailto:entelloqnetworks@gmail.com">Get in touch ↗</a></footer>`;
+    document.body.appendChild(el);
+    document.body.classList.add('pe-landing-open');
+    ['.app','.mtab','#tutor-fab','#audio-btn','#eq-pres'].forEach(function(s){var n=document.querySelector(s);if(n){n.inert=true;n.setAttribute('aria-hidden','true');}});
+    el.querySelectorAll('[data-enter]').forEach(function(b){b.addEventListener('click',function(){enter(b.dataset.enter);});});
+    // Native anchors target the independently scrolling launch surface.
+    el.querySelectorAll('a[href^="#pe-"]').forEach(function(a){a.addEventListener('click',function(e){e.preventDefault();var t=el.querySelector(a.getAttribute('href'));if(t)t.scrollIntoView({behavior:'auto'});});});
+    orbit();
+  }
+  function enter(dest){
+    if(!el)return;alive=false;cancelAnimationFrame(frame);if(observer)observer.disconnect();cleanup.forEach(function(f){f();});cleanup=[];
+    try{localStorage.setItem('peq_entered','1');}catch(e){}
+    el.remove();el=null;document.body.classList.remove('pe-landing-open');
+    ['.app','.mtab','#tutor-fab','#audio-btn','#eq-pres'].forEach(function(s){var n=document.querySelector(s);if(n){n.inert=false;n.removeAttribute('aria-hidden');}});
+    if(dest==='catcradle'){window.__peqNextPreset='catcradle';go('sandbox');}
+    else if(dest==='waves')go('lesson','wave-basics');
+    else if(dest==='tutor'){go('home');Tutor.open();}
+    else go(dest||'home');
+    var cb=done;done=null;
+    // Discover the experiment immediately; onboarding remains available on a later visit.
+    if(dest==='home'&&cb)cb();
+  }
+  function orbit(){
+    var cv=el.querySelector('#pe-orbit-canvas'),g=null;try{g=cv.getContext('2d');}catch(e){}
+    var slider=el.querySelector('#pe-velocity'),state=el.querySelector('#pe-orbit-state'),insight=el.querySelector('#pe-orbit-insight');
+    var reduced=matchMedia('(prefers-reduced-motion: reduce)').matches||/still/.test(location.search+location.hash),paused=reduced,visible=true,ratio=1,theta=.9,last=0,tilt=0,targetTilt=0;
+    var pause=el.querySelector('#pe-pause');pause.textContent=paused?'▷':'Ⅱ';pause.setAttribute('aria-label',paused?'Play orbital animation':'Pause orbital animation');
+    if(!g){cv.hidden=true;pause.disabled=true;}else el.querySelector('.pe-orbit-fallback').hidden=true;
+    function readout(){var vc=Math.sqrt(398600.4418/6971),v=ratio*vc,escape=ratio>=Math.SQRT2,hit=ratio<Math.sqrt(2*6371/(6971+6371));
+      el.querySelector('#pe-velocity-value').innerHTML=v.toFixed(2)+' <small>km/s</small>';
+      state.textContent=escape?'ESCAPE TRAJECTORY':hit?'EARTH-INTERSECTING PATH':Math.abs(ratio-1)<.015?'CIRCULAR ORBIT':'ELLIPTICAL ORBIT';
+      insight.textContent=escape?'At or above escape speed, orbital energy is non-negative. The path no longer closes.':hit?'Too slow: the predicted path meets Earth. A satellite needs sideways speed to keep falling around it.':Math.abs(ratio-1)<.015?'Gravity bends the path. It doesn’t have to slow the satellite down.':'The path stretches into an ellipse. Speed changes around the orbit; energy stays constant.';
+      if(!g)insight.textContent+=' The static diagram above remains available.';
+    }
+    function draw(now){
+      if(!alive||!g)return;
+      var r=cv.getBoundingClientRect(),w=r.width,h=r.height,dpr=Math.min(devicePixelRatio||1,1.5);
+      if(w<2||h<2)return;
+      if(cv.width!==Math.round(w*dpr)||cv.height!==Math.round(h*dpr)){cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);g.setTransform(dpr,0,0,dpr,0,0);}
+      var dt=last?Math.min(.035,(now-last)/1000):0;last=now;
+      if(!paused&&visible&&!document.hidden){var eccentricity=ratio*ratio-1,rad=ratio*ratio/(1+eccentricity*Math.cos(theta));theta+=dt*.5*ratio/(rad*rad);if(theta>Math.PI*2)theta-=Math.PI*2;}
+      tilt+=reduced?0:(targetTilt-tilt)*.08;
+      var cx=w*.51,cy=h*.51,R=Math.min(w*.32,h*.40),angle=-.40+tilt*.08,flatten=.60;
+      function project(x,y){return [cx+(x*Math.cos(angle)-y*flatten*Math.sin(angle))*R,cy+(x*Math.sin(angle)+y*flatten*Math.cos(angle))*R];}
+      g.clearRect(0,0,w,h);
+      var halo=g.createRadialGradient(cx,cy,0,cx,cy,R*1.7);halo.addColorStop(0,'rgba(61,151,171,.15)');halo.addColorStop(1,'rgba(3,11,17,0)');g.fillStyle=halo;g.fillRect(0,0,w,h);
+      // Seed-free analytic star field: constant locations, no per-frame random allocation.
+      for(var i=0;i<62;i++){var x=((i*137.508)%997)/997*w,y=((i*i*29.37)%661)/661*h;g.fillStyle=i%7?'rgba(184,207,214,.22)':'rgba(207,226,228,.55)';g.fillRect(x,y,i%7?1:1.5,i%7?1:1.5);}
+      for(var ring=1;ring<=3;ring++){g.strokeStyle='rgba(123,171,184,'+(ring===1?.17:.06)+')';g.lineWidth=1;g.beginPath();for(var j=0;j<=120;j++){var a=j/120*Math.PI*2,p=project(Math.cos(a)*ring*.55,Math.sin(a)*ring*.55);j?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1]);}g.stroke();}
+      var e=ratio*ratio-1,path=[];g.lineWidth=1.1;g.strokeStyle='rgba(118,217,229,.65)';g.setLineDash([3,5]);g.beginPath();
+      var limit=e>=1?Math.acos(-1/e)-.045:Math.PI;
+      for(var k=0;k<=220;k++){var a=-limit+2*limit*k/220,rr=ratio*ratio/(1+e*Math.cos(a)),pp=project(rr*Math.cos(a),rr*Math.sin(a));if(rr>6)continue;path.push(pp);path.length===1?g.moveTo(pp[0],pp[1]):g.lineTo(pp[0],pp[1]);}g.stroke();g.setLineDash([]);
+      var bodyR=R*.33,glow=g.createRadialGradient(cx,cy,bodyR*.8,cx,cy,bodyR*1.4);glow.addColorStop(0,'rgba(91,204,218,.14)');glow.addColorStop(.6,'rgba(67,165,186,.08)');glow.addColorStop(1,'rgba(0,0,0,0)');g.fillStyle=glow;g.beginPath();g.arc(cx,cy,bodyR*1.4,0,7);g.fill();
+      var earth=g.createRadialGradient(cx-bodyR*.62,cy-bodyR*.6,1,cx,cy,bodyR*1.15);earth.addColorStop(0,'#215966');earth.addColorStop(.40,'#153744');earth.addColorStop(.75,'#091b26');earth.addColorStop(1,'#030911');g.fillStyle=earth;g.beginPath();g.arc(cx,cy,bodyR,0,7);g.fill();
+      g.save();g.beginPath();g.arc(cx,cy,bodyR,0,7);g.clip();g.strokeStyle='rgba(100,169,173,.17)';g.lineWidth=.7;
+      for(var lat=-2;lat<=2;lat++){g.beginPath();g.ellipse(cx,cy+lat*bodyR*.30,bodyR*Math.sqrt(1-Math.pow(lat*.30,2)),bodyR*.12,-.15,0,7);g.stroke();}g.restore();
+      g.strokeStyle='rgba(137,232,235,.55)';g.lineWidth=1.2;g.beginPath();g.arc(cx,cy,bodyR,Math.PI*.95,Math.PI*1.83);g.stroke();
+      var rr=ratio*ratio/(1+e*Math.cos(theta)),p=project(rr*Math.cos(theta),rr*Math.sin(theta));
+      if(rr>0&&rr<5){g.strokeStyle='#f0bb78';g.lineWidth=2;g.beginPath();for(var t=0;t<36;t++){var at=theta-(35-t)*.014,rt=ratio*ratio/(1+e*Math.cos(at)),tp=project(rt*Math.cos(at),rt*Math.sin(at));t?g.lineTo(tp[0],tp[1]):g.moveTo(tp[0],tp[1]);}g.stroke();g.fillStyle='#ffe2b4';g.shadowColor='#ffc787';g.shadowBlur=14;g.beginPath();g.arc(p[0],p[1],4.5,0,7);g.fill();g.shadowBlur=0;g.strokeStyle='rgba(240,187,120,.5)';g.beginPath();g.arc(p[0],p[1],10,0,7);g.stroke();}
+    }
+    function tick(t){if(!alive)return;if(visible&&!document.hidden)draw(t);else last=t;frame=requestAnimationFrame(tick);}
+    slider.addEventListener('input',function(){ratio=+slider.value;theta=0;readout();draw(performance.now());});
+    pause.addEventListener('click',function(){paused=!paused;pause.textContent=paused?'▷':'Ⅱ';pause.setAttribute('aria-label',paused?'Play orbital animation':'Pause orbital animation');if(!reduced) return;if(!paused&&!frame)frame=requestAnimationFrame(tick);});
+    cv.addEventListener('pointermove',function(ev){if(reduced)return;var r=cv.getBoundingClientRect();targetTilt=(ev.clientX-r.left)/r.width-.5;});cv.addEventListener('pointerleave',function(){targetTilt=0;});
+    if(typeof ResizeObserver!=='undefined'){var ro=new ResizeObserver(function(){draw(performance.now());});ro.observe(cv);cleanup.push(function(){ro.disconnect();});}
+    if(typeof IntersectionObserver!=='undefined'){observer=new IntersectionObserver(function(es){visible=es[0].isIntersecting;},{threshold:0});observer.observe(cv);}
+    readout();draw(performance.now());if(!reduced&&g)frame=requestAnimationFrame(tick);
+  }
+  return {pending:pending,show:show};
+})();

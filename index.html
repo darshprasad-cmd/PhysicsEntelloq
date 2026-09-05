@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en" class="dark pe-refined">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
@@ -2066,6 +2066,355 @@ html[data-theme=light] .cc-hero{background:#e2edf1}html[data-theme=light] .cc-he
 @media(max-width:700px){.cr-note{top:15px;left:15px;font-size:7px}.cr-note b{font-size:16px}.cr-stage-actions{left:12px;bottom:36px;gap:5px}.cr-stage-actions button{font-size:9px;padding:8px;min-height:36px}.cr-lab{padding:18px}.cr-stats strong{font-size:20px}}
 @media(prefers-reduced-motion:reduce){.pe-launch *,.cc-home *,.cr-lab *{animation:none!important;transition:none!important;scroll-behavior:auto!important}.pe-world:hover{transform:none!important}}
 
+/* Application design system. One material palette; colour communicates the physics field.
+   Scoped specificity intentionally supersedes legacy visual experiments in index.html. */
+html.pe-refined{
+  --bg:#09121a;--bg-1:#0c1720;--bg-2:#14232e;--card:#101e29;--card-2:#162733;
+  --bg-app:#09121a;--bg-panel:#101e29;--bg-raise:#162733;
+  --ink:#e4edea;--ink-dim:#b0c1c9;--ink-faint:#8fa5b1;--ink-ghost:#8fa5b1;
+  --line:rgba(170,200,211,.19);--line-2:rgba(170,200,211,.12);
+  --blue:#a1d4db;--blue-2:#a1d4db;--violet:#b7b5df;--emerald:#a1cebc;
+  --amber:#e8bc86;--cyan:#94cfd4;--sb:224px;
+  --display:'Space Grotesk','Inter',system-ui,sans-serif;--title:var(--display);
+  --pe-surface:#101e29;--pe-surface-2:#152631;--pe-border:#2c424f;
+  --pe-reading:70ch;--pe-content:1200px;--pe-gutter:clamp(24px,4vw,64px);
+}
+html.pe-refined[data-theme=light]{
+  --bg:#f3f4ee;--bg-1:#edf0eb;--bg-2:#e2e8e3;--card:#fafbf6;--card-2:#e9eee8;
+  --bg-app:#f3f4ee;--bg-panel:#fafbf6;--bg-raise:#e9eee8;
+  --ink:#162d36;--ink-dim:#425d66;--ink-faint:#516c74;--ink-ghost:#516c74;
+  --line:#cbd6d2;--line-2:#dce3dc;--blue:#2c6974;--blue-2:#2c6974;
+  --pe-surface:#fafbf6;--pe-surface-2:#e9eee8;--pe-border:#bacbc7;
+}
+.pe-refined body{background:var(--bg);color:var(--ink);font-size:16px;line-height:1.65}
+.pe-refined #bg{display:none}
+.pe-refined .app{background:var(--bg);grid-template-columns:var(--sb) minmax(0,1fr)}
+.pe-refined .side{width:var(--sb);background:var(--bg-1);border-right:1px solid var(--line);padding:27px 16px 18px;box-shadow:none;backdrop-filter:none}
+.pe-refined .logo{font-size:16px;letter-spacing:-.6px;gap:10px;padding:0 5px;margin-bottom:28px}
+.pe-refined .side-scroll{gap:4px;padding:0 1px;margin:0;scrollbar-width:thin}
+.pe-refined .side .nav-i{display:flex;align-items:center;width:100%;min-height:43px;margin:0;padding:9px 12px;gap:12px;border-radius:6px;font-size:13px;font-weight:450;text-align:left;color:var(--ink-dim);background:transparent;border:1px solid transparent;box-shadow:none;letter-spacing:0;transition:background 140ms,color 140ms}
+.pe-refined .side .nav-i.on{color:var(--ink);background:var(--pe-surface-2);border-color:var(--line)}
+.pe-refined .nav-i::before,.pe-refined .nav-i::after{display:none}
+.pe-refined .side .nav-i:hover{color:var(--ink);background:var(--pe-surface-2);transform:none;box-shadow:none}
+.pe-icon-svg{width:21px;height:21px;display:block;flex:none}
+.pe-refined .nav-i.on .pe-icon-svg{color:var(--blue)}
+.pe-refined .side-sep{margin:12px 10px;height:1px;background:var(--line)}
+.pe-refined .side .side-card{padding:16px;margin-top:16px;border:1px solid var(--line);border-radius:9px;background:var(--pe-surface);box-shadow:none}
+.pe-refined .lv-ring{width:43px;height:43px;filter:none}
+.pe-refined .lv-ring .n{font-size:13px}
+.pe-refined .lv-meta .t{font-size:14px;color:var(--ink)}
+.pe-refined .lv-meta .s,.pe-refined .side-card .streak{font-size:10px;letter-spacing:0;color:var(--ink-dim)}
+.pe-refined .rank-row{display:none}
+.pe-refined .topbar{height:76px;padding:0 var(--pe-gutter);gap:22px;background:var(--bg);border-bottom:1px solid var(--line);backdrop-filter:none}
+.pe-refined .crumb{font:12px var(--sans);letter-spacing:0;color:var(--ink-dim);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pe-refined .t-search{width:210px;border:1px solid var(--line);border-radius:6px;background:transparent;padding:8px 12px;box-shadow:none}
+.pe-refined .t-search input{font-size:12px;color:var(--ink)}
+.pe-explore-trigger{display:flex;align-items:center;gap:9px;min-height:44px;padding:9px 0;color:var(--ink-dim);font-size:13px}
+.pe-explore-trigger:hover{color:var(--ink)}
+.pe-refined #main{min-width:0;transition:none}
+.pe-refined #main.view-out{opacity:1;transform:none;filter:none}
+.pe-refined .wrap{max-width:var(--pe-content);padding:42px var(--pe-gutter) 100px}
+.pe-refined #main .h-hello,.pe-refined .pe-page-head h1{font-size:clamp(32px,3.5vw,48px)!important;font-weight:450;letter-spacing:-1.8px;line-height:1.1;color:var(--ink);margin:12px 0 20px}
+.pe-refined .eyebrow{font:10px var(--mono);letter-spacing:1.8px;font-weight:500;color:var(--blue);line-height:1.6;text-shadow:none}
+.pe-refined #main .h-sub{display:block!important;max-width:var(--pe-reading);font-size:16px;line-height:1.75;color:var(--ink-dim);margin:0 0 30px}
+.pe-refined .btn{border:1px solid var(--pe-border);border-radius:6px;background:transparent;box-shadow:none;color:var(--ink);font-size:13px;min-height:42px;padding:10px 16px;line-height:1.4;transition:background 140ms,transform 140ms}
+.pe-refined .btn-pri{background:var(--blue);color:var(--bg);border-color:var(--blue);font-weight:550;box-shadow:none}
+.pe-refined .btn::before,.pe-refined .btn::after{display:none}
+.pe-refined .btn:active{transform:scale(.98)}
+.pe-refined :focus-visible{outline:2px solid var(--blue);outline-offset:4px;box-shadow:none}
+.pe-refined input,.pe-refined textarea,.pe-refined select{color:var(--ink);accent-color:var(--blue)}
+.pe-refined .rs-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.pe-refined .rs-card{border:1px solid var(--line);background:var(--pe-surface);border-radius:9px;padding:23px;gap:16px;box-shadow:none;min-width:0;text-align:left}
+.pe-refined .rs-card .nm{font-size:17px;line-height:1.35;color:var(--ink);font-weight:500;letter-spacing:-.35px}
+.pe-refined .rs-card .dm{font-size:14px;line-height:1.7;margin-top:8px;color:var(--ink-dim)!important}
+.pe-refined .rs-cic{width:34px;height:34px;min-width:34px;font-size:23px;border:0;background:none;box-shadow:none}
+.pe-refined .rs-card .arr{font-size:19px;color:var(--ink-faint)}
+.pe-refined .rs-card:hover{border-color:var(--pe-border);background:var(--pe-surface-2);box-shadow:none;transform:none}
+.pe-refined .rec,.pe-refined .titem{background:var(--pe-surface);border:1px solid var(--line);border-radius:8px;text-align:left;box-shadow:none}
+.pe-refined .rec .nm,.pe-refined .titem .nm{font-size:16px;color:var(--ink)}
+.pe-refined .titem{padding:20px;gap:18px;width:100%;min-width:0}
+.pe-refined .titem .de{font-size:14px;line-height:1.7;color:var(--ink-dim);margin-top:5px}
+.pe-refined .titem .num{color:var(--blue);background:transparent;font:12px var(--mono)}
+.pe-refined .titem .rt{gap:9px;flex-wrap:wrap;max-width:210px;justify-content:flex-end}
+.pe-refined .titem .lvl-badge,.pe-refined .titem .sim-b,.pe-refined .ti-rd{font-size:10px;box-shadow:none}
+.pe-refined .unit-head{margin-bottom:28px}.pe-refined .uh-ring{display:none}
+.pe-refined .uh-meta h1{font-size:44px;font-weight:450;color:var(--ink)}
+.pe-refined .lvl-filter{margin-bottom:24px}
+.pe-refined .lvl-chip{border-radius:5px;font-size:12px;min-height:40px;box-shadow:none}
+/* Field library: original scientific line studies, not stock thumbnails or letter tiles. */
+.pe-page-head{display:flex;justify-content:space-between;align-items:center;gap:30px;margin-bottom:32px}
+.pe-page-head p{max-width:650px;color:var(--ink-dim);font-size:16px;line-height:1.75;margin:0}
+.pe-index-mark{font:100px var(--display);color:var(--pe-border);line-height:1}
+.pe-reading-next{display:flex;align-items:center;gap:24px;width:100%;padding:19px 22px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-bottom:28px;text-align:left}
+.pe-reading-next strong{font-weight:450;font-size:16px;flex:1;color:var(--ink)}
+.pe-reading-next>span:not(.eyebrow){color:var(--ink-dim);font-size:12px}
+.pe-field-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px}
+.field-card{display:block;min-width:0;text-align:left;padding:23px 24px;background:var(--pe-surface);border:1px solid var(--line);border-radius:9px;transition:background 160ms,border-color 160ms}
+.field-card:hover{background:var(--pe-surface-2);border-color:var(--pe-border)}
+.field-num{font:9px var(--mono);letter-spacing:1px;color:var(--ink-faint)}
+.field-art{width:100%;height:106px;display:block;color:var(--field,var(--blue));margin:12px 0;opacity:.85}
+.field-card h2{font-size:21px;font-weight:450;letter-spacing:-.65px;color:var(--ink);margin:16px 0 9px}
+.field-card p{font-size:14px;line-height:1.7;color:var(--ink-dim);min-height:48px;margin:0 0 25px}
+.field-bottom{display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--line);padding-top:15px;font:10px var(--mono);color:var(--ink-faint)}
+.field-bottom .pe-icon-svg{width:17px;height:17px;color:var(--ink)}
+.pe-library-foot{display:flex;align-items:center;gap:12px;padding-top:30px;flex-wrap:wrap;font-size:13px;color:var(--ink-dim)}
+/* Field-first universe: ten legible nodes, then one local neighbourhood at a time. */
+.atlas-view{display:flex;border:1px solid var(--line);padding:3px;border-radius:6px;flex:none}
+.atlas-view button,.atlas-filters button{min-height:38px;border-radius:4px;padding:8px 13px;font-size:12px;color:var(--ink-dim)}
+.atlas-view button[aria-pressed=true],.atlas-filters button[aria-pressed=true]{background:var(--pe-surface-2);color:var(--ink)}
+.atlas-tools{display:flex;justify-content:space-between;gap:20px;align-items:end;margin-bottom:25px}
+.atlas-tools label{color:var(--ink-faint);font-size:11px;display:block;flex:1;max-width:380px}
+.atlas-tools input{display:block;border:1px solid var(--line);border-radius:6px;background:var(--pe-surface);padding:12px 15px;font:14px var(--sans);width:100%;margin-top:7px;outline-offset:3px;min-height:46px}
+.atlas-filters{display:flex;gap:4px}
+.atlas-fields{position:relative;border:1px solid var(--line);border-radius:10px;background:var(--pe-surface);overflow:hidden}
+.atlas-fields.spatial{height:490px}
+.atlas-lines{position:absolute;inset:0;width:100%;height:100%;fill:none;stroke:var(--blue);stroke-width:.65;opacity:.14}
+.atlas-centre{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;padding:16px 26px;background:var(--pe-surface)}
+.atlas-centre span{font:22px var(--display);letter-spacing:7px;color:var(--ink)}
+.atlas-centre small{display:block;font:8px var(--mono);letter-spacing:1.1px;color:var(--ink-faint);margin-top:9px}
+.atlas-field{position:absolute;left:var(--ax);top:var(--ay);transform:translate(-50%,-50%);width:17%;padding:10px 0;text-align:center;border-radius:9px;border:1px solid transparent}
+.atlas-field:hover{background:var(--pe-surface-2);border-color:var(--line)}
+.atlas-glyph{display:block;margin:0 auto 12px;width:72px;height:55px}
+.atlas-glyph .field-art{height:55px;margin:0}
+.atlas-field strong{font-size:13px;font-weight:450;line-height:1.4;display:block;color:var(--ink);padding:0 5px}
+.atlas-field small{display:block;font:9px var(--mono);color:var(--ink-faint);margin-top:7px}
+.atlas-fields.outline{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));padding:12px;gap:9px}
+.atlas-fields.outline .atlas-lines,.atlas-fields.outline .atlas-centre{display:none}
+.atlas-fields.outline .atlas-field{position:static;transform:none;width:auto;display:grid;grid-template-columns:64px 1fr;text-align:left;column-gap:18px;padding:16px;border:1px solid var(--line)}
+.atlas-fields.outline .atlas-glyph{grid-row:1/3;margin:0;width:64px}
+.atlas-fields.outline strong{font-size:16px;padding:0;align-self:end}
+.atlas-fields.outline small{font-size:11px}
+.atlas-legend{font-size:12px;color:var(--ink-faint);line-height:1.75;max-width:750px;margin:16px 0 25px}
+.atlas-next{display:flex;align-items:center;gap:20px;width:100%;text-align:left;border-top:1px solid var(--line);padding:25px 0}
+.atlas-next>span{font:9px var(--mono);letter-spacing:1px;color:var(--blue)}
+.atlas-next strong{font:17px var(--display);color:var(--ink)}
+.atlas-next small{font-size:12px;color:var(--ink-dim);flex:1}
+.atlas-field-head{display:flex;align-items:center;gap:20px;padding:8px 0 24px}
+.atlas-field-head button{font-size:12px;min-height:44px;color:var(--blue)}
+.atlas-field-head h2{font:25px var(--display);flex:1;color:var(--ink)}
+.atlas-field-head>span{font:11px var(--mono);color:var(--ink-faint)}
+.atlas-detail-grid{display:grid;grid-template-columns:1fr 1.05fr;gap:24px;align-items:start}
+.atlas-topics{border:1px solid var(--line);border-radius:9px;overflow:hidden}
+.atlas-topics>button{width:100%;display:flex;gap:15px;align-items:center;text-align:left;padding:18px;border-bottom:1px solid var(--line);background:var(--pe-surface)}
+.atlas-topics>button:last-child{border-bottom:0}
+.atlas-topics>button[aria-pressed=true]{background:var(--pe-surface-2);box-shadow:inset 3px 0 var(--blue)}
+.atlas-topics>button>span:nth-child(2){flex:1}
+.atlas-topics strong{display:block;font-size:15px;font-weight:450;color:var(--ink)}
+.atlas-topics small{font-size:11px;color:var(--ink-faint)}
+.atlas-topics .pe-icon-svg{width:17px;height:17px;color:var(--ink-faint)}
+.atlas-concept{padding:27px 30px;border:1px solid var(--line);border-radius:9px;background:var(--pe-surface)}
+.atlas-concept h2{font-size:29px;font-weight:450;letter-spacing:-.8px;margin:15px 0;color:var(--ink);scroll-margin-top:90px}
+.atlas-concept p{font-size:16px;line-height:1.8;color:var(--ink-dim);margin:0 0 23px}
+.atlas-concept .atlas-root-note{font-size:13px;margin-top:20px;color:var(--ink-faint)}
+.atlas-links{margin-top:28px;border-top:1px solid var(--line);padding-top:19px}
+.atlas-links h3{font:10px var(--mono);text-transform:uppercase;letter-spacing:1px;color:var(--ink-faint);margin-bottom:12px}
+.atlas-links button{display:flex;align-items:center;gap:12px;justify-content:space-between;width:100%;padding:11px 0;text-align:left;font-size:14px;color:var(--ink)}
+.atlas-links .pe-icon-svg{width:15px;height:15px;color:var(--blue)}
+.pe-empty{padding:25px;background:var(--pe-surface)}.pe-empty h3{font-size:20px;font-weight:450}.pe-empty p{font-size:15px;color:var(--ink-dim)}
+/* Reading surfaces and the working tools. */
+.pe-refined .lesson-wrap{max-width:1320px;grid-template-columns:minmax(0,1fr) 230px;gap:42px}
+.pe-refined .lesson h1{font-size:clamp(34px,3.6vw,50px);letter-spacing:-1.5px;line-height:1.1;color:var(--ink);text-shadow:none}
+.pe-refined .lesson .intuition{font-size:19px;line-height:1.8;color:var(--ink-dim);border:0;background:none;padding:0;margin:20px 0 30px}
+.pe-refined .l-comp{width:auto}.pe-refined .comp-card{background:transparent;border:0;border-left:1px solid var(--line);border-radius:0;padding:0 0 0 22px;box-shadow:none}
+.pe-refined .cc-row{font-size:12px;line-height:1.7;margin:10px 0;gap:8px}.pe-refined .cc-row b{font-size:12px;color:var(--ink)}
+.pe-refined .cc-h{font-size:10px;letter-spacing:1px}.pe-refined .cc-flow{font-size:11px;line-height:2}
+.pe-refined .l-tag,.pe-refined .l-diff,.pe-refined .chip{font-size:11px;border-radius:4px;box-shadow:none}
+.pe-refined .l-sec{margin-top:36px}.pe-refined .l-sec h3{font-size:21px;font-weight:450;color:var(--ink);margin-bottom:19px}
+.pe-refined .pt,.pe-refined .callout,.pe-refined .l-sec p{font-size:16px;line-height:1.9;color:var(--ink-dim)}
+.pe-refined .eq{border:1px solid var(--line);background:var(--pe-surface);border-radius:7px;padding:20px;box-shadow:none}
+.pe-refined .eq .f{font-size:21px;color:var(--ink);text-shadow:none}.pe-refined .eq .d{font-size:13px;color:var(--ink-dim)}
+.pe-refined .l-sim{border:1px solid var(--line);border-radius:10px;box-shadow:none;margin-top:28px}
+.pe-refined .sim-stage{min-height:340px;background:#0d1c26}
+.pe-refined .sim-foot{padding:17px;background:var(--pe-surface)}.pe-refined .sim-foot .cap{font-size:14px;line-height:1.7;color:var(--ink-dim)}
+.pe-refined .ln-tabs,.pe-refined .lens-tabs,.pe-refined .lm-bar{overflow-x:auto;flex-wrap:nowrap;scrollbar-width:thin;max-width:100%;overscroll-behavior-x:contain}
+.pe-refined .ln-tab,.pe-refined .lens-tab{flex:none;min-height:44px;box-shadow:none}
+.pe-refined .lm-bar{display:flex;gap:4px;padding:4px 0 12px;margin:22px 0 25px;background:none;border:0;border-bottom:1px solid var(--line);border-radius:0;mask-image:linear-gradient(to right,#000 calc(100% - 12px),transparent)}
+.pe-refined .lm-tag{display:none}.pe-refined .lm-seg{flex:none;border-radius:5px;min-height:44px;font-size:12px;padding:10px 15px;background:transparent;color:var(--ink-dim);border:1px solid transparent;box-shadow:none}
+.pe-refined .lm-seg.on{background:var(--pe-surface-2);color:var(--ink);border-color:var(--line);box-shadow:none}
+.pe-refined .lab-blue .lm-seg.on{background:var(--pe-surface-2);box-shadow:none;color:var(--ink)}
+.pe-refined .xg-bar{display:flex;flex-wrap:wrap;gap:9px;background:transparent;border:0;padding:10px 0 25px}
+.pe-refined .xg-sig{width:100%;font:11px var(--mono);letter-spacing:.4px;color:var(--ink-dim);margin-bottom:10px}
+.pe-refined .xg-chip{min-height:40px;font-size:12px;padding:8px 14px;border:1px solid var(--line);border-radius:5px;background:transparent;color:var(--ink-dim);box-shadow:none}
+.pe-refined .xg-chip.on{background:var(--pe-surface-2);border-color:var(--pe-border);color:var(--ink);box-shadow:none}
+.pe-refined .xg-find input{font-size:13px;min-height:42px;border:1px solid var(--line);border-radius:5px;padding:8px 13px;letter-spacing:0}
+.pe-refined .xg-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:15px}
+.pe-refined .xg-card{display:block;min-width:0;text-align:left;background:var(--pe-surface);border:1px solid var(--line);border-radius:9px;box-shadow:none;animation:none;overflow:hidden;padding:0;color:var(--ink)}
+.pe-refined .xg-card:hover{transform:none;box-shadow:none;border-color:var(--pe-border)}
+.pe-refined .xg-c,.pe-refined .xg-card::before,.pe-refined .xg-card::after{display:none}
+.pe-refined .xg-thumb{height:160px;background:#0c1b25;border-bottom:1px solid var(--line)}
+.pe-refined .xg-b{padding:20px}.pe-refined .xg-b h2{font-size:18px;font-weight:450;letter-spacing:-.5px;line-height:1.45;color:var(--ink);min-height:0}
+.pe-refined .xg-open{display:block;width:100%;padding:0;text-align:left;background:transparent;color:var(--ink)}
+.pe-refined .xg-pair{display:block;width:100%;min-height:44px;text-align:left}
+.pe-refined .inv-sh{width:100%;text-align:left}
+.pe-refined .xg-meta{font-size:10px;letter-spacing:.1px;color:var(--ink-faint);margin-top:14px;line-height:1.7;gap:8px;flex-wrap:wrap}
+.pe-refined .xg-badge{font:9px var(--mono);background:#122c36;color:#c5e7e7;border:1px solid #355662;border-radius:4px;padding:5px 8px;box-shadow:none}
+.pe-refined .xg-pair{padding:12px 20px;font-size:11px;letter-spacing:0;color:var(--ink-dim);border-top:1px solid var(--line)}
+.pe-refined .xg-cont{font-size:14px;border-radius:7px;background:var(--pe-surface);box-shadow:none;border:1px solid var(--line)}
+.pe-refined .xp-dom{font:18px var(--display);color:var(--ink);margin-top:38px}.pe-refined .xp-dom .ct{font:11px var(--mono);color:var(--ink-faint)}
+.pe-refined .lab-card,.pe-refined .pg-dom{background:var(--pe-surface);border:1px solid var(--line);border-radius:9px;box-shadow:none;text-align:left}
+.pe-refined .pg-dom{padding:20px}.pe-refined .pg-dn{font-size:15px;color:var(--ink)}.pe-refined .pg-dc{font-size:11px;color:var(--ink-dim);margin-top:13px}
+.pe-refined .pg-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.pe-refined .pg-ready{background:var(--pe-surface);border:1px solid var(--line);border-left:3px solid var(--blue);border-radius:7px;padding:23px;font-size:16px;line-height:1.8;color:var(--ink-dim)}
+.pe-refined .pg-ready b{color:var(--ink)}.pe-refined .pg-sec-h{color:var(--ink-faint);font-size:10px;margin:32px 0 18px}
+.pe-refined .pg-rank{border-radius:6px;opacity:.75;background:transparent;box-shadow:none}.pe-refined .pg-rank.cur{border-color:var(--blue);box-shadow:none;background:var(--pe-surface)}
+.pe-refined .pg-rn{font-size:12px;color:var(--ink)}.pe-refined .pg-rl{font-size:10px;color:var(--ink-dim)}
+.pe-refined .pg-details{font-size:11px;color:var(--ink-faint)}
+.pe-refined .sv-box,.pe-refined .pr-box,.pe-refined .set-card,.pe-refined .settings-card{background:var(--pe-surface);border:1px solid var(--line);border-radius:9px;box-shadow:none}
+.pe-refined .sv-input,.pe-refined #sv-input{font-size:16px;line-height:1.8;min-height:160px;background:var(--pe-surface)}
+.pe-refined .pr-q{font-size:20px;line-height:1.7;color:var(--ink)}
+.pe-refined .pr-opt{font-size:15px;line-height:1.7;min-height:50px;border-radius:6px;box-shadow:none}
+.pe-refined .st-sec{padding:26px;margin-bottom:18px;border:1px solid var(--line);border-radius:9px;background:var(--pe-surface);box-shadow:none}
+.pe-refined .st-h{font:18px var(--display);color:var(--ink);margin-bottom:22px;letter-spacing:-.3px}
+.pe-refined .st-row{font-size:15px;line-height:1.8;gap:20px;flex-wrap:wrap}
+.pe-refined .sv-box{padding:18px;align-items:end}
+.pe-refined .sv-box textarea{border:0;box-shadow:none;background:transparent;backdrop-filter:none;font-size:16px;min-height:130px;padding:0;line-height:1.8}
+.pe-refined .sv-exb .dm{font-family:var(--sans)}
+.pe-refined .rec-grid{gap:12px;grid-template-columns:repeat(2,minmax(0,1fr))}
+.pe-refined .pr-pick{padding:22px;min-height:102px}
+.pe-refined .pr-pick .dm{font-size:12px;color:var(--ink-dim);margin-top:7px}
+.pe-refined .pr-pick .dot{font-size:15px;border:1px solid var(--line);background:transparent!important;border-radius:6px}
+.pe-refined .lens-tabs{display:flex;gap:8px;padding:4px 0 12px}
+.pe-refined .lens-tab{flex:1 0 105px;font:13px/1.5 var(--sans);padding:12px;border:1px solid var(--line);border-radius:6px;background:var(--pe-surface);text-shadow:none}
+.pe-refined .lens-tab.on{background:var(--pe-surface-2);box-shadow:inset 0 -2px var(--blue);border-color:var(--pe-border)}
+.pe-refined .lens{background:transparent;box-shadow:none;border:0;padding:0}
+.pe-refined .lens-h{padding:18px 0}.pe-refined .lens-sub{font-size:14px;color:var(--ink-dim)}
+/* Full-screen instruments: a large stage, a readable notebook, no scanner decoration. */
+.pe-refined #lab-full{background:#07121a}
+.pe-refined .lf-shell{background:var(--bg);border:1px solid var(--line);border-radius:12px;box-shadow:0 24px 90px #0007}
+.pe-refined .lf-top{background:var(--bg-1);padding:18px 22px;min-height:76px;gap:18px;backdrop-filter:none}
+.pe-refined .lf-id .lf-ey{font-size:9px;letter-spacing:1px;color:var(--ink-faint)}
+.pe-refined .lf-id .lf-ti{font:21px var(--display);color:var(--ink);margin-top:7px}
+.pe-refined .lf-ask{background:var(--blue);color:var(--bg);border-radius:6px;min-height:44px;font-size:12px;box-shadow:none}
+.pe-refined .lf-back,.pe-refined #lf-close,.pe-refined #lf-focus{min-height:44px;min-width:44px;font-size:13px;border:1px solid var(--line);border-radius:6px}
+.pe-refined .lf-body{grid-template-columns:minmax(0,1fr) 360px}
+.pe-refined .lf-stage{background:radial-gradient(ellipse at 50% 55%,#163241,#0b1a25 75%)}
+.pe-refined .lf-scan,.pe-refined .lf-bk,.pe-refined .lf-tele{display:none}
+.pe-refined .lf-side{padding:25px;background:var(--pe-surface);backdrop-filter:none}
+.pe-refined .lf-badge{border:0;padding:0;color:var(--ink-faint);font:10px var(--mono);margin-bottom:25px}
+.pe-refined .inv-flow-h{font:11px var(--mono);color:var(--blue);line-height:1.7;letter-spacing:.4px}
+.pe-refined .inv-step{border:1px solid var(--line);border-radius:7px;background:transparent;margin:12px 0;box-shadow:none}
+.pe-refined .inv-sh{padding:16px 13px;min-height:48px}.pe-refined .inv-sh .t{font-size:14px;color:var(--ink)}
+.pe-refined .inv-bd{font-size:16px;line-height:1.8;padding:0 15px 20px;color:var(--ink-dim)}
+.pe-refined .inv-opt{font-size:14px;line-height:1.6;min-height:44px;padding:12px;text-align:left;border-radius:5px;box-shadow:none}
+.pe-refined .inv-ask,.pe-refined .inv-go{font-size:12px;min-height:44px;line-height:1.6}
+.pe-refined .lf-ctl .ctl-row{font-size:13px;min-height:44px}.pe-refined .lf-ctl label{font-size:13px}
+.pe-refined #lab-full.pe-stage-focus .lf-body{grid-template-columns:1fr}.pe-refined #lab-full.pe-stage-focus .lf-side{display:none}
+.pe-refined .reason-note{display:block;margin:15px 0;font-size:13px;color:var(--ink-dim)}
+.pe-refined .reason-note textarea{display:block;width:100%;min-height:90px;border:1px solid var(--line);background:var(--bg);border-radius:5px;padding:12px;font:15px/1.6 var(--sans);margin-top:8px;resize:vertical}
+/* One visible tutor. Specialist controls remain available, quietly, on demand. */
+.pe-refined #eq-pres,.pe-refined #eqx-fab,.pe-refined #audio-btn{display:none!important}
+.pe-refined #tutor-fab{width:48px;height:48px;min-width:48px;min-height:48px;right:24px;bottom:24px;border:1px solid #62818a;border-radius:50%;padding:0;display:grid;place-items:center;background:#c2e0df;color:#12313a;box-shadow:0 4px 16px #0003;animation:none;transform:none}
+.pe-refined #tutor-fab .pe-icon-svg{width:23px;height:23px}
+.pe-refined #tutor-fab::before,.pe-refined #tutor-fab::after{display:none}
+.pe-refined #tutor{width:430px;max-width:100vw;background:var(--bg-1);border-left:1px solid var(--line);box-shadow:-16px 0 50px #0003}
+.pe-refined .tu-head{padding:22px;gap:13px;background:transparent;border-bottom:1px solid var(--line)}
+.pe-refined .tu-head .ti{min-width:0}.pe-refined #tu-name{font:22px var(--display);color:var(--ink)}
+.pe-refined #tu-role{font-size:12px;line-height:1.5;color:var(--ink-dim);margin-top:5px}
+.pe-refined .tu-head .tu-orb,.pe-refined #tu-wake{display:none}
+.pe-refined .tu-spk,.pe-refined .tu-head .x{min-width:36px;min-height:40px;background:transparent;box-shadow:none;color:var(--ink-dim)}
+.pe-refined .tu-specialists{padding:15px 23px;border-bottom:1px solid var(--line);color:var(--ink-faint);font-size:12px}
+.pe-refined .tu-specialists summary{min-height:24px;cursor:pointer}
+.pe-refined .tu-roster{padding:15px 0 0;gap:7px;border:0;max-height:170px;overflow:auto;background:none}
+.pe-refined .tu-empty{padding:26px 23px}.pe-refined .tu-empty .big{display:none}
+.pe-refined .tu-empty>p{font-size:17px;line-height:1.8;color:var(--ink-dim)}
+.pe-refined .tu-sugg{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:24px}
+.pe-refined .tu-sugg button{background:var(--pe-surface);border:1px solid var(--line);border-radius:7px;min-height:92px;padding:16px;text-align:left;box-shadow:none}
+.pe-refined .tu-sugg b{font-size:13px;color:var(--ink);line-height:1.5}.pe-refined .tu-sugg span{font-size:12px;color:var(--ink-faint);line-height:1.6;margin-top:7px}
+.pe-refined .tu-in{padding:16px;background:var(--bg-1);border-top:1px solid var(--line)}
+.pe-refined .tu-in input{font-size:16px;min-width:0;background:var(--pe-surface)}
+.pe-refined .tu-thread{padding:20px}.pe-refined .bub{font-size:16px;line-height:1.8;border-radius:8px;box-shadow:none}
+.pe-refined .bub .av{display:none}.pe-refined .bub.a{background:transparent;padding:14px 0;color:var(--ink)}
+/* Native Explore dialog: focus management and Escape handled by the browser. */
+.pe-explore-sheet{width:min(730px,calc(100vw - 40px));max-height:calc(100dvh - 64px);padding:30px;margin:auto;border:1px solid var(--pe-border);border-radius:13px;background:var(--bg-1);color:var(--ink);box-shadow:0 25px 100px #0008;overflow:auto}
+.pe-explore-sheet::backdrop{background:#040b12c9;backdrop-filter:blur(4px)}
+.pe-explore-sheet header{display:flex;justify-content:space-between;align-items:start;gap:20px;padding-bottom:27px}
+.pe-explore-sheet header h2{font:31px var(--display);letter-spacing:-1px;margin-top:12px}
+.pe-explore-sheet header button{min-width:44px;min-height:44px;display:grid;place-items:center;border:1px solid var(--line);border-radius:6px}
+.pe-explore-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pe-explore-grid>button{display:flex;gap:16px;align-items:start;text-align:left;padding:22px 18px;border:1px solid var(--line);border-radius:8px;background:var(--pe-surface);min-width:0}
+.pe-explore-grid>button:hover{background:var(--pe-surface-2)}
+.pe-explore-grid>button>.pe-icon-svg{color:var(--blue);width:22px}
+.pe-explore-grid>button>.pe-icon-svg:last-child{width:15px;color:var(--ink-faint);margin-left:auto}
+.pe-explore-grid b{display:block;font-size:16px;font-weight:450;color:var(--ink);line-height:1.4}
+.pe-explore-grid small{display:block;font-size:12px;line-height:1.7;color:var(--ink-dim);margin-top:7px}
+.pe-explore-sheet footer{display:flex;justify-content:space-between;align-items:center;gap:18px;margin-top:26px;font-size:11px;color:var(--ink-faint)}
+.pe-explore-sheet footer button{font-size:12px;min-height:44px;color:var(--ink)}
+/* Home carries the same materials; preserve its working entry and personalisation. */
+.pe-refined .cc-head{margin-bottom:30px}.pe-refined .cc-head h1{font-size:44px;color:var(--ink)}
+.pe-refined .cc-head p{font-size:13px;color:var(--ink-dim)}
+.pe-refined .cc-hero{background:var(--pe-surface);border:1px solid var(--line);border-radius:10px;min-height:310px}
+.pe-refined .cc-hero h2{font-weight:450;font-size:32px;color:var(--ink)}
+.pe-refined .cc-hero p{font-size:16px;line-height:1.8;color:var(--ink-dim)}
+.pe-refined .cc-hero-copy{padding:32px}.pe-refined .cc-art span{font-size:9px;color:var(--ink-faint)}
+.pe-refined .cc-world{background:var(--pe-surface);border:1px solid var(--line);border-radius:8px;padding:24px}
+.pe-refined .cc-world h3{font-size:22px;font-weight:450;color:var(--ink)}.pe-refined .cc-world p{font-size:14px;color:var(--ink-dim);line-height:1.75}
+.pe-refined .cc-world small{font-size:9px;color:var(--ink-faint);letter-spacing:.8px}
+.pe-refined .cc-node{background:var(--pe-surface);border-color:var(--line);border-radius:6px;padding:17px 13px}
+.pe-refined .cc-node b{font-size:12px;color:var(--ink)}.pe-refined .cc-node small{font-size:10px;color:var(--ink-dim)}
+.pe-refined .cc-summary{font-size:13px;color:var(--ink-dim)}
+@media(min-width:851px){.pe-refined .mtab{display:none!important}}
+@media(max-width:1100px){
+  .pe-field-grid,.pe-refined .xg-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .pe-refined .lesson-wrap{grid-template-columns:1fr}.pe-refined .l-comp{display:none}
+  .pe-refined .lf-body{grid-template-columns:minmax(0,1fr) 320px}
+  .atlas-next{flex-wrap:wrap}.atlas-next small{flex-basis:50%}
+  .pe-refined .cc-worlds{gap:10px}.pe-refined .cc-world{padding:18px}
+}
+@media(max-width:850px){
+  .pe-refined .app{display:block;height:100dvh}.pe-refined .side{display:none!important}
+  .pe-refined .main{height:100dvh;padding-bottom:calc(73px + env(safe-area-inset-bottom));overflow-y:auto}
+  .pe-refined .topbar{height:66px;padding:0 22px;gap:15px}.pe-refined .t-search{display:none}.pe-refined .crumb{font-size:12px}
+  .pe-refined .pe-explore-trigger{font-size:13px;gap:8px}.pe-refined .topbar .sp{flex:1}
+  .pe-refined .mtab{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr));position:fixed;inset:auto 0 0;z-index:40;border-top:1px solid var(--line);background:var(--bg-1);padding:8px 8px calc(8px + env(safe-area-inset-bottom));height:auto;gap:3px;backdrop-filter:none;box-shadow:none}
+  .pe-refined .mtab button{display:flex;flex-direction:column;justify-content:center;align-items:center;gap:5px;min-height:51px;min-width:0;padding:4px 0;font:10px var(--sans);line-height:1.2;color:var(--ink-faint);border-radius:6px;border:0;background:none;box-shadow:none}
+  .pe-refined .mtab button.on{color:var(--ink);background:var(--pe-surface-2)}.pe-refined .mtab .pe-icon-svg{width:21px;height:21px}
+  .pe-refined .mtab button::before,.pe-refined .mtab button::after{display:none}
+  .pe-refined #tutor-fab{bottom:calc(86px + env(safe-area-inset-bottom));right:17px;width:46px;height:46px;min-width:46px;min-height:46px}
+  .pe-refined .wrap{padding:30px 22px 105px}
+  .pe-refined #main .h-hello,.pe-refined .pe-page-head h1{font-size:34px!important;letter-spacing:-1.25px;margin:13px 0 18px}
+  .pe-refined #main .h-sub,.pe-page-head p{font-size:16px;line-height:1.8}
+  .pe-index-mark{display:none}.pe-page-head{gap:18px;margin-bottom:28px;align-items:start;flex-direction:column}
+  .pe-refined .rs-grid,.pe-refined .pg-grid{grid-template-columns:1fr}
+  .pe-refined .rs-card{padding:22px}.pe-refined .rs-card .nm{font-size:18px}.pe-refined .rs-card .dm{font-size:16px}
+  .pe-refined .btn,.pe-refined .lvl-chip{min-height:44px;font-size:13px}
+  .pe-reading-next{flex-wrap:wrap;padding:18px 0;gap:12px}.pe-reading-next .eyebrow{width:100%}.pe-reading-next>span:not(.eyebrow){display:none}
+  .atlas-view{display:none}.atlas-tools{flex-direction:column;align-items:stretch;gap:15px}.atlas-tools label{max-width:none;font-size:12px}
+  .atlas-tools input{font-size:16px}.atlas-filters{overflow-x:auto}.atlas-filters button{min-height:44px;white-space:nowrap}
+  .atlas-fields.spatial,.atlas-fields.outline{height:auto;display:grid;grid-template-columns:1fr;padding:8px;gap:7px}
+  .atlas-fields .atlas-lines,.atlas-fields .atlas-centre{display:none}
+  .atlas-fields .atlas-field,.atlas-fields.outline .atlas-field{position:static;transform:none;width:100%;display:grid;grid-template-columns:64px 1fr;text-align:left;gap:4px 17px;padding:14px 16px;border:1px solid var(--line)}
+  .atlas-fields .atlas-glyph{width:64px;grid-row:1/3;margin:0}.atlas-fields .atlas-field strong{font-size:16px;align-self:end;padding:0}.atlas-fields .atlas-field small{font-size:11px;margin-top:0}
+  .atlas-detail-grid{grid-template-columns:1fr;gap:18px}.atlas-field-head{gap:14px;flex-wrap:wrap}.atlas-field-head h2{font-size:24px}
+  .atlas-topics strong{font-size:16px}.atlas-topics small{font-size:12px}.atlas-concept{padding:25px 22px}.atlas-concept p{font-size:16px}.atlas-links button{font-size:16px;min-height:44px}
+  .atlas-next{gap:12px;padding-bottom:0}.atlas-next>span{width:100%}.atlas-next small{flex-basis:100%;font-size:14px}
+  .pe-refined .lesson h1{font-size:36px}.pe-refined .lesson .intuition{font-size:18px}
+  .pe-refined .titem{padding:18px;gap:12px;flex-wrap:wrap}.pe-refined .titem .ti{min-width:0;flex:1}.pe-refined .titem .rt{margin-left:35px;max-width:none;justify-content:flex-start}
+  .pe-refined .titem .de{font-size:16px}.pe-refined .lm-seg{font-size:13px}
+  .pe-refined .lf-shell{width:100vw;height:100dvh;max-width:none;max-height:none;border:0;border-radius:0}
+  .pe-refined .lf-top{padding:12px 14px;gap:9px;flex-wrap:wrap;min-height:74px}.pe-refined .lf-id{flex:1;min-width:0}.pe-refined .lf-id .lf-ti{font-size:18px}.pe-refined .lf-id .lf-ey{font-size:8px}
+  .pe-refined .lf-back{font-size:11px;padding:8px}.pe-refined .lf-ask{display:none}
+  .pe-refined .lf-body{display:block;overflow:auto;height:calc(100dvh - 76px)}
+  .pe-refined .lf-stage{height:55dvh;min-height:330px}.pe-refined .lf-side{overflow:visible;border-left:0;border-top:1px solid var(--line);padding:24px 22px 80px}
+  .pe-refined .lf-side .inv-bd{font-size:16px}.pe-refined #lab-full.pe-stage-focus .lf-stage{height:calc(100dvh - 80px);min-height:0}
+  .pe-refined .cc-head h1{font-size:34px}.pe-refined .cc-hero-copy{padding:26px}.pe-refined .cc-hero h2{font-size:30px}.pe-refined .cc-hero p{font-size:16px}
+  .pe-refined .cc-world p{font-size:16px}.pe-refined .cc-world{padding:24px}.pe-refined .cc-node small{font-size:11px}.pe-refined .cc-node b{font-size:13px}
+  .pe-refined .cc-home{padding:30px 22px 100px!important}.pe-refined .cc-summary{font-size:14px}
+  .pe-refined .sbx-foot{overflow-x:auto;flex-wrap:nowrap;padding-bottom:14px}.pe-refined .sbx-transport{flex:none}.pe-refined .sbx-stage{min-height:430px}.pe-refined .cr-lab>p{font-size:16px}.pe-refined .cr-lab label{font-size:13px}.pe-refined .cr-row button{min-height:44px;font-size:12px}
+  .pe-refined .cr-question p,.pe-refined .cr-question h3,.pe-refined .cr-feedback,.pe-refined .cr-lab details{font-size:15px;line-height:1.8}
+  .pe-refined .tu-spk,.pe-refined .tu-head .x{min-width:36px;min-height:44px}
+  .pe-explore-sheet{width:100%;max-height:90dvh;border-radius:16px 16px 0 0;margin:auto 0 0;padding:25px 21px 20px}
+  .pe-explore-sheet header h2{font-size:28px}.pe-explore-grid{grid-template-columns:1fr}.pe-explore-grid>button{padding:18px}.pe-explore-grid small{font-size:14px}.pe-explore-sheet footer{flex-direction:column;align-items:start;gap:6px}
+}
+@media(max-width:550px){
+  .pe-field-grid,.pe-refined .xg-grid{grid-template-columns:1fr}.field-card{padding:24px}.field-card .field-art{height:120px}.field-card h2{font-size:26px}.field-card p{font-size:16px;min-height:0}.field-num,.field-bottom{font-size:11px}
+  .pe-refined .xg-thumb{height:180px}.pe-refined .xg-b h4{font-size:21px}.pe-refined .xg-meta{font-size:12px}.pe-refined .xg-pair{font-size:13px}
+  .pe-refined .xg-bar .sp{display:none}.pe-refined .xg-find{width:100%}.pe-refined .xg-find input{width:100%;font-size:16px;min-height:46px}
+  .pe-refined .cc-worlds{grid-template-columns:1fr}.pe-refined .cc-hero{grid-template-columns:1fr}.pe-refined .cc-art{height:160px}
+  .pe-refined .tu-head{padding:19px 16px;gap:9px}.pe-refined #tu-name{font-size:20px}.pe-refined .tu-sugg{grid-template-columns:1fr 1fr}.pe-refined .tu-sugg button{padding:13px}
+}
+@media(prefers-reduced-motion:reduce){.pe-refined *, .pe-refined *::before,.pe-refined *::after{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
+@media(hover:hover) and (pointer:fine){.field-card:hover .field-art{opacity:1}.atlas-topics>button:hover,.atlas-links button:hover{background:var(--pe-surface-2)}}
+
 </style>
 <!-- EXPERIENCE:CSS:END -->
 </head>
@@ -2136,11 +2485,7 @@ html[data-theme=light] .cc-hero{background:#e2edf1}html[data-theme=light] .cc-he
   <button data-go="home"><span class="ic">⌂</span>Home</button>
   <button data-go="universe"><span class="ic">✦</span>Universe</button>
   <button data-go="learn"><span class="ic">◳</span>Learn</button>
-  <button data-go="solve"><span class="ic">∑</span>Solve</button>
-  <button data-go="practice"><span class="ic">◎</span>Practice</button>
   <button data-go="lab"><span class="ic">∇</span>Lab</button>
-  <button data-go="sandbox"><span class="ic">⊙</span>Sandbox</button>
-  <button data-go="research"><span class="ic">∴</span>Research</button>
   <button data-go="progress"><span class="ic">▦</span>Me</button>
 </nav>
 
@@ -2149,7 +2494,7 @@ html[data-theme=light] .cc-hero{background:#e2edf1}html[data-theme=light] .cc-he
 <div id="tutor-scrim"></div>
 <aside id="tutor" role="dialog" aria-label="AI tutor">
   <div class="tu-head"><canvas class="av tu-orb" aria-hidden="true"></canvas><div class="ti"><span id="tu-name">Entelloq</span><div class="s" id="tu-role">your physics tutor</div></div><button class="tu-spk" id="tu-wake" aria-label="Wake-word listening" title="Wake word — say a tutor's name to switch">◎</button><button class="tu-spk" id="tu-spk" aria-label="Read answers aloud" title="Read answers aloud">⊘</button><button class="tu-spk" id="tu-key" aria-label="Set AI key" title="Set your Groq AI key — free at console.groq.com — stored only in this browser">※</button><button class="x" id="tu-close" aria-label="Close">✕</button></div>
-  <div class="tu-roster" id="tu-roster"></div>
+  <details class="tu-specialists"><summary>Specialist modes</summary><div class="tu-roster" id="tu-roster"></div></details>
   <div class="tu-empty" id="tu-empty">
     <div class="big">✦</div>
     <p>Ask me anything in physics — a derivation, the intuition, an exam problem, or what you're studying right now.</p>
@@ -2167,7 +2512,7 @@ html[data-theme=light] .cc-hero{background:#e2edf1}html[data-theme=light] .cc-he
 </aside>
 
 <!-- LAB FULLSCREEN -->
-<div id="lab-full"><div class="lf-shell"></div></div>
+<div id="lab-full" role="dialog" aria-modal="true" aria-label="Physics investigation"><div class="lf-shell"></div></div>
 
 <!-- PALETTE -->
 <div id="pal" role="dialog" aria-label="Search"><div class="pal-box"><div class="pal-in"><span style="color:var(--violet)">⌕</span><input id="pal-q" placeholder="Search topics or ask Entelloq…"/></div><div class="pal-r" id="pal-r"></div></div></div>
@@ -2702,6 +3047,7 @@ var SIM_FOR={ gravitation:'orbit', 'circular-motion':'orbit', 'black-holes':'bla
 var root=document.documentElement;
 function hexRGB(h){ h=h.replace('#',''); return [parseInt(h.slice(0,2),16)/255,parseInt(h.slice(2,4),16)/255,parseInt(h.slice(4,6),16)/255]; }
 var Atmo=(function(){
+  if(document.documentElement.classList.contains('pe-refined'))return {theme:function(){},mouse:{x:0,y:0,tx:0,ty:0}};
   var cv=$('#bg');
   var cur={r:.12,g:.24,b:.5,in:.35}, tgt={r:.12,g:.24,b:.5,in:.35};
   var M={x:innerWidth/2,y:innerHeight/2,tx:innerWidth/2,ty:innerHeight/2};
@@ -3783,7 +4129,7 @@ var Tutor=(function(){
   function buildRoster(){ var rost=$('#tu-roster'); if(!rost)return; var cur=Personas.get().id;
     rost.innerHTML=Personas.list().map(function(p){ return '<button class="tu-pchip'+(p.id===cur?' on':'')+'" data-pid="'+p.id+'" title="'+esc(p.title)+'" style="--pc:'+p.c+'"><b>'+p.icon+'</b> '+esc(p.name)+'</button>'; }).join('');
     $$('.tu-pchip',rost).forEach(function(b){ b.addEventListener('click',function(){ setPersona(b.dataset.pid,true); }); }); }
-  function setPersona(id,announce){ var p=Personas.setActive(id); var nm=$('#tu-name'); if(nm)nm.textContent=p.name; var rl=$('#tu-role'); if(rl)rl.textContent=p.title; if(input)input.placeholder='Ask '+p.name+'…';
+  function setPersona(id,announce){ var p=Personas.setActive(id); var nm=$('#tu-name'); if(nm)nm.textContent='Entelloq'; var rl=$('#tu-role'); if(rl)rl.textContent=p.title; if(input)input.placeholder='Ask Entelloq…';
     $$('.tu-pchip').forEach(function(x){ x.classList.toggle('on',x.dataset.pid===id); });
     if(announce){ openP(); var bd=addMsg('a'); bd.textContent=p.greet; var av=bd.parentNode&&bd.parentNode.querySelector('.av'); if(av)av.textContent=p.icon; Voice.setState('idle'); Voice.speak(p.greet); } }
   function handleWake(t){ if(!t)return; var s=' '+t.toLowerCase()+' '; var list=Personas.list(); for(var i=0;i<list.length;i++){ var p=list[i]; for(var j=0;j<p.wake.length;j++){ var w=p.wake[j],idx=s.indexOf(' '+w+' '); if(idx<0)idx=s.indexOf(w); if(idx>=0){ setPersona(p.id,true); var rest=t.slice(Math.max(0,idx)+w.length).replace(/^[\s,.:-]+/,'').trim(); if(rest.length>2) ask(rest); return; } } } }
@@ -9907,12 +10253,12 @@ function go(v,id){ stopSim(); try{ Track.view(v+(id?(':'+id):'')); }catch(eT){}
   else if(v==='adv') viewAdv(id);
   else if(v==='journeys') viewJourneys();
   else if(v==='journey') viewJourney(id);
-  cinematicReveal();
+  AppDesign.afterView();
   };
   /* cinematic crossfade: dip #main out, swap behind the dip, fade in (child .fade/.rvl supply the rise) */
   var _sc=$('#main-scroll');
   if(go._t){ clearTimeout(go._t); go._t=0; }
-  if(!main||(window.matchMedia&&matchMedia('(prefers-reduced-motion:reduce)').matches)){ if(main)main.classList.remove('view-out'); _render(); if(_sc)_sc.scrollTop=0; return; }
+  if(!main||document.documentElement.classList.contains('pe-refined')||(window.matchMedia&&matchMedia('(prefers-reduced-motion:reduce)').matches)){ if(main)main.classList.remove('view-out'); _render(); if(_sc)_sc.scrollTop=0; return; }
   main.classList.add('view-out');
   go._t=setTimeout(function(){ go._t=0; _render(); if(_sc)_sc.scrollTop=0; void main.offsetWidth; main.classList.remove('view-out'); }, 145);
 }
@@ -11206,11 +11552,54 @@ document.addEventListener('click',function(e){
   var l=e.target.closest('[data-link]'); if(l){ var p=l.dataset.link.split(':'); go(p[0],p[1]); return; }
 });
 
-function viewUniverse(){
-  setCrumb([{t:'Universe'}]);
-  main.innerHTML='<div class="uni" id="uni-host"></div>';
-  Uni.mount($('#uni-host'));
+/* EXPERIENCE:ATLAS:START */
+/* A readable field atlas, built from the existing concept and prerequisite data. */
+var FieldCatalogue=(function(){
+  var descriptions={mechanics:'The language of motion, force and balance.',waves:'How energy travels, overlaps and resonates.',thermo:'Heat, probability and the direction of change.',optics:'Light as a ray, a wave and an instrument.',electrostatics:'Charges, fields and the energy between them.',current:'Moving charge. Circuits that do useful work.',magnetism:'Fields that turn motion into electricity.',modern:'Where classical intuition meets its limits.',quantum:'States, probabilities and the structure of matter.',relativity:'Space, time and gravity at their extremes.'};
+  var drawings={mechanics:'M25 87Q70 5 119 55T215 80M25 96H215M45 85V68m0 0-5 6m5-6 5 6',waves:'M10 60Q25 5 40 60T70 60T100 60T130 60T160 60T190 60T220 60M10 60H230',thermo:'M20 95H224M25 93Q55 92 80 38T128 47Q162 84 218 92M73 95V75m36 20V47m36 48V68',optics:'M95 90 130 20l35 70ZM15 30 114 52l88 0M141 52l68-30m-65 31 66-14m-63 16 68-3',electrostatics:'M85 58a26 26 0 1 0-52 0 26 26 0 0 0 52 0M207 58a26 26 0 1 0-52 0 26 26 0 0 0 52 0M50 58h18m-9-9v18m113-9h18M89 36Q120 16 151 36M89 80Q120 100 151 80M90 58h59',current:'M25 60V25h75l4-7 8 14 8-14 8 14 8-14 4 7h75v70H140m-40 0H25V60M100 83v24m10-17v10m10-17v24m10-17v10',magnetism:'M50 35v34a30 30 0 0 0 60 0V35h-18v34a12 12 0 0 1-24 0V35ZM141 24q70 32 0 64m10-51q39 22 0 36',modern:'M30 86h180M55 72h130M75 51h90M87 21h67M127 78V30m0 0-5 7m5-7 5 7',quantum:'M15 64H225M20 64q22-3 35-9T78 78Q103 12 119 64t29 0q18 15 27-6t47 6',relativity:'M25 20Q120 35 215 20M25 43Q120 86 215 43M25 67Q120 113 215 67M25 93Q120 105 215 93M60 15Q75 65 60 100m40-85q15 48 0 85m40-85q-15 48 0 85m40-85q-15 48 0 85'};
+  function art(k){return '<svg class="field-art" viewBox="0 0 240 116" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="'+(drawings[k]||drawings.mechanics)+'"/></svg>';}
+  function cards(){return DOMAINS.map(function(d,i){var count=topicsOf(d.k).length;return '<button class="field-card" style="--field:'+d.c+'" data-link="domain:'+d.k+'"><span class="field-num">'+String(i+1).padStart(2,'0')+' / '+count+' CONCEPTS</span>'+art(d.k)+'<h2>'+esc(d.n)+'</h2><p>'+descriptions[d.k]+'</p><span class="field-bottom">'+Me.domDone(d.k)+' explored '+AppDesign.icon('arrow')+'</span></button>';}).join('');}
+  return {art:art,cards:cards,descriptions:descriptions};
+})();
+function viewLibrary(){
+  setCrumb([{t:'Learn'}]);
+  var next=Me.recommend(1)[0];
+  main.innerHTML='<div class="wrap pe-catalogue"><div class="pe-page-head"><div><div class="eyebrow">THE PHYSICS LIBRARY</div><h1>Find your way into an idea.</h1><p>Ten fields. '+DB.length+' connected concepts. Start with a question, then follow it as far as it takes you.</p></div><span class="pe-index-mark" aria-hidden="true">∑</span></div>'+(next?'<button class="pe-reading-next" data-link="lesson:'+next.id+'"><span class="eyebrow">A PLACE TO BEGIN</span><strong>'+esc(next.name)+'</strong><span>'+esc(DMAP[next.domain].n)+'</span>'+AppDesign.icon('arrow')+'</button>':'')+'<div class="pe-field-grid">'+FieldCatalogue.cards()+'</div><div class="pe-library-foot"><span>Want a more structured path?</span><button class="btn" data-go="journeys">Learning journeys →</button><button class="btn" data-go="deeps">Full courses →</button></div></div>';
 }
+var Atlas=(function(){
+  var field=null,selected=null,filter='all',query='',mode=matchMedia('(max-width:850px)').matches?'outline':'map';
+  function mount(){
+    var rec=Me.recommend(1)[0];
+    main.innerHTML='<div class="wrap pe-atlas"><div class="pe-page-head"><div><div class="eyebrow">THE PHYSICS UNIVERSE</div><h1>Everything is connected.</h1><p>Choose a field. Meet its ideas. See what they build on—and where they lead.</p></div><div class="atlas-view" aria-label="Atlas view"><button data-atlas-mode="map" aria-pressed="'+(mode==='map')+'">Spatial</button><button data-atlas-mode="outline" aria-pressed="'+(mode==='outline')+'">Outline</button></div></div><div class="atlas-tools"><label for="atlas-search">Find a concept<input id="atlas-search" type="search" placeholder="Try energy, waves, gravity…" value="'+esc(query)+'"></label><div class="atlas-filters" aria-label="Concept filter">'+[['all','All ideas'],['ready','Ready next'],['review','Revisit'],['explored','Explored']].map(function(f){return '<button data-atlas-filter="'+f[0]+'" aria-pressed="'+(filter===f[0])+'">'+f[1]+'</button>';}).join('')+'</div></div><div id="atlas-results"></div>'+(rec?'<button class="atlas-next" data-link="lesson:'+rec.id+'"><span>NEXT CONNECTION</span><strong>'+esc(rec.name)+'</strong><small>'+((Graph.readiness(rec.id).missing||[]).length?'Explore its foundations in the atlas.':'Its prerequisite foundations are in place.')+'</small>'+AppDesign.icon('arrow')+'</button>':'')+'</div>';
+    $('#atlas-search').addEventListener('input',function(){query=this.value;selected=null;results();});
+    $$('[data-atlas-filter]').forEach(function(b){b.addEventListener('click',function(){filter=b.dataset.atlasFilter;selected=null;$$('[data-atlas-filter]').forEach(function(x){x.setAttribute('aria-pressed',String(x===b));});results();});});
+    $$('[data-atlas-mode]').forEach(function(b){b.addEventListener('click',function(){mode=b.dataset.atlasMode;field=null;selected=null;mount();});});results();
+  }
+  function matches(t){if(field&&t.domain!==field)return false;if(query&&!(t.name+' '+t.summary+' '+DMAP[t.domain].n).toLowerCase().includes(query.toLowerCase()))return false;if(filter==='ready')return !Me.isDone(t.id)&&Graph.readiness(t.id).ready;if(filter==='explored')return Me.isDone(t.id);if(filter==='review')return Mastery.queue().some(function(x){return x.id===t.id;});return true;}
+  function results(){
+    var host=$('#atlas-results');if(!host)return;
+    if(!field&&!query&&filter==='all'){
+      host.innerHTML='<div class="atlas-fields '+(mode==='map'?'spatial':'outline')+'"><svg class="atlas-lines" viewBox="0 0 1000 400" preserveAspectRatio="none" aria-hidden="true"><path d="M100 100 300 300 500 100 700 300 900 100M100 300 300 100 500 300 700 100 900 300M100 100H900M100 300H900"/></svg><div class="atlas-centre" aria-hidden="true"><span>PHYSICS</span><small>'+DB.length+' IDEAS · ONE UNIVERSE</small></div>'+DOMAINS.map(function(d,i){return '<button class="atlas-field" data-field="'+d.k+'" style="--field:'+d.c+';--ax:'+(10+(i%5)*20)+'%;--ay:'+(i<5?20:80)+'%"><span class="atlas-glyph">'+FieldCatalogue.art(d.k)+'</span><strong>'+esc(d.n)+'</strong><small>'+topicsOf(d.k).length+' concepts</small></button>';}).join('')+'</div><p class="atlas-legend">Colour identifies a field. The overview lines suggest shared ideas, not prerequisites. Select a concept to see its exact connections.</p>';
+      $$('[data-field]',host).forEach(function(b){b.addEventListener('click',function(){field=b.dataset.field;selected=null;results();});});return;
+    }
+    var topics=DB.filter(matches);
+    host.innerHTML='<div class="atlas-field-head"><button id="atlas-back">← All fields</button><h2>'+(field?esc(DMAP[field].n):'Concepts')+'</h2><span aria-live="polite">'+topics.length+' '+(topics.length===1?'idea':'ideas')+'</span></div><div class="atlas-detail-grid"><div class="atlas-topics">'+(topics.length?topics.map(function(t){return '<button data-concept="'+t.id+'" aria-pressed="'+(selected===t.id)+'"><span class="atlas-topic-mark" style="color:'+DMAP[t.domain].c+'">'+(Me.isDone(t.id)?'✓':'○')+'</span><span><strong>'+esc(t.name)+'</strong><small>'+esc(DMAP[t.domain].n)+'</small></span>'+AppDesign.icon('arrow')+'</button>';}).join(''):'<div class="pe-empty"><h3>No concepts here yet.</h3><p>'+(filter==='review'?'Your review queue is clear. Explore something new, then return when an idea needs refreshing.':'Try another filter or a shorter search.')+'</p></div>')+'</div><section class="atlas-concept" id="atlas-concept" aria-label="Concept connections"></section></div>';
+    $('#atlas-back').addEventListener('click',function(){field=null;selected=null;query='';filter='all';mount();});
+    $$('[data-concept]',host).forEach(function(b){b.addEventListener('click',function(){selected=b.dataset.concept;$$('[data-concept]').forEach(function(x){x.setAttribute('aria-pressed',String(x===b));});detail();var h=$('#atlas-concept h2');if(h){h.tabIndex=-1;h.focus({preventScroll:true});if(matchMedia('(max-width:700px)').matches)h.scrollIntoView({block:'start',behavior:'auto'});}});});detail();
+  }
+  function detail(){
+    var host=$('#atlas-concept');if(!host)return;var t=selected?topicById(selected):null;
+    if(!t){host.innerHTML='<span class="eyebrow">CHOOSE AN IDEA</span><h2>See the connections.</h2><p>Every concept has a history and a future. Select one to find the foundations it needs and the ideas it unlocks.</p>'+FieldCatalogue.art(field||'mechanics');return;}
+    function group(title,ids){return ids.length?'<div class="atlas-links"><h3>'+title+'</h3>'+ids.slice(0,6).map(function(id){var c=topicById(id);return c?'<button data-related="'+id+'">'+esc(c.name)+AppDesign.icon('arrow')+'</button>':'';}).join('')+'</div>':'';}
+    var pre=Graph.prereqsOf(t.id),unlocks=Graph.unlocks(t.id),related=Graph.relatedOf(t.id).map(function(r){return r.id;});
+    host.innerHTML='<span class="eyebrow">'+esc(DMAP[t.domain].n)+'</span><h2>'+esc(t.name)+'</h2><p>'+esc(t.summary)+'</p><button class="btn btn-pri" data-link="lesson:'+t.id+'">Explore this concept →</button>'+(!pre.length?'<p class="atlas-root-note">A foundational idea. No prerequisites are listed.</p>':'')+group('Understand first',pre)+group('Where this leads',unlocks)+group('Across the fields',related);
+    $$('[data-related]',host).forEach(function(b){b.addEventListener('click',function(){selected=b.dataset.related;$$('[data-concept]').forEach(function(x){x.setAttribute('aria-pressed',String(x.dataset.concept===selected));});detail();var h=host.querySelector('h2');h.tabIndex=-1;h.focus({preventScroll:true});});});
+  }
+  return {mount:mount};
+})();
+function viewUniverse(){setCrumb([{t:'Universe'}]);Atlas.mount();}
+
+/* EXPERIENCE:ATLAS:END */
 /* ===== Pass 87 — FBD trainer: draw the forces, get coached ===== */
 var FBD=(function(){
   var COLS={mg:'#fbbf24',N:'#7dd3fc',T:'#a78bfa',f:'#f0abfc',F:'#34d399'};
@@ -11422,17 +11811,10 @@ function viewReview(){ stopSim(); setCrumb([{t:'Review'}]);
   $$('.rv-open').forEach(function(b){ b.addEventListener('click',function(){ go('lesson',b.dataset.id); }); });
   $$('.rv-know').forEach(function(b){ b.addEventListener('click',function(){ var r=Mastery.rec(b.dataset.id); Mastery.record(b.dataset.id,4,r?r.conf:1); Me.award(4,'Memory refreshed'); viewReview(); }); });
 }
-function viewLearn(){
-  setCrumb([{t:'Learn'}]);
-  var html='<div class="wrap fade"><div class="eyebrow">Curriculum</div><h1 class="h-hello" style="font-size:30px">Learn Physics</h1><div class="h-sub">Ten fields, 69 lessons. Start anywhere — each lesson stands on its own.</div><div class="dom-grid">'+
-    DOMAINS.map(function(dm){ var done=Me.domDone(dm.k),tot=topicsOf(dm.k).length,pc=Math.round(done/tot*100);
-      return '<div class="dom" data-link="domain:'+dm.k+'"><div class="glow" style="background:'+dm.c+'"></div>'+
-        '<div class="ic" style="background:'+dm.c+'22;color:'+dm.c+'">'+dm.n.charAt(0)+'</div>'+
-        '<h3>'+esc(dm.n)+'</h3><div class="meta">'+done+' of '+tot+' lessons'+(pc===100?' · complete ✓':'')+'</div>'+
-        '<div class="track"><div class="fill" style="width:'+pc+'%;background:'+dm.c+'"></div></div></div>'; }).join('')+
-    '</div></div>';
-  main.innerHTML=html;
-}
+/* EXPERIENCE:LIBRARY:START */
+function viewLearn(){viewLibrary();}
+
+/* EXPERIENCE:LIBRARY:END */
 var domFilter='all';
 function topicRowsHtml(k,nextId){
   var ts=topicsOf(k);
@@ -11791,7 +12173,7 @@ var Expt=(function(){
   function esc2(s){ return esc(s); }
   function card(nm,dm,ic,col,attrs,badge){ return '<button class="rs-card" '+attrs+'><div class="rs-cic" style="color:'+col+';border-color:'+col+'55">'+ic+'</div><div class="rs-ct"><div class="nm">'+esc2(nm)+'</div><div class="dm">'+esc2(dm)+'</div>'+(badge||'')+'</div><span class="arr">›</span></button>'; }
   function hub(main,toggle,wireToggle){
-    var filt=hub._f||'all';
+    hub._f=hub._f||'live';var filt=hub._f;
     var last=null; try{ last=JSON.parse(localStorage.getItem('peq_lab_last')||'null'); }catch(e){}
     var flat=[]; SEC.forEach(function(sec,si){ sec.items.forEach(function(it,ii){ flat.push({si:si,ii:ii,it:it,sec:sec}); }); });
     (function(){ var st=(typeof Style!=='undefined')?Style.get():null; if(!st) return;
@@ -11800,16 +12182,15 @@ var Expt=(function(){
     var nLive=0,i; for(i=0;i<flat.length;i++){ if(flat[i].it.s) nLive++; }
     var H='<div class="wrap fade"><div class="eyebrow">Structured experiments</div><h1 class="h-hello" style="font-size:30px">Work like an experimentalist</h1>'+toggle;
     if(last&&SEC[last.si]&&SEC[last.si].items[last.ii]){ var lit=SEC[last.si].items[last.ii];
-      H+='<div class="xg-cont" data-xsec="'+last.si+'" data-xit="'+last.ii+'"><span class="ic">'+(lit.s?'▸':'▤')+'</span><span class="tx"><b>Continue</b> — '+esc2(lit.n)+'</span><span class="go">RESUME →</span></div>'; }
-    H+='<div class="xg-bar"><span class="xg-sig">LAB INDEX · '+flat.length+' EXPT · '+nLive+' LIVE</span>'+
-       [['all','ALL'],['live','▸ LIVE'],['bench','▤ BENCH'],['quantum','⚛ QUANTUM']].map(function(f){ return '<button class="xg-chip'+(filt===f[0]?' on':'')+'" data-xf="'+f[0]+'">'+f[1]+'</button>'; }).join('')+
-       '<span class="sp"></span><span class="xg-find"><input id="xg-q" type="text" autocomplete="off" spellcheck="false" placeholder="SEARCH EXPERIMENTS"></span></div>';
+      H+='<button class="xg-cont" data-xsec="'+last.si+'" data-xit="'+last.ii+'"><span class="ic">'+(lit.s?'▸':'▤')+'</span><span class="tx"><b>Continue</b> — '+esc2(lit.n)+'</span><span class="go">Resume →</span></button>'; }
+    H+='<p class="h-sub">'+nLive+' live simulations to explore here. '+(flat.length-nLive)+' practical protocols for experiments with real equipment.</p><div class="xg-bar"><span class="xg-sig">EXPERIMENT LIBRARY</span>'+
+       [['live','Live simulations'],['bench','Practical protocols'],['all','Everything'],['quantum','Quantum']].map(function(f){ return '<button class="xg-chip'+(filt===f[0]?' on':'')+'" aria-pressed="'+(filt===f[0])+'" data-xf="'+f[0]+'">'+f[1]+'</button>'; }).join('')+
+       '<span class="sp"></span><span class="xg-find"><input id="xg-q" type="text" autocomplete="off" spellcheck="false" aria-label="Search experiments" placeholder="Find an experiment"></span></div>';
     H+='<div class="xg-grid">';
     flat.forEach(function(o,k){ var live=!!o.it.s;
-      H+='<div class="xg-card" data-xsec="'+o.si+'" data-xit="'+o.ii+'" data-live="'+(live?1:0)+'" data-qm="'+(o.sec.h==='Quantum Mechanics'?1:0)+'" data-nm="'+esc2(o.it.n.toLowerCase())+'" style="--gi:'+Math.min(k,18)+'">'+
-        '<i class="xg-c c1"></i><i class="xg-c c2"></i><i class="xg-c c3"></i><i class="xg-c c4"></i>'+
-        '<div class="xg-thumb" id="xg-th-'+o.si+'-'+o.ii+'"><span class="xg-badge">'+(live?'▸ LIVE':'▤ BENCH')+'</span></div>'+
-        '<div class="xg-b"><h4>'+esc2(o.it.n)+'</h4><div class="xg-meta"><span>'+(live?'▸ SIM':'▤ PROTOCOL')+'</span><span class="tag">'+esc2(o.sec.h)+'</span></div></div>'+(o.it.pair?'<div class="xg-pair" data-pairid="'+o.it.pair+'">⤷ paired lesson · '+esc2((topicById(o.it.pair)||{name:o.it.pair}).name)+'</div>':'')+'</div>';
+      H+='<article class="xg-card" data-live="'+(live?1:0)+'" data-qm="'+(o.sec.h==='Quantum Mechanics'?1:0)+'" data-nm="'+esc2(o.it.n.toLowerCase())+'" style="--gi:'+Math.min(k,18)+'"><button class="xg-open" data-xsec="'+o.si+'" data-xit="'+o.ii+'">'+
+        '<div class="xg-thumb" id="xg-th-'+o.si+'-'+o.ii+'"><span class="xg-badge">'+(live?'Live simulation':'Equipment required')+'</span></div>'+
+        '<div class="xg-b"><h2>'+esc2(o.it.n)+'</h2><div class="xg-meta"><span>'+(live?'Explore →':'View protocol →')+'</span><span class="tag">'+esc2(o.sec.h)+'</span></div></div></button>'+(o.it.pair?'<button class="xg-pair" data-link="lesson:'+o.it.pair+'">Read the concept · '+esc2((topicById(o.it.pair)||{name:o.it.pair}).name)+' →</button>':'')+'</article>';
     });
     H+='</div><div class="xg-empty" style="display:none">NO MATCH — ADJUST SEARCH OR FILTER</div><div id="xp-work"></div></div>';
     main.innerHTML=H; wireToggle();
@@ -11826,7 +12207,7 @@ var Expt=(function(){
       });
       em=$('.xg-empty',main); if(em) em.style.display=vis?'none':'';
     }
-    $$('.xg-card,.xg-cont',main).forEach(function(b){ b.addEventListener('click',function(ev){
+    $$('.xg-open,.xg-cont',main).forEach(function(b){ b.addEventListener('click',function(ev){
       var pt=ev&&ev.target; while(pt&&pt!==b){ if(pt.getAttribute&&pt.getAttribute('data-pairid')){ go('lesson',pt.getAttribute('data-pairid')); return; } pt=pt.parentNode; }
       var si=+b.getAttribute('data-xsec'), ii=+b.getAttribute('data-xit');
       var sec=SEC[si], it=sec&&sec.items[ii]; if(!sec||!it) return;
@@ -11835,7 +12216,7 @@ var Expt=(function(){
     }); });
     $$('[data-xf]',main).forEach(function(b){ b.addEventListener('click',function(){
       hub._f=b.getAttribute('data-xf');
-      $$('[data-xf]',main).forEach(function(x){ x.className='xg-chip'+(x===b?' on':''); });
+      $$('[data-xf]',main).forEach(function(x){ x.className='xg-chip'+(x===b?' on':'');x.setAttribute('aria-pressed',String(x===b)); });
       applyFilter();
     }); });
     var qEl=$('#xg-q',main);
@@ -11960,7 +12341,7 @@ function viewLab(){
   var _MO=(function(){ var sl=(typeof Style!=='undefined'&&Style.def())?Style.def().lab:null; if(!sl) return MODES;
     return MODES.filter(function(m){ return m[0]===sl; }).concat(MODES.filter(function(m){ return m[0]!==sl; })); })();
   var toggle='<div class="lm-bar"><span class="lm-tag">MODE</span>'+_MO.map(function(md){ var _sl=(typeof Style!=='undefined'&&Style.def())?Style.def().lab:null; return '<button class="lm-seg'+(labMode===md[0]?' on':'')+'" data-lm="'+md[0]+'" '+(md[0]===_sl?'title="matched to how you learn"':'')+'>'+md[1]+(md[0]===_sl?'<i class="lm-you"></i>':'')+'</button>'; }).join('')+'</div>';
-  function wireToggle(){ try{ var fw=main.firstElementChild; if(fw) fw.classList.add('lab-blue'); LabVig.decorate(main); }catch(e){} $$('[data-lm]').forEach(function(b){ b.addEventListener('click',function(){ labMode=b.dataset.lm; viewLab(); }); }); }
+  function wireToggle(){ try{ var fw=main.firstElementChild; if(fw) fw.classList.add('lab-blue'); LabVig.decorate(main); }catch(e){} AppDesign.enhance(main);$$('[data-lm]').forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.lm===labMode)); b.addEventListener('click',function(){ labMode=b.dataset.lm; viewLab(); }); }); }
   if(labMode==='graphs'){ main.innerHTML='<div class="wrap fade"><div class="eyebrow">Direct manipulation</div><h1 class="h-hello" style="font-size:30px">Sketch the mathematics</h1>'+toggle+'<div id="gx-host"></div></div>'; wireToggle(); try{ Grapher.mount($('#gx-host')); }catch(e){} return; }
   if(labMode==='labs'){ Expt.hub(main,toggle,wireToggle); return; }
   if(labMode==='discover'){ Expt.discover(main,toggle,wireToggle); return; }
@@ -12275,11 +12656,11 @@ function renderFlow(s,host){
   stages.forEach(function(st,i){ var k=st[0],body;
     if(k==='predict'){ body='<div>'+esc(d.predict.q)+'</div><div class="inv-opts">'+d.predict.opts.map(function(o,oi){ return '<button class="inv-opt" data-oi="'+oi+'">'+esc(o)+'</button>'; }).join('')+'</div><div class="inv-why" style="display:none"></div>'; }
     else { body='<div>'+(d[k]||INV_GENERIC[k])+'</div>'; if(k==='collect') body+='<button class="inv-go" data-nb="1">∫ Take real measurements in the Notebook →</button>'; }
-    body+='<button class="inv-ask" data-ask="'+k+'">✦ Ask '+esc(P.name)+'</button>';
-    html+='<div class="inv-step'+(i===_oi?' open':'')+'" data-k="'+k+'"><div class="inv-sh"><span class="ic">'+st[1]+'</span><span class="t">'+st[2]+'</span><span class="ch">›</span></div><div class="inv-bd">'+body+'</div></div>';
+    body+='<button class="inv-ask" data-ask="'+k+'">Ask Entelloq →</button>';
+    html+='<div class="inv-step'+(i===_oi?' open':'')+'" data-k="'+k+'"><button class="inv-sh" aria-expanded="'+(i===_oi)+'"><span class="ic">'+st[1]+'</span><span class="t">'+st[2]+'</span><span class="ch">›</span></button><div class="inv-bd">'+body+'</div></div>';
   });
   host.innerHTML=html;
-  $$('.inv-sh',host).forEach(function(sh){ sh.addEventListener('click',function(){ var step=sh.parentNode,was=step.classList.contains('open'); $$('.inv-step',host).forEach(function(x){ x.classList.remove('open'); }); if(!was) step.classList.add('open'); }); });
+  $$('.inv-sh',host).forEach(function(sh){ sh.addEventListener('click',function(){ var step=sh.parentNode,was=step.classList.contains('open'); $$('.inv-step',host).forEach(function(x){ x.classList.remove('open');x.querySelector('.inv-sh').setAttribute('aria-expanded','false'); }); if(!was){step.classList.add('open');sh.setAttribute('aria-expanded','true');} }); });
   var pstep=host.querySelector('.inv-step[data-k="predict"]');
   $$('.inv-opt',pstep).forEach(function(b){ b.addEventListener('click',function(){ if(pstep.dataset.done)return; pstep.dataset.done='1'; var oi=+b.dataset.oi,a=d.predict.a; $$('.inv-opt',pstep).forEach(function(x,xi){ if(xi===a)x.classList.add('correct'); else if(xi===oi)x.classList.add('wrong'); }); var w=pstep.querySelector('.inv-why'); w.style.display='block'; w.innerHTML='<b>'+(oi===a?'Exactly. ':'Not quite. ')+'</b>'+esc(d.predict.why); pstep.classList.add('done'); Me.award(5,'Made a prediction'); }); });
   var nb=host.querySelector('[data-nb]'); if(nb) nb.addEventListener('click',function(){ closeLabFull(); labMode='investigate'; go('lab'); });
@@ -12292,19 +12673,20 @@ function openLabFull(s){
   var pid=SIM_PERSONA[s]||'edge',P=Personas.byId(pid)||Personas.byId('edge'),pc=(P&&P.c)||SIM_THEME[s]||'#7dd3fc',meta=SIM_META[s];
   var shell=$('.lf-shell'); shell.style.setProperty('--pc',pc);
   shell.innerHTML='<div class="lf-top"><button class="lf-back" id="lf-back">← Labs</button>'+
-    '<div class="lf-id"><div class="lf-ey">INVESTIGATION // <span style="color:'+pc+'">'+esc(P.name)+'</span></div><div class="lf-ti">'+esc(meta.n)+'</div></div>'+
-    '<div style="flex:1"></div><button class="lf-ask" id="lf-ask">✦ Ask '+esc(P.name)+'</button><button class="mini-b" id="lf-close">✕</button></div>'+
+    '<div class="lf-id"><div class="lf-ey">ENTELLOQ / LIVE EXPERIMENT</div><div class="lf-ti">'+esc(meta.n)+'</div></div>'+
+    '<div style="flex:1"></div><button class="lf-ask" id="lf-focus" aria-pressed="false" aria-label="Expand experiment">'+AppDesign.icon('expand')+'</button><button class="lf-ask" id="lf-ask">Ask Entelloq</button><button class="mini-b" id="lf-close" aria-label="Close experiment">✕</button></div>'+
     '<div class="lf-body"><div class="lf-stage" id="lf-stage"><span class="lf-bk tl"></span><span class="lf-bk tr"></span><span class="lf-bk bl"></span><span class="lf-bk br"></span><div class="lf-scan"></div><div class="lf-tele">LIVE · '+esc(P.name)+'</div></div>'+
     '<aside class="lf-side"><div class="lf-badge"><span class="dot"></span>'+esc(P.title)+'</div><div class="lf-ctl" id="lf-ctl"></div><div class="inv-flow" id="inv-flow"></div></aside></div>';
   $('#lab-full').classList.add('on');   // show first so the stage has real dimensions when the sim mounts
   var stage=$('#lf-stage'); labFullInst=SIMS[s](stage); if(labFullInst.controls) labFullInst.controls($('#lf-ctl'));
-  renderFlow(s,$('#inv-flow'));
+  renderFlow(s,$('#inv-flow'));AppDesign.enhance($('#lab-full'));AppDesign.enterLab();
+  $('#lf-focus').addEventListener('click',function(){var full=$('#lab-full').classList.toggle('pe-stage-focus');this.setAttribute('aria-pressed',String(full));this.setAttribute('aria-label',full?'Show investigation notebook':'Expand experiment');window.dispatchEvent(new Event('resize'));});
   $('#lf-close').addEventListener('click',closeLabFull); $('#lf-back').addEventListener('click',closeLabFull);
   $('#lf-ask').addEventListener('click',function(){ if(typeof Tutor!=='undefined'&&Tutor.persona) Tutor.persona(pid); Tutor.ask('Guide me through the '+meta.n+' investigation — what should I notice, and why does it happen?', meta.n); });
   Me.award(3,'Started an investigation'); try{ Track.ev('lab-open'); }catch(eV){}
   if(Atmo&&Atmo.theme) Atmo.theme(hexRGB(pc),.9);
 }
-function closeLabFull(){ if(labFullInst&&labFullInst.stop) labFullInst.stop(); labFullInst=null; $('#lab-full').classList.remove('on'); if(Atmo&&Atmo.theme) Atmo.theme(hexRGB('#4cb8f5'),.4); }
+function closeLabFull(){ if(labFullInst&&labFullInst.stop) labFullInst.stop(); labFullInst=null; $('#lab-full').classList.remove('on');AppDesign.exitLab(); if(Atmo&&Atmo.theme) Atmo.theme(hexRGB('#4cb8f5'),.4); }
 function mountMini(id,type){ var c=$('#'+id); if(c) homeSim=SIMS[type](c); }
 
 /* ===== SEARCH / PALETTE ===== */
@@ -12489,6 +12871,64 @@ var Landing=(function(){
 })();
 
 /* EXPERIENCE:LAUNCH:END */
+/* EXPERIENCE:APPDESIGN:START */
+/* Shared application interaction layer. No physics, auth or provider changes. */
+var AppDesign=(function(){
+  var sheet=null,lastTrigger=null,focusNext=false,labTrigger=null;
+  var paths={
+    home:'M3 11 12 3l9 8M5 10v11h5v-7h4v7h5V10',
+    universe:'M12 3v3m0 12v3M3 12h3m12 0h3M6 6l2 2m8 8 2 2M6 18l2-2m8-8 2-2M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0',
+    learn:'M12 6v15M3 4c4-1 7 0 9 2 2-2 5-3 9-2v15c-4-1-7 0-9 2-2-2-5-3-9-2Z',
+    solve:'M19 4H5l7 8-7 8h14',practice:'M20 7a9 9 0 1 0 1 7M15 4h6v6M8 12l3 3 6-7',
+    lab:'M9 3h6M10 3v6L4 19q-1 2 2 2h12q3 0 2-2L14 9V3M8 14h8',
+    sandbox:'M4 5h16v14H4ZM8 9l4-2 4 2v6l-4 2-4-2ZM8 9l4 2 4-2m-4 2v6',
+    research:'M5 3h10l4 4v14H5ZM14 3v5h5M8 12h8m-8 4h5',
+    progress:'M4 20h16M7 16V9m5 7V4m5 12v-5',settings:'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8M12 2v3m0 14v3M2 12h3m14 0h3M5 5l2 2m10 10 2 2M5 19l2-2M17 7l2-2',
+    search:'M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0m-2 5 6 6',
+    arrow:'M5 12h14m-5-5 5 5-5 5',close:'M6 6l12 12M6 18 18 6',explore:'M4 4h6v6H4Zm10 0h6v6h-6ZM4 14h6v6H4Zm10 0h6v6h-6Z',
+    tutor:'M12 3c1 6 3 8 9 9-6 1-8 3-9 9-1-6-3-8-9-9 6-1 8-3 9-9Z',
+    expand:'M9 3H3v6m12-6h6v6M3 15v6h6m12-6v6h-6'
+  };
+  function icon(name){return '<svg class="pe-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="'+(paths[name]||paths.explore)+'"/></svg>';}
+  function openExplore(trigger){if(!sheet)return;lastTrigger=trigger||document.activeElement;sheet.showModal();}
+  function closeExplore(){if(sheet&&sheet.open)sheet.close();}
+  function makeNavigation(){
+    $$('.side .nav-i[data-go]:not(#nav-acct)').forEach(function(n){var b=ce('button',n.className);for(var a of n.attributes)b.setAttribute(a.name,a.value);var oldIcon=n.querySelector('.ic'),label=n.textContent.trim();if(oldIcon)label=label.replace(oldIcon.textContent,'').trim();b.type='button';b.innerHTML=icon(n.dataset.go)+'<span>'+esc(label)+'</span>';n.replaceWith(b);});
+    var search=$('#nav-cmdk');if(search){search.setAttribute('role','button');search.tabIndex=0;search.querySelector('.ic').innerHTML=icon('search');}
+    $$('.mtab [data-go]').forEach(function(n){n.innerHTML=icon(n.dataset.go)+'<span>'+esc(n.dataset.go==='progress'?'Me':n.dataset.go.charAt(0).toUpperCase()+n.dataset.go.slice(1))+'</span>';});
+    var more=ce('button','pe-explore-trigger');more.id='pe-explore';more.type='button';more.setAttribute('aria-haspopup','dialog');more.innerHTML=icon('explore')+'<span>Explore</span>';$('.topbar').insertBefore(more,$('.t-search'));more.addEventListener('click',function(){openExplore(more);});
+    sheet=ce('dialog','pe-explore-sheet');sheet.id='pe-explore-sheet';sheet.setAttribute('aria-labelledby','pe-explore-title');
+    var routes=[['solve','Solve','Model a problem, step by step.'],['practice','Practice','Build confidence through retrieval.'],['sandbox','Sandbox','Build a system and change its rules.'],['research','Research','Ask a question. Follow the evidence.'],['journeys','Learning journeys','A guided path through connected ideas.'],['deeps','Deep courses','Take one idea further.'],['adv','Advanced physics','Derivations and computational models.'],['settings','Settings','Personalise your learning space.']];
+    sheet.innerHTML='<header><div><div class="eyebrow">YOUR PHYSICS WORKSPACE</div><h2 id="pe-explore-title">Follow your curiosity.</h2></div><button id="pe-explore-close" aria-label="Close Explore">'+icon('close')+'</button></header><div class="pe-explore-grid">'+routes.map(function(r){return '<button data-explore-go="'+r[0]+'">'+icon(r[0])+'<span><b>'+r[1]+'</b><small>'+r[2]+'</small></span>'+icon('arrow')+'</button>';}).join('')+'</div><footer><span>One subject. Many ways of thinking.</span><button id="pe-apps">Other Entelloq apps ↗</button></footer>';
+    document.body.appendChild(sheet);$('#pe-explore-close').addEventListener('click',closeExplore);
+    sheet.addEventListener('click',function(e){if(e.target===sheet){var r=sheet.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)closeExplore();}var b=e.target.closest('[data-explore-go]');if(b){closeExplore();go(b.dataset.exploreGo);}});
+    sheet.addEventListener('close',function(){if(lastTrigger&&lastTrigger.isConnected)lastTrigger.focus({preventScroll:true});});
+    $('#pe-apps').addEventListener('click',function(){closeExplore();var b=$('#eqx-fab');if(b)b.click();});
+  }
+  function enhance(scope){
+    if(!scope)return;
+    // These navigation cards use the app's delegated router, with no private listeners.
+    $$('.rec[data-link],.titem[data-link],.pg-dom[data-link]',scope).forEach(function(n){if(n.tagName==='BUTTON')return;var b=ce('button',n.className);for(var a of n.attributes)b.setAttribute(a.name,a.value);b.type='button';while(n.firstChild)b.appendChild(n.firstChild);n.replaceWith(b);});
+    $$('input:not([type=hidden]):not([type=range]):not([type=checkbox]):not([type=radio]),textarea',scope).forEach(function(n){if(n.labels&&n.labels.length||n.hasAttribute('aria-label')||n.hasAttribute('aria-labelledby'))return;var label=n.placeholder||'Your response';n.setAttribute('aria-label',label.replace(/[⌕✦]/g,'').trim());});
+  }
+  function afterView(){
+    document.body.dataset.view=curView;
+    enhance(main);
+    var prompt=$('#tu-role');if(prompt)prompt.textContent=curView==='lesson'?'Concept companion':curView==='research'?'Research companion':'Your physics companion';
+    if(focusNext){focusNext=false;var h=main.querySelector('h1');if(h){h.tabIndex=-1;h.focus({preventScroll:true});}}
+  }
+  function enterLab(){labTrigger=document.activeElement;$('.app').inert=true;$('.mtab').inert=true;$('#lf-back').focus();}
+  function exitLab(){$('.app').inert=false;$('.mtab').inert=false;$('#lab-full').classList.remove('pe-stage-focus');if(labTrigger&&labTrigger.isConnected)labTrigger.focus({preventScroll:true});}
+  function init(){
+    makeNavigation();enhance(document.body);
+    var fab=$('#tutor-fab');if(fab){fab.innerHTML=icon('tutor');fab.setAttribute('aria-label','Ask Entelloq');fab.title='Ask Entelloq';}
+    document.addEventListener('keydown',function(e){if((e.key==='Enter'||e.key===' ')&&e.target.matches('.nav-i[role=button],.side-card[role=button]')){e.preventDefault();focusNext=true;e.target.click();}var lab=$('#lab-full.on');if(lab&&!$('#tutor.on')){if(e.key==='Escape')closeLabFull();if(e.key==='Tab'){var items=$$('button,input,textarea,select,[tabindex="0"]',lab).filter(function(n){return !n.disabled&&n.getClientRects().length;});var first=items[0],last=items[items.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}}});
+    document.addEventListener('click',function(e){if(e.detail===0&&e.target.closest('[data-go],[data-link]'))focusNext=true;});
+  }
+  return {init:init,afterView:afterView,enhance:enhance,icon:icon,enterLab:enterLab,exitLab:exitLab};
+})();
+
+/* EXPERIENCE:APPDESIGN:END */
 /* ===== SANDBOX WORKSPACE UX — undo/redo ring · regioned side rail · PNG snapshot · camera reset ===== */
 window.PeqSbxUX=(function(){
   var CAP=40, LSKEY='peq_sbx_regions';
@@ -13582,7 +14022,7 @@ function viewSettings(){ setCrumb([{t:'Settings'}]);
   $('#st-reset').addEventListener('click',function(){ if(!confirm('Erase ALL local progress, mastery, streaks and preferences? This cannot be undone.')) return; try{ var ks=[],i2; for(i2=0;i2<localStorage.length;i2++){ var kk=localStorage.key(i2); if(kk&&kk.indexOf('peq_')===0) ks.push(kk); } ks.forEach(function(kk2){ localStorage.removeItem(kk2); }); }catch(e){} location.reload(); });
 }
 /* ===== INIT ===== */
-Me.streakInit(); renderSide(); buildSide(); Tutor.init(); Theme.init(); Presence.init();
+Me.streakInit(); renderSide(); buildSide(); Tutor.init(); Theme.init(); Presence.init();AppDesign.init();
 go(window.__peqShare?'sandbox':'home');
 try{ var _pp=JSON.parse(localStorage.getItem('peq_profile')||'null'); if(_pp&&_pp.lens&&!(typeof Style!=='undefined'&&Style.get())) window.__lensDefault=_pp.lens; }catch(e){}
 if(Landing.pending())Landing.show(); // Personalisation is available from Home; never interrupt an experiment.

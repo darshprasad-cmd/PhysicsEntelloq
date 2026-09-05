@@ -23,7 +23,7 @@ async function check(name,fn){await fn();report.checks.push(name);console.log('P
     const range=page.locator('#pe-velocity');await range.fill('1.5');await range.dispatchEvent('input');assert.match(await page.locator('#pe-orbit-state').innerText(),/ESCAPE/);await range.fill('0.7');await range.dispatchEvent('input');assert.match(await page.locator('#pe-orbit-state').innerText(),/EARTH-INTERSECTING/);await range.fill('1');await range.dispatchEvent('input');
    });
    await check(device+' enter without forced onboarding',async()=>{await page.getByRole('button',{name:'Enter the Physics Lab',exact:true}).first().click();await page.locator('.cc-home').waitFor();assert.equal(await page.locator('#onb').count(),0);});
-   await page.screenshot({path:path.join(out,phase+'-'+device+'-home.png')});
+   await page.waitForTimeout(600);await page.screenshot({path:path.join(out,phase+'-'+device+'-home.png')});
    await check(device+' start exploring opens cradle',async()=>{await page.locator('#cc-start').click();await page.locator('.cradle-mode').waitFor();await page.waitForTimeout(1000);assert.equal(await page.locator('#cr-lab').isVisible(),true);assert.match(await page.locator('#cr-peak').innerText(),/N/);});
    await page.screenshot({path:path.join(out,phase+'-'+device+'-cradle.png')});
    await check(device+' pause freezes physics; play advances it',async()=>{await page.locator('#cr-stage-pause').click();const a=await page.evaluate(()=>window.__peqSbx.simT());await page.waitForTimeout(200);assert.equal(await page.evaluate(()=>window.__peqSbx.simT()),a);await page.locator('#cr-stage-pause').click();await page.waitForTimeout(250);assert.ok(await page.evaluate(()=>window.__peqSbx.simT())>a);});

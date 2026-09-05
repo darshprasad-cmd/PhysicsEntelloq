@@ -2457,8 +2457,6 @@ html.pe-refined[data-theme=light] .field-art{filter:brightness(.63) saturate(.8)
 
 </style>
 <!-- EXPERIENCE:CSS:END -->
-<link rel="stylesheet" href="assets/feature-tutorials.css">
-<script defer src="assets/feature-tutorials.js" data-app="physics"></script>
 </head>
 <body>
 <noscript><section style="position:fixed;inset:0;z-index:100101;overflow:auto;background:#070e16;color:#ecefe9;padding:clamp(24px,8vw,100px);font:18px/1.8 system-ui"><p>PHYSICS ENTELLOQ / AN INTERACTIVE LABORATORY</p><h1>Understand the universe by changing it.</h1><p>Explore orbits, elastic strings, waves and connected physics concepts. The interactive experiments need JavaScript enabled in your browser.</p><h2>One model to start with</h2><p>A cord stretched by ΔL carries tension T = EA × ΔL / L. A loose cord carries no compressive force. When you move two supports apart, the rope becomes shallower and needs more tension to hold the same weight.</p><p>Our cradle is a planar elastic-string approximation, not a simulation of real knots.</p><a style="text-decoration:underline" href="https://mmacklin.com/xpbd.pdf">Read about the constraint method</a></section></noscript>
@@ -14323,6 +14321,7 @@ if(Landing.pending())Landing.show(); // Personalisation is available from Home; 
 <script data-app="physics">/* Guided feature demonstrations. Navigation only: never starts a camera or changes a specimen. */
 (function(){
   'use strict';
+  if(window.EntelloqFeatureGuide)return;
   var physics=document.currentScript.dataset.app==='physics',root=null,index=0,timer=0,trigger=null,active=false,started=0,scrolled=false;
   function find(selector){var el=Array.from(document.querySelectorAll(selector)).find(function(n){var r=n.getBoundingClientRect();return r.width>0&&r.height>0;});if(el)return {el:el,frame:null};for(var id of ['launchFrame','viewFrame']){var frame=document.getElementById(id);try{el=frame&&frame.contentDocument&&frame.contentDocument.querySelector(selector);if(el)return {el:el,frame:frame};}catch(e){}}return null;}
   function enterSandbox(){if(document.getElementById("sbx-c"))return;var b=document.querySelector("[data-explore-go=\"sandbox\"]");if(b)b.click();}

@@ -242,7 +242,7 @@ html.pe-refined[data-theme=light] .field-art{filter:brightness(.63) saturate(.8)
 .pe-refined .reason-note{display:block;margin:15px 0;font-size:13px;color:var(--ink-dim)}
 .pe-refined .reason-note textarea{display:block;width:100%;min-height:90px;border:1px solid var(--line);background:var(--bg);border-radius:5px;padding:12px;font:15px/1.6 var(--sans);margin-top:8px;resize:vertical}
 /* One visible tutor. Specialist controls remain available, quietly, on demand. */
-.pe-refined #eq-pres,.pe-refined #eqx-fab,.pe-refined #audio-btn{display:none!important}
+.pe-refined #eq-pres,.pe-refined #audio-btn{display:none!important}
 .pe-refined #tutor-fab{width:48px;height:48px;min-width:48px;min-height:48px;right:24px;bottom:24px;border:1px solid #62818a;border-radius:50%;padding:0;display:grid;place-items:center;background:#c2e0df;color:#12313a;box-shadow:0 4px 16px #0003;animation:none;transform:none}
 .pe-refined #tutor-fab .pe-icon-svg{width:23px;height:23px}
 .pe-refined #tutor-fab::before,.pe-refined #tutor-fab::after{display:none}

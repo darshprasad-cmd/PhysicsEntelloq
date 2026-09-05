@@ -27,7 +27,7 @@ fs.mkdirSync(out,{recursive:true});
   const email=device+'-'+stamp+'@example.invalid';
   const before=await page.evaluate(()=>({done:Me.done,xp:Me.xp}));
   await page.evaluate(e=>window.PEQ_gauth._simSignIn({n:'Welcome QA',e}),email);
-  await page.locator('#welcome-tour[open]').waitFor();assert.equal(await page.locator('#pe-launch').count(),0,'Successful identity exits landing');
+  await page.locator('#welcome-tour[open]').waitFor();assert.equal(await page.locator('#lnd').count(),0,'Successful identity exits landing');
   if(device==='desktop'){
    assert.equal(await page.locator('#welcome-play').getAttribute('aria-pressed'),'true');await page.mouse.move(0,0);await page.waitForTimeout(11400);
    assert.match(await page.locator('#welcome-count').innerText(),/STEP 2 OF 8/,'Auto-play advances');

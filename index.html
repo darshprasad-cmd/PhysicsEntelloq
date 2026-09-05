@@ -2038,7 +2038,7 @@ html[data-theme="light"] .lw-card{background:rgba(30,90,150,.026)}
 /* Shared experience materials. Cyan = force, amber = motion, ivory = reading. */
 :root{--pe-night:#070e16;--pe-panel:#0d1721;--pe-paper:#ecefe9;--pe-muted:#99abb5;--pe-force:#79d5df;--pe-energy:#efbd80;--pe-line:rgba(171,207,215,.16);--pe-radius:20px;--pe-ease:cubic-bezier(.23,1,.32,1);--pe-fast:160ms;--pe-space:clamp(22px,5vw,84px)}
 .pe-launch,.pe-launch *{box-sizing:border-box}.pe-launch{position:fixed;inset:0;z-index:100100;background:var(--pe-night);color:var(--pe-paper);overflow:auto;overflow-x:hidden;font-family:var(--font,'Inter',sans-serif);scrollbar-color:#334c57 #070e16;isolation:isolate}
-.pe-landing-open #eq-pres,.pe-landing-open #tutor,.pe-landing-open #eqx-fab{visibility:hidden}.pe-launch button,.pe-launch a{color:inherit;font:inherit}.pe-launch button{cursor:pointer}.pe-launch a{text-decoration:none}.pe-launch :focus-visible,.cc-home :focus-visible,.cr-lab :focus-visible{outline:2px solid var(--pe-force);outline-offset:5px}
+.pe-landing-open #eq-pres,.pe-landing-open #tutor{visibility:hidden}.pe-launch button,.pe-launch a{color:inherit;font:inherit}.pe-launch button{cursor:pointer}.pe-launch a{text-decoration:none}.pe-launch :focus-visible,.cc-home :focus-visible,.cr-lab :focus-visible{outline:2px solid var(--pe-force);outline-offset:5px}
 .pe-launch button{transition:transform var(--pe-fast) var(--pe-ease),background var(--pe-fast),border-color var(--pe-fast)}.pe-launch button:active{transform:scale(.98)}
 .pe-skip{position:absolute;left:20px;top:12px;transform:translateY(-150%);padding:12px;background:#d7f5f4;color:#07151c!important;z-index:8}.pe-skip:focus{transform:none}
 .pe-nav{height:92px;display:flex;align-items:center;justify-content:space-between;padding:0 var(--pe-space);gap:24px;border-bottom:1px solid var(--pe-line);position:relative;z-index:3}.pe-brand{display:flex;align-items:center;gap:6px;font-size:16px;white-space:nowrap;letter-spacing:-.4px}.pe-brand strong{font-weight:650}.pe-brand small{font-family:var(--mono,monospace);font-size:8px;letter-spacing:1.6px;line-height:1.5;color:#8fabb5;max-width:88px;white-space:normal;border-left:1px solid var(--pe-line);padding-left:18px;margin-left:16px}.pe-mark{display:grid;place-items:center;width:32px;height:36px;font-size:40px;font-weight:300;color:var(--pe-force);margin-right:6px}.pe-nav nav{display:flex;gap:32px;font-size:12px;color:#adbdc3}
@@ -2310,7 +2310,7 @@ html.pe-refined[data-theme=light] .field-art{filter:brightness(.63) saturate(.8)
 .pe-refined .reason-note{display:block;margin:15px 0;font-size:13px;color:var(--ink-dim)}
 .pe-refined .reason-note textarea{display:block;width:100%;min-height:90px;border:1px solid var(--line);background:var(--bg);border-radius:5px;padding:12px;font:15px/1.6 var(--sans);margin-top:8px;resize:vertical}
 /* One visible tutor. Specialist controls remain available, quietly, on demand. */
-.pe-refined #eq-pres,.pe-refined #eqx-fab,.pe-refined #audio-btn{display:none!important}
+.pe-refined #eq-pres,.pe-refined #audio-btn{display:none!important}
 .pe-refined #tutor-fab{width:48px;height:48px;min-width:48px;min-height:48px;right:24px;bottom:24px;border:1px solid #62818a;border-radius:50%;padding:0;display:grid;place-items:center;background:#c2e0df;color:#12313a;box-shadow:0 4px 16px #0003;animation:none;transform:none}
 .pe-refined #tutor-fab .pe-icon-svg{width:23px;height:23px}
 .pe-refined #tutor-fab::before,.pe-refined #tutor-fab::after{display:none}
@@ -14121,6 +14121,9 @@ if(Landing.pending())Landing.show(); // Personalisation is available from Home; 
 }
 @media print{.eqx-fab,.eqx-panel{display:none!important}}
 @media (prefers-reduced-motion:reduce){.eqx-fab,.eqx-panel,.eqx-item{transition-duration:.01ms!important}}
+.eqx-founder{margin:6px 10px;border-top:1px solid #303640;padding-top:12px;font-size:12px;line-height:1.6;color:#dce3ed}.eqx-founder summary{cursor:pointer;min-height:36px}.eqx-founder summary span{display:block;color:#aeb9c8;margin-left:15px}.eqx-founder p{margin:6px 0 10px;color:#b8c4d4}.eqx-founder a{display:block;color:#b9e8e0;padding:6px 0;text-decoration:underline}.eqx-founder :focus-visible{outline:2px solid #b9e8e0;outline-offset:3px}
+.eqx-panel{max-height:calc(100dvh - 110px);overflow-y:auto}.eqx-fab{min-height:44px}.eqx-x{width:36px;height:36px}
+@media(max-width:760px){.eqx-fab,.eqx-panel{bottom:calc(78px + env(safe-area-inset-bottom,0px))}}
 </style>
 
 <button class="eqx-fab" id="eqx-fab" type="button" aria-expanded="false" aria-controls="eqx-panel" aria-label="Switch Entelloq app">
@@ -14138,6 +14141,7 @@ if(Landing.pending())Landing.show(); // Personalisation is available from Home; 
     </button>
   </div>
   <div id="eqx-list"></div>
+  <details class="eqx-founder"><summary>Meet the founder <span>Darsh Prasad</span></summary><div><strong>Darsh Prasad</strong><p>Founder, Entelloq Networks. Designer and engineer of Quant, Physics and Biology Entelloq — interactive tools for learning through exploration.</p><a href="https://entelloq.com/#leadership" target="_top">Read the founder’s story ↗</a><a href="mailto:entelloqnetworks@gmail.com">Get in touch ↗</a></div></details>
   <div class="eqx-foot">
     <a href="https://entelloq.com" target="_top">entelloq.com</a>
     <span class="eqx-soc">
@@ -14190,6 +14194,7 @@ if(Landing.pending())Landing.show(); // Personalisation is available from Home; 
     fab.setAttribute('aria-expanded','false');
     fab.focus();
   }
+  panel.addEventListener('focusout',function(){setTimeout(function(){if(panel.classList.contains('eqx-open')&&!panel.contains(document.activeElement)&&document.activeElement!==fab){panel.classList.remove('eqx-open');fab.classList.remove('eqx-hide');fab.setAttribute('aria-expanded','false');}},0);});
   fab.addEventListener('click', open);
   if (closeBtn) closeBtn.addEventListener('click', close);
   document.addEventListener('keydown', function(e){

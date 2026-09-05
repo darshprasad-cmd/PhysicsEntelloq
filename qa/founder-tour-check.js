@@ -25,7 +25,7 @@ fs.mkdirSync(out,{recursive:true});
   await page.goto('https://physics.entelloq.com/?landing&still&welcomeqa='+stamp,{waitUntil:'load'});
   await page.locator('[data-signup]').first().click();
   const email=device+'-'+stamp+'@example.invalid';
-  const before=await page.evaluate(()=>({done:Me.done,xp:Me.xp}));
+  const before=await page.evaluate(()=>{const m=JSON.parse(localStorage.getItem('peq_learn_v1')||'{}');return{done:m.done,xp:m.xp};});
   await page.evaluate(e=>window.PEQ_gauth._simSignIn({n:'Welcome QA',e}),email);
   await page.locator('#welcome-tour[open]').waitFor();assert.equal(await page.locator('#lnd').count(),0,'Successful identity exits landing');
   if(device==='desktop'){
@@ -36,19 +36,21 @@ fs.mkdirSync(out,{recursive:true});
   for(let i=1;i<=8;i++){
    assert.equal(await page.locator('#welcome-count').innerText(),'STEP '+i+' OF 8');await scan('step-'+i,'#welcome-tour');
    const card=await page.locator('#welcome-card').boundingBox();assert.ok(card.x>=0&&card.x+card.width<=width+1&&card.y>=0&&card.y+card.height<=height+1,'Card within viewport');
+   assert.equal(await page.locator('#welcome-card').evaluate(c=>c.scrollWidth>c.clientWidth+1),false,'Tour controls do not overflow');
+   if(width<=700){const spot=await page.locator('#welcome-highlight').boundingBox();assert.ok(spot.height>20,'Highlighted control remains visible');assert.ok(spot.y+spot.height<=card.y||spot.y>=card.y+card.height,'Card does not cover its spotlight');if(![6,7].includes(i)){const bar=await page.locator('.topbar').boundingBox();assert.ok(spot.y>=bar.y+bar.height,'Sticky header does not cover the highlighted control');}}
    assert.equal(await page.locator('#welcome-tour').evaluate(d=>d.contains(document.activeElement)),true,'Focus stays in tutorial');
    await page.locator('#welcome-next').click();
   }
   assert.equal(await page.locator('#welcome-tour[open]').count(),0);assert.equal(await page.evaluate(e=>JSON.parse(localStorage.getItem('peq_welcome_v1:'+encodeURIComponent(e))).status,email),'completed');
-  assert.deepEqual(await page.evaluate(()=>({done:Me.done,xp:Me.xp})),before,'Tour does not award learning progress');
-  await page.reload({waitUntil:'load'});assert.equal(await page.locator('#welcome-tour[open]').count(),0,'Completion survives reload');
-  await page.evaluate(()=>go('settings'));await page.locator('[data-welcome-replay]').click();await page.locator('#welcome-tour[open]').waitFor();
+  assert.deepEqual(await page.evaluate(()=>{const m=JSON.parse(localStorage.getItem('peq_learn_v1')||'{}');return{done:m.done,xp:m.xp};}),before,'Tour does not award learning progress');
+  await page.goto('https://physics.entelloq.com/?still&welcomeqa='+stamp,{waitUntil:'load'});assert.equal(await page.locator('#welcome-tour[open]').count(),0,'Completion survives a fresh page load');
+  await page.locator('#pe-explore').click();await page.locator('[data-explore-go="settings"]').click();await page.locator('[data-welcome-replay]').click();await page.locator('#welcome-tour[open]').waitFor();
   await page.keyboard.press('Tab');assert.equal(await page.locator('#welcome-play').getAttribute('aria-pressed'),'false');
   await page.keyboard.press('Escape');assert.equal(await page.locator('#welcome-tour[open]').count(),0);
   assert.equal(await page.evaluate(e=>JSON.parse(localStorage.getItem('peq_welcome_v1:'+encodeURIComponent(e))).status,email),'skipped');
   await page.evaluate(()=>{PEQ_gauth.signOut();PEQ_gauth._simSignIn({n:'Second QA',e:'second-'+Date.now()+'@example.invalid'});});
   await page.locator('#welcome-tour[open]').waitFor();await page.locator('#welcome-skip').click();
-  await page.evaluate(()=>{document.documentElement.dataset.theme='light';go('settings');});
+  await page.locator('#pe-explore').click();await page.locator('[data-explore-go="settings"]').click();
   const light=page.locator('[data-th="light"]');if(await light.count())await light.click();
   await page.locator('[data-welcome-replay]').click();await scan('light-tour','#welcome-tour');await page.locator('#welcome-skip').click();
   assert.deepEqual(errors,[],'No page errors');report.push({device,flows:'autoplay, account handoff, guest, 8 steps, completion, replay, skip, second identity, reduced motion, keyboard, light theme',errors});await context.close();

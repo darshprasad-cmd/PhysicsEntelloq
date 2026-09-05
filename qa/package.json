@@ -1,0 +1,8 @@
+{
+  "name": "physics-entelloq-live-qa",
+  "private": true,
+  "description": "Test-only accessibility scanner; Playwright is supplied by the workspace runtime",
+  "devDependencies": {
+    "axe-core": "4.10.3"
+  }
+}

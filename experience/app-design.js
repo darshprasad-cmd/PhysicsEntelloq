@@ -36,6 +36,7 @@ var AppDesign=(function(){
     // These navigation cards use the app's delegated router, with no private listeners.
     $$('.rec[data-link],.titem[data-link],.pg-dom[data-link]',scope).forEach(function(n){if(n.tagName==='BUTTON')return;var b=ce('button',n.className);for(var a of n.attributes)b.setAttribute(a.name,a.value);b.type='button';while(n.firstChild)b.appendChild(n.firstChild);n.replaceWith(b);});
     $$('input:not([type=hidden]):not([type=range]):not([type=checkbox]):not([type=radio]),textarea',scope).forEach(function(n){if(n.labels&&n.labels.length||n.hasAttribute('aria-label')||n.hasAttribute('aria-labelledby'))return;var label=n.placeholder||'Your response';n.setAttribute('aria-label',label.replace(/[⌕✦]/g,'').trim());});
+    $$('input[type=range]',scope).forEach(function(n){if(n.labels&&n.labels.length||n.hasAttribute('aria-label')||n.hasAttribute('aria-labelledby'))return;var label=n.parentElement.cloneNode(true);$$('input,button,b,output,canvas',label).forEach(function(x){x.remove();});var text=label.textContent.trim().replace(/\s+/g,' ');if(text)n.setAttribute('aria-label',text.slice(0,120));});
   }
   function afterView(){
     document.body.dataset.view=curView;

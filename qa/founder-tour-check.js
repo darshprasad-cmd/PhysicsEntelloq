@@ -37,7 +37,7 @@ fs.mkdirSync(out,{recursive:true});
    assert.equal(await page.locator('#welcome-count').innerText(),'STEP '+i+' OF 8');await scan('step-'+i,'#welcome-tour');
    const card=await page.locator('#welcome-card').boundingBox();assert.ok(card.x>=0&&card.x+card.width<=width+1&&card.y>=0&&card.y+card.height<=height+1,'Card within viewport');
    assert.equal(await page.locator('#welcome-card').evaluate(c=>c.scrollWidth>c.clientWidth+1),false,'Tour controls do not overflow');
-   if(width<=700){const spot=await page.locator('#welcome-highlight').boundingBox();assert.ok(spot.height>20,'Highlighted control remains visible');assert.ok(spot.y+spot.height<=card.y||spot.y>=card.y+card.height,'Card does not cover its spotlight');}
+   if(width<=700){const spot=await page.locator('#welcome-highlight').boundingBox();assert.ok(spot.height>20,'Highlighted control remains visible');assert.ok(spot.y+spot.height<=card.y||spot.y>=card.y+card.height,'Card does not cover its spotlight');if(![6,7].includes(i)){const bar=await page.locator('.topbar').boundingBox();assert.ok(spot.y>=bar.y+bar.height,'Sticky header does not cover the highlighted control');}}
    assert.equal(await page.locator('#welcome-tour').evaluate(d=>d.contains(document.activeElement)),true,'Focus stays in tutorial');
    await page.locator('#welcome-next').click();
   }

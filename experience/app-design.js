@@ -9,6 +9,7 @@ var AppDesign=(function(){
     lab:'M9 3h6M10 3v6L4 19q-1 2 2 2h12q3 0 2-2L14 9V3M8 14h8',
     sandbox:'M4 5h16v14H4ZM8 9l4-2 4 2v6l-4 2-4-2ZM8 9l4 2 4-2m-4 2v6',
     research:'M5 3h10l4 4v14H5ZM14 3v5h5M8 12h8m-8 4h5',
+    adv:'M3 12h18M12 3v18M6 6c-5 5 7 16 12 12S11 1 6 6Z',
     progress:'M4 20h16M7 16V9m5 7V4m5 12v-5',settings:'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8M12 2v3m0 14v3M2 12h3m14 0h3M5 5l2 2m10 10 2 2M5 19l2-2M17 7l2-2',
     search:'M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0m-2 5 6 6',
     arrow:'M5 12h14m-5-5 5 5-5 5',close:'M6 6l12 12M6 18 18 6',explore:'M4 4h6v6H4Zm10 0h6v6h-6ZM4 14h6v6H4Zm10 0h6v6h-6Z',
@@ -24,7 +25,7 @@ var AppDesign=(function(){
     $$('.mtab [data-go]').forEach(function(n){n.innerHTML=icon(n.dataset.go)+'<span>'+esc(n.dataset.go==='progress'?'Me':n.dataset.go.charAt(0).toUpperCase()+n.dataset.go.slice(1))+'</span>';});
     var more=ce('button','pe-explore-trigger');more.id='pe-explore';more.type='button';more.setAttribute('aria-haspopup','dialog');more.innerHTML=icon('explore')+'<span>Explore</span>';$('.topbar').insertBefore(more,$('.t-search'));more.addEventListener('click',function(){openExplore(more);});
     sheet=ce('dialog','pe-explore-sheet');sheet.id='pe-explore-sheet';sheet.setAttribute('aria-labelledby','pe-explore-title');
-    var routes=[['solve','Solve','Model a problem, step by step.'],['practice','Practice','Build confidence through retrieval.'],['sandbox','Sandbox','Build a system and change its rules.'],['research','Research','Ask a question. Follow the evidence.'],['journeys','Learning journeys','A guided path through connected ideas.'],['deeps','Deep courses','Take one idea further.'],['adv','Advanced physics','Derivations and computational models.'],['settings','Settings','Personalise your learning space.']];
+    var routes=[['solve','Solve','Model a problem, step by step.'],['practice','Practice','Build confidence through retrieval.'],['sandbox','Sandbox','Build a system and change its rules.'],['research','Research','Ask a question. Follow the evidence.'],['journeys','Learning journeys','A guided path through connected ideas.'],['deeps','Deep courses','Take one idea further.'],['adv','Advanced Studio','Upper-undergraduate physics. Preparation expected.'],['settings','Settings','Personalise your learning space.']];
     sheet.innerHTML='<header><div><div class="eyebrow">YOUR PHYSICS WORKSPACE</div><h2 id="pe-explore-title">Follow your curiosity.</h2></div><button id="pe-explore-close" aria-label="Close Explore">'+icon('close')+'</button></header><div class="pe-explore-grid">'+routes.map(function(r){return '<button data-explore-go="'+r[0]+'">'+icon(r[0])+'<span><b>'+r[1]+'</b><small>'+r[2]+'</small></span>'+icon('arrow')+'</button>';}).join('')+'</div><footer><span>One subject. Many ways of thinking.</span><button id="pe-apps">Other Entelloq apps ↗</button></footer>';
     document.body.appendChild(sheet);$('#pe-explore-close').addEventListener('click',closeExplore);
     sheet.addEventListener('click',function(e){if(e.target===sheet){var r=sheet.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)closeExplore();}var b=e.target.closest('[data-explore-go]');if(b){closeExplore();go(b.dataset.exploreGo);}});

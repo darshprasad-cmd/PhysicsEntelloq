@@ -29,3 +29,5 @@ jobs:
         run: node .github/build-experience.js --check
       - name: Check cradle physics against analytical results
         run: node --test .github/test-cradle.js
+      - name: Check application design contracts
+        run: node --test .github/test-app-design.js

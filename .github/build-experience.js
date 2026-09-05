@@ -12,8 +12,11 @@ embed('LAUNCH','launch.js','var Landing=(function(){','/* ===== SANDBOX WORKSPAC
 embed('MODEL','cradle-model.js','var Sandbox=(function(){');
 embed('STUDIO','cradle-studio.js','  function accel(){ var n=B.length');
 embed('HOME','home.js','function viewHome(){','function recCard(');
+embed('APPDESIGN','app-design.js','/* ===== SANDBOX WORKSPACE UX');
+embed('ATLAS','atlas.js','function viewUniverse(){','/* ===== Pass 87');
+embed('LIBRARY','library-entry.js','function viewLearn(){','var domFilter=');
 const cssStart='<!-- EXPERIENCE:CSS:START -->',cssEnd='<!-- EXPERIENCE:CSS:END -->';
-const css=cssStart+'\n<style id="experience-css">\n'+fs.readFileSync(path.join(root,'experience','experience.css'),'utf8')+'\n</style>\n'+cssEnd;
+const css=cssStart+'\n<style id="experience-css">\n'+['experience.css','app-design.css'].map(file=>fs.readFileSync(path.join(root,'experience',file),'utf8')).join('\n')+'\n</style>\n'+cssEnd;
 if(html.includes(cssStart)){const a=html.indexOf(cssStart),b=html.indexOf(cssEnd,a);html=html.slice(0,a)+css+html.slice(b+cssEnd.length);}
 else html=html.replace('</head>',css+'\n</head>');
 if(process.argv.includes('--check')){

@@ -20,6 +20,6 @@ const css=cssStart+'\n<style id="experience-css">\n'+['experience.css','app-desi
 if(html.includes(cssStart)){const a=html.indexOf(cssStart),b=html.indexOf(cssEnd,a);html=html.slice(0,a)+css+html.slice(b+cssEnd.length);}
 else html=html.replace('</head>',css+'\n</head>');
 if(process.argv.includes('--check')){
-  if(fs.readFileSync(target,'utf8')!==html)throw Error('Experience sources and index.html differ. Run node .github/build-experience.js');
+  if(fs.readFileSync(target,'utf8').replace(/\r\n/g,'\n')!==html.replace(/\r\n/g,'\n'))throw Error('Experience sources and index.html differ. Run node .github/build-experience.js');
   console.log('Experience artifact matches its sources');
 }else{fs.writeFileSync(target,html);console.log('Built launch, command centre, cradle model, studio and styles into index.html');}

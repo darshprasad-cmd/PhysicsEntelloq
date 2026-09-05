@@ -29,7 +29,7 @@ The scoped sequence was: original responsive launch and live orbit preview; one 
 - `.github/workflows/static-site-checks.yml`: retains the required check and adds model/artifact verification. No deployment topology changes.
 - `qa/live-check.js`: isolated real-site Playwright journeys, screenshots and performance observations; generated outputs are ignored by Git.
 
-No new production dependencies. Canvas 2D, native controls, CSS and the existing tutor/hand tracker suffice. Automated browser checks use the already-bundled Playwright, not a new site dependency. The repository has no TypeScript, formatter or linter configuration; inline parsing, assembly validation, whitespace checks and targeted tests are the applicable local checks.
+No new production dependencies. Canvas 2D, native controls, CSS and the existing tutor/hand tracker suffice. Automated browser checks use the already-bundled Playwright. `qa/package.json` pins test-only axe-core 4.10.3, with its lockfile: a maintained scanner is needed for automated accessibility checks and is never loaded by the product. `qa/accessibility.js` scans the new surfaces; `qa/edge-check.js` exercises persistence, pointer drag, undo, offline and unsupported-browser paths. The repository has no TypeScript, formatter or linter configuration; inline parsing, assembly validation, whitespace checks and targeted tests are the applicable local checks.
 
 ## Scientific model
 
@@ -64,6 +64,33 @@ Baseline HTML response: 2,513,066 decoded bytes; 863,682 encoded bytes. No horiz
 
 ## Release verification
 
-Pending real-site verification after the protected checks and deployment complete. Physical-device touch/camera validation is outside the automated viewport tests; the existing hand tracking remains opt-in and unchanged.
+Published through protected pull requests #3 and #4; both required Static site checks passed before merge. HTTPS served the new HTML successfully. Live verification found and corrected a transparent canvas intercepting overlay buttons. It also replaced duplicate synthetic range events in the undo test with a genuine keyboard change: the actual undo behaviour restores both geometry and stiffness correctly.
+
+The real-site desktop, mobile and tablet journeys passed: guest entry without an onboarding interruption, orbital speed regimes, direct cradle entry, pause/play clock behaviour, parameters, saved restoration, shape/reset, keyboard anchor movement and pluck. Emulated touch reaches the stage actions. The controlled comparison runs after a prediction. Universe, Learn, Solve, Practice, Lab, Research and Progress still render through their available navigation controls. Page-error arrays were empty.
+
+All nine edge-case journeys pass: reduced-motion default pause with explicit play; pointer anchor drag/release; undo; save across full reload; tutor context and simulated provider failure; loaded experiment offline; stopped clock after navigation; no-canvas SVG fallback; no-JavaScript explanatory fallback. The AI request was intercepted in an isolated test browser: it contained measured tension, stiffness and limitations, and no API key or bearer token in its message content. No live AI response was fabricated or relied upon for this test.
+
+Axe scans found **zero violations** across the new launch (20 rule passes), command centre (5), cradle instrument (18), and cradle stage (9), using WCAG A/AA tags through 2.2. This is scoped automated coverage, not certification of all legacy screens or a substitute for assistive-technology testing.
+
+| After live release | Desktop 1440×900 | Mobile viewport 390×844 | Tablet 820×1180 |
+| --- | ---: | ---: | ---: |
+| Observed LCP | 772 ms | 636 ms | 956 ms |
+| Load event | 2331 ms | 1075 ms | 1499 ms |
+| CLS | 0.00046 | 0 | 0.00349 |
+| Long tasks | 6 | 4 | 4 |
+| DOM elements | 626 | 626 | 626 |
+| Canvas elements | 3 | 3 | 3 |
+
+Response size at that measurement: 2,409,244 decoded bytes and 817,730 encoded bytes, down from 2,513,066 and 863,682. DOM count dropped about 37% on desktop; canvas count fell from 10 to 3. These structural improvements are more reliable than the large observed LCP difference: the before/after runs were not statistically controlled, font/network caches differ, and no field INP or real-phone FPS claim is made. The final small-screen spacing pass adds a few hundred bytes without another rendering loop or dependency.
+
+Screenshots: `qa/results/before-{desktop,mobile,tablet}-launch.png` and `after-{desktop,mobile,tablet}-{launch,home,cradle}.png`; JSON results accompany them. They are local generated verification artifacts, excluded from the deployed app. To repeat, run `npm ci --prefix qa --ignore-scripts`, expose the workspace Playwright through NODE_PATH, then run `node qa/live-check.js after`, `node qa/edge-check.js`, and `node qa/accessibility.js`.
+
+## Risks and reviewed side effects
+
+- The existing single-file content remains approximately 2.4 MB uncompressed. Splitting content would be a separate architectural change; no claim of full offline installation, perfect low-end-phone performance or comprehensive legacy accessibility is made.
+- The time accumulator intentionally affects all sandbox presets so simulation time is not tied to refresh rate. The analytical physics suite validates the new cradle; smoke journeys validate other destinations, not every scientific model in the legacy app.
+- Existing authentication, provider routes, credentials, camera-tracking implementation and content datasets were not changed. Camera access is still explicit. No learner data is cleared; saved cradle state uses its own versioned local key.
+- The existing game-like challenges and generic inspector are hidden for the cradle; legacy presets retain them. Cradle entry no longer pops an XP award. The new home labels completion as exploration; confidence/review remain separate.
+- Physical-device gestures, real-camera tracking, long-session memory profiling, screen-reader testing, Firefox/Safari and field Core Web Vitals remain manual validation limits. The new hero does not need WebGL. Model approximations are described above and in the instrument.
 
 Recommended next flagship: Newton’s second law, connecting a draggable force vector, mass, acceleration, prediction, and a measured trajectory to the existing concept graph.

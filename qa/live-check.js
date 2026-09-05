@@ -19,6 +19,7 @@ async function check(name,fn){await fn();report.checks.push(name);console.log('P
    if(phase==='before'){await context.close();continue;}
    assert.equal(errors.length,0,errors.join('\n'));
    await check(device+' launch has no overflow',async()=>assert.equal(metrics.overflow,false));
+   if(device==='mobile')await check('mobile orbit control is on the first screen',async()=>{const box=await page.locator('#pe-velocity').boundingBox();assert.ok(box.y+box.height<height);});
    await check(device+' real orbital speed control',async()=>{
     const range=page.locator('#pe-velocity');await range.fill('1.5');await range.dispatchEvent('input');assert.match(await page.locator('#pe-orbit-state').innerText(),/ESCAPE/);await range.fill('0.7');await range.dispatchEvent('input');assert.match(await page.locator('#pe-orbit-state').innerText(),/EARTH-INTERSECTING/);await range.fill('1');await range.dispatchEvent('input');
    });
@@ -26,6 +27,7 @@ async function check(name,fn){await fn();report.checks.push(name);console.log('P
    await page.waitForTimeout(600);await page.screenshot({path:path.join(out,phase+'-'+device+'-home.png')});
    await check(device+' start exploring opens cradle',async()=>{await page.locator('#cc-start').click();await page.locator('.cradle-mode').waitFor();await page.waitForTimeout(1000);assert.equal(await page.locator('#cr-lab').isVisible(),true);assert.match(await page.locator('#cr-peak').innerText(),/N/);});
    await page.screenshot({path:path.join(out,phase+'-'+device+'-cradle.png')});
+   if(device==='mobile')await check('emulated touch reaches cradle actions',async()=>{await page.locator('#cr-stage-pluck').tap();await page.locator('#cr-stage-pause').tap();assert.equal(await page.locator('#cr-stage-pause').innerText(),'Play');await page.locator('#cr-stage-pause').tap();});
    await check(device+' pause freezes physics; play advances it',async()=>{await page.locator('#cr-stage-pause').click();const a=await page.evaluate(()=>window.__peqSbx.simT());await page.waitForTimeout(200);assert.equal(await page.evaluate(()=>window.__peqSbx.simT()),a);await page.locator('#cr-stage-pause').click();await page.waitForTimeout(250);assert.ok(await page.evaluate(()=>window.__peqSbx.simT())>a);});
    await check(device+' stiffness, damping and save/restore round trip',async()=>{
     await page.locator('#cr-elasticity').fill('130');await page.locator('#cr-elasticity').dispatchEvent('input');await page.locator('#cr-damping').fill('0');await page.locator('#cr-damping').dispatchEvent('input');await page.locator('#cr-save').click();await page.locator('#cr-elasticity').fill('40');await page.locator('#cr-elasticity').dispatchEvent('input');await page.locator('#cr-restore').click();assert.equal(await page.locator('#cr-elasticity').inputValue(),'130');assert.equal(await page.locator('#cr-damping').inputValue(),'0');
@@ -35,7 +37,7 @@ async function check(name,fn){await fn();report.checks.push(name);console.log('P
    });
    if(device==='desktop'){
     await check('prediction precedes measured controlled comparison',async()=>{assert.equal(await page.locator('#cr-compare').isDisabled(),true);await page.getByRole('button',{name:'Higher',exact:true}).click();await page.locator('#cr-compare').click();await page.getByText('Your prediction matches.',{exact:false}).waitFor();});
-    await check('legacy destinations still render',async()=>{for(const name of ['universe','learn','solve','practice','lab','research','progress']){await page.locator('.nav-i[data-go="'+name+'"]').click();assert.ok((await page.locator('#main').innerText()).length>80);}});
+    await check('legacy destinations still render',async()=>{for(const name of ['universe','learn','solve','practice','lab','research','progress']){const nav=page.locator('.nav-i[data-go="'+name+'"]');if(await nav.isVisible())await nav.click();else{await page.locator('.nav-i[data-go="home"]').click();await page.locator('.cc-return [data-go="'+name+'"]').click();}await page.waitForFunction(()=>!document.querySelector('#main').classList.contains('view-out'));assert.ok((await page.locator('#main').innerText()).length>80);}});
    }
    assert.equal(errors.length,0,errors.join('\n'));await context.close();
   }

@@ -9,7 +9,7 @@ const checks=[];async function check(name,fn){await fn();checks.push(name);conso
   await page.mouse.move(p.x,p.y);await page.mouse.down();await page.mouse.move(p.x+30,p.y+18,{steps:8});await page.mouse.up();const b=await page.evaluate(id=>__peqSbx.state().B[id],p.id);assert.ok(b.x>p.bx+5);assert.equal(b.fixed,true);
  });
  await check('undo restores both the weave and material parameters',async()=>{
-  await page.locator('#cr-elasticity').fill('160');await page.locator('#cr-elasticity').dispatchEvent('input');await page.locator('#cr-elasticity').dispatchEvent('change');await page.locator('#sbx-undo').click();assert.equal(await page.locator('#cr-elasticity').inputValue(),'80');
+  await page.locator('#cr-elasticity').focus();await page.locator('#cr-elasticity').press('ArrowRight');assert.equal(await page.locator('#cr-elasticity').inputValue(),'85');await page.locator('#sbx-undo').click();assert.equal(await page.locator('#cr-elasticity').inputValue(),'80');
  });
  await check('saved weave survives a full page reload',async()=>{await page.locator('#cr-elasticity').fill('135');await page.locator('#cr-elasticity').dispatchEvent('input');await page.locator('#cr-save').click();await page.goto('https://physics.entelloq.com/?still',{waitUntil:'load'});await page.locator('[data-scene="catcradle"]').click();await page.locator('#cr-restore').click();assert.equal(await page.locator('#cr-elasticity').inputValue(),'135');});
  await check('tutor receives measurements and limitations; provider failure has a useful fallback',async()=>{

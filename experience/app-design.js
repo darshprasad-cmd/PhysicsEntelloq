@@ -40,6 +40,7 @@ var AppDesign=(function(){
   }
   function afterView(){
     document.body.dataset.view=curView;
+    $$('.nav-i[data-go],.mtab [data-go]').forEach(function(n){if(n.classList.contains('on'))n.setAttribute('aria-current','page');else n.removeAttribute('aria-current');});
     enhance(main);
     var prompt=$('#tu-role');if(prompt)prompt.textContent=curView==='lesson'?'Concept companion':curView==='research'?'Research companion':'Your physics companion';
     if(focusNext){focusNext=false;var h=main.querySelector('h1');if(h){h.tabIndex=-1;h.focus({preventScroll:true});}}
@@ -50,7 +51,8 @@ var AppDesign=(function(){
     makeNavigation();enhance(document.body);
     var fab=$('#tutor-fab');if(fab){fab.innerHTML=icon('tutor');fab.setAttribute('aria-label','Ask Entelloq');fab.title='Ask Entelloq';}
     document.addEventListener('keydown',function(e){if((e.key==='Enter'||e.key===' ')&&e.target.matches('.nav-i[role=button],.side-card[role=button]')){e.preventDefault();focusNext=true;e.target.click();}var lab=$('#lab-full.on');if(lab&&!$('#tutor.on')){if(e.key==='Escape')closeLabFull();if(e.key==='Tab'){var items=$$('button,input,textarea,select,[tabindex="0"]',lab).filter(function(n){return !n.disabled&&n.getClientRects().length;});var first=items[0],last=items[items.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}}});
-    document.addEventListener('click',function(e){if(e.detail===0&&e.target.closest('[data-go],[data-link]'))focusNext=true;});
+    document.addEventListener('click',function(e){if(e.detail===0&&e.target.closest('[data-go],[data-link],[data-explore-go]'))focusNext=true;},true);
+    document.addEventListener('click',function(e){if(e.target.closest('.lvl-chip[data-f]'))queueMicrotask(function(){enhance(main);});});
   }
   return {init:init,afterView:afterView,enhance:enhance,icon:icon,enterLab:enterLab,exitLab:exitLab};
 })();

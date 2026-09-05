@@ -21,7 +21,7 @@ fs.mkdirSync(out,{recursive:true});
  await page.locator('.xg-open:visible').first().click();await page.locator('#lab-full.on').waitFor();await scan('instrument','#lab-full');await page.locator('#lf-focus').click();assert.ok(await page.locator('#lab-full.pe-stage-focus').count());await scan('instrument-focus','#lab-full');await page.keyboard.press('Escape');assert.equal(await page.locator('.app').evaluate(e=>e.inert),false);
  await page.locator('#tutor-fab').click();await scan('tutor','#tutor');await page.locator('#tu-close').click();
  await route('settings');await page.locator('[data-th="light"]').click();
- for(const name of ['home','universe','learn','lab','progress','settings']){await route(name);await scan(name+'-light');}
+ for(const name of ['home','universe','learn','lesson','solve','practice','lab','research','progress','settings']){if(name==='lesson'){await page.locator('#main [data-link="domain:mechanics"]').click();await page.locator('#main [data-link="lesson:newton-laws"]').click();}else await route(name);await scan(name+'-light');}
  assert.deepEqual(errors,[],'No runtime errors');report.push({device,errors});await context.close();
 }}finally{fs.writeFileSync(path.join(out,phase+'-checks.json'),JSON.stringify(report,null,2));await browser.close();}
 if(report.some(r=>r.overflow||r.violations&&r.violations.length))process.exitCode=1;

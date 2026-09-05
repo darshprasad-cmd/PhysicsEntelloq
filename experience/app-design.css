@@ -19,6 +19,9 @@ html.pe-refined[data-theme=light]{
   --pe-surface:#fafbf6;--pe-surface-2:#e9eee8;--pe-border:#bacbc7;
 }
 html.pe-refined[data-theme=light] .cc-hero-copy>small,html.pe-refined[data-theme=light] .cc-map-head small{color:var(--blue)}
+html.pe-refined[data-theme=light] .l-tag,html.pe-refined[data-theme=light] .l-diff,html.pe-refined[data-theme=light] .lens-eyebrow,html.pe-refined[data-theme=light] .lx-more,html.pe-refined[data-theme=light] .cc-h,html.pe-refined[data-theme=light] .xp-dom{color:var(--blue)!important}
+html.pe-refined[data-theme=light] .side,html.pe-refined[data-theme=light] .topbar{background:var(--bg-1)!important;box-shadow:none!important}
+html.pe-refined[data-theme=light] .field-art{filter:brightness(.63) saturate(.8)}
 .pe-refined .pg-dp{color:var(--ink-dim)!important}
 .pe-refined body{background:var(--bg);color:var(--ink);font-size:16px;line-height:1.65}
 .pe-refined #bg{display:none}

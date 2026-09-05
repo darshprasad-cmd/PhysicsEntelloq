@@ -35,3 +35,5 @@ jobs:
         run: node --test .github/test-welcome.js
       - name: Check search, graph parsing and simulation cleanup regressions
         run: node --test .github/test-quality.js
+      - name: Check voluntary Advanced Studio entry and treatment contracts
+        run: node --test .github/test-advanced.js

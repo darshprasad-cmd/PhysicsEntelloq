@@ -8,7 +8,7 @@ var Cmdk=(function(){
   function build(){ix=[];
     DB.forEach(function(t){var dm=DMAP[t.domain]||{};ix.push({k:'lesson',id:t.id,n:t.name,sub:'Lesson · '+(dm.n||''),c:dm.c||'#7dd3fc',x:(t.summary||'').toLowerCase()});});
     DOMAINS.forEach(function(d){ix.push({k:'domain',id:d.k,n:d.n,sub:'Field · '+topicsOf(d.k).length+' lessons',c:d.c,x:''});});
-    [['home','Home'],['universe','Universe'],['learn','Learn'],['solve','Solve'],['practice','Practice'],['lab','Lab'],['sandbox','Sandbox'],['research','Research'],['progress','Progress'],['review','Review'],['journeys','Journeys'],['deeps','Deep Dives'],['adv','Advanced Physics'],['settings','Settings']].forEach(function(v){ix.push({k:'view',id:v[0],n:v[1],sub:'Space',c:'#a3b1cc',x:''});});
+    [['home','Home'],['universe','Universe'],['learn','Learn'],['solve','Solve'],['practice','Practice'],['lab','Lab'],['sandbox','Sandbox'],['research','Research'],['progress','Progress'],['review','Review'],['journeys','Journeys'],['deeps','Deep Dives'],['adv','Advanced Studio'],['settings','Settings']].forEach(function(v){ix.push({k:'view',id:v[0],n:v[1],sub:v[0]==='adv'?'Upper-undergraduate physics':'Space',c:'#a3b1cc',x:''});});
     try{Deep.list().forEach(function(d){if(d&&d.id)ix.push({k:'deep',id:d.id,n:d.title||d.id,sub:'Full course',c:'#fbbf24',x:''});});}catch(e){}
     try{Adv.list().forEach(function(d){if(d&&d.id)ix.push({k:'adv',id:d.id,n:String(d.title).replace(/<[^>]+>/g,''),sub:'Advanced',c:'#a78bfa',x:''});});}catch(e){}
     try{Object.keys(JOURNEYS).forEach(function(j){ix.push({k:'journey',id:j,n:JOURNEYS[j].title,sub:'Journey',c:JOURNEYS[j].c,x:''});});}catch(e){}

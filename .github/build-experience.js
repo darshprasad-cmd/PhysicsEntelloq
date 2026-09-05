@@ -18,6 +18,7 @@ embed('APPDESIGN','app-design.js','/* ===== SANDBOX WORKSPACE UX');
 embed('WELCOME','welcome-tour.js','/* ===== SANDBOX WORKSPACE UX');
 embed('ATLAS','atlas.js','function viewUniverse(){','/* ===== Pass 87');
 embed('LIBRARY','library-entry.js','function viewLearn(){','var domFilter=');
+embed('SEARCH','search.js','var Cmdk=(function(){','/* ===== SOLVE — type any problem');
 const cssStart='<!-- EXPERIENCE:CSS:START -->',cssEnd='<!-- EXPERIENCE:CSS:END -->';
 const css=cssStart+'\n<style id="experience-css">\n'+['experience.css','app-design.css','welcome.css'].map(file=>fs.readFileSync(path.join(root,'experience',file),'utf8')).join('\n')+'\n</style>\n'+cssEnd;
 if(html.includes(cssStart)){const a=html.indexOf(cssStart),b=html.indexOf(cssEnd,a);html=html.slice(0,a)+css+html.slice(b+cssEnd.length);}

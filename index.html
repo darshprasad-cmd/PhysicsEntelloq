@@ -2361,6 +2361,23 @@ html.pe-refined[data-theme=light] .field-art{filter:brightness(.63) saturate(.8)
 .pe-refined .cc-node b{font-size:12px;color:var(--ink)}.pe-refined .cc-node small{font-size:10px;color:var(--ink-dim)}
 .pe-refined .cc-summary{font-size:13px;color:var(--ink-dim)}
 @media(min-width:851px){.pe-refined .mtab{display:none!important}}
+/* Search is a single native modal, with immediate keyboard feedback. */
+.pe-refined #cmdk{width:100vw;height:100dvh;max-width:none;max-height:none;margin:0;border:0;color:var(--ink);padding:clamp(24px,10vh,100px) 16px 24px;overflow:auto}
+.pe-refined #cmdk::backdrop{background:transparent}
+.pe-refined #cmdk.on,.pe-refined .cp-panel{animation:none}
+.pe-refined .cp-panel{background:var(--bg-1);border-color:var(--pe-border);border-radius:12px}
+.pe-refined .cp-inwrap{gap:10px;padding:12px 16px}.pe-refined #cp-in{font-size:16px;min-width:0}
+.pe-refined #cp-close{width:44px;height:44px;flex:none;border:1px solid var(--line);border-radius:6px;font-size:24px;color:var(--ink)}
+.pe-refined .cp-list{max-height:min(48dvh,440px)}.pe-refined .cp-row{min-height:48px;border-radius:6px;gap:10px}.pe-refined .cp-row .nm{font-size:15px}.pe-refined .cp-row .sub{font-size:10px;color:var(--ink-dim)}
+.pe-refined .cp-row.on{background:var(--pe-surface-2);outline:1px solid var(--pe-border);outline-offset:-1px}.pe-refined .cp-foot{gap:10px;flex-wrap:wrap;color:var(--ink-dim);font-size:11px;padding:10px 16px}
+.pe-refined #cp-ask{min-height:44px;color:var(--blue);font-size:13px}.pe-refined #cp-ask:disabled{opacity:.5;cursor:default}
+.pe-search-label{flex:1;font-size:12px;text-align:left;color:var(--ink-dim)}
+.pe-refined .main{scroll-padding-top:100px}
+.pe-sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
+.pe-refined .lab-card:focus-visible{outline:2px solid var(--blue);outline-offset:4px}
+.pe-refined .jn-next .btn,.pe-refined [data-flowx=next]{white-space:normal;max-width:100%;text-align:left;overflow-wrap:anywhere}
+.pe-refined .jn-head>div{min-width:0}.pe-refined .jn-next{min-width:0}
+@media(max-width:550px){.pe-refined .cp-row{flex-wrap:wrap;column-gap:8px}.pe-refined .cp-row .nm{flex:1;min-width:0;white-space:normal}.pe-refined .cp-row .sub{width:100%;margin:0 0 0 17px;font-size:11px}.pe-refined .cp-row .ret{display:none}}
 @media(max-width:1100px){
   .pe-field-grid,.pe-refined .xg-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .pe-refined .lesson-wrap{grid-template-columns:1fr}.pe-refined .l-comp{display:none}
@@ -2514,7 +2531,7 @@ html.pe-refined[data-theme=light] .field-art{filter:brightness(.63) saturate(.8)
     <div class="topbar">
       <div class="crumb" id="crumb"></div>
       <div class="sp"></div>
-      <label class="t-search"><span style="color:var(--ink-faint)">⌕</span><input id="t-search" placeholder="Search topics…" aria-label="Search"/><span class="k">⌘K</span></label>
+      <button class="t-search" id="t-search" type="button" aria-haspopup="dialog"><span aria-hidden="true">⌕</span><span class="pe-search-label">Search topics…</span><span class="k" aria-hidden="true">Ctrl K</span></button>
     </div>
     <div id="main"></div>
   </div>
@@ -6551,56 +6568,49 @@ var Mastery=(function(){
 })();
 
 /* ===== COMMAND PALETTE — Ctrl/Cmd+K: search everything ===== */
+/* EXPERIENCE:SEARCH:START */
+/* One search surface for keyboard, sidebar and top navigation. */
 var Cmdk=(function(){
-  var el=null,inp=null,list=null,ix=null,sel=0,res=[],RKEY='peq_recent_cmdk';
-  function recents(){ try{ return JSON.parse(localStorage.getItem(RKEY)||'[]'); }catch(e){ return []; } }
-  function pushRecent(it){ try{ var r=recents().filter(function(x){ return !(x.k===it.k&&x.id===it.id); }); r.unshift({k:it.k,id:it.id}); localStorage.setItem(RKEY,JSON.stringify(r.slice(0,6))); }catch(e){} }
-  function build(){ ix=[]; var i;
-    for(i=0;i<DB.length;i++){ var t=DB[i],dm=DMAP[t.domain]||{}; ix.push({k:'lesson',id:t.id,n:t.name,sub:'Lesson \u00b7 '+(dm.n||''),c:dm.c||'#7dd3fc',x:(t.summary||'').toLowerCase()}); }
-    DOMAINS.forEach(function(d){ ix.push({k:'domain',id:d.k,n:d.n,sub:'Field \u00b7 '+topicsOf(d.k).length+' lessons',c:d.c,x:''}); });
-    [['home','Home','\u2302'],['universe','Universe','\u2726'],['learn','Learn','\u25f3'],['solve','Solve','\u2211'],['practice','Practice','\u25ce'],['lab','Lab','\u2207'],['sandbox','Sandbox','\u2299'],['research','Research','\u2234'],['progress','Progress','\u25a6'],['review','Review','\u25d4'],['journeys','Journeys','\u2756'],['deeps','Deep Dives','\u00a7'],['adv','Advanced Physics','\u2202']].forEach(function(v){ ix.push({k:'view',id:v[0],n:v[1],sub:'Space',c:'#a3b1cc',g:v[2],x:''}); });
-    try{ Deep.list().forEach(function(dd){ if(dd&&dd.id) ix.push({k:'deep',id:dd.id,n:dd.title||dd.id,sub:'Full course',c:'#fbbf24',x:''}); }); }catch(e){}
-    try{ Adv.list().forEach(function(ad){ if(ad&&ad.id) ix.push({k:'adv',id:ad.id,n:String(ad.title).replace(/<[^>]+>/g,''),sub:'Advanced',c:'#a78bfa',x:''}); }); }catch(e){}
-    try{ Object.keys(JOURNEYS).forEach(function(j){ ix.push({k:'journey',id:j,n:JOURNEYS[j].title,sub:'Journey',c:JOURNEYS[j].c,x:''}); }); }catch(e){}
+  var el=null,inp=null,list=null,ix=null,sel=0,res=[],trigger=null,RKEY='peq_recent_cmdk';
+  function recents(){
+    try{var items=JSON.parse(localStorage.getItem(RKEY)||'[]');return Array.isArray(items)?items.filter(function(x){return x&&typeof x.k==='string'&&typeof x.id==='string';}).slice(0,6):[];}catch(e){return [];}
   }
-  function scoreOne(q,s){ var i=s.indexOf(q); if(i===0) return 100; if(i>0) return (s.charAt(i-1)===' '?80:55)-Math.min(i,25);
-    var qi=0,si=0; while(si<s.length&&qi<q.length){ if(s.charAt(si)===q.charAt(qi)) qi++; si++; } return qi===q.length?30:-1; }
-  function match(q,it){ var hay=(it.n+' '+it.sub).toLowerCase(),score=0,toks=q.split(/\s+/),i;
-    for(i=0;i<toks.length;i++){ if(!toks[i]) continue; var sc=scoreOne(toks[i],hay); if(sc<0){ var sx=it.x?scoreOne(toks[i],it.x):-1; if(sx<0) return -1; sc=sx*0.3; } score+=sc; }
-    if(it.k==='view'||it.k==='domain') score+=8; return score; }
-  function row(it,i){ var ic=it.g?'<span class="cp-g">'+it.g+'</span>':'<span class="cp-d" style="background:'+(it.c||'#7dd3fc')+'"></span>';
-    return '<div class="cp-row'+(i===sel?' on':'')+'" data-i="'+i+'">'+ic+'<span class="nm">'+esc(it.n)+'</span><span class="sub">'+esc(it.sub)+'</span><span class="ret">\u21b5</span></div>'; }
-  function paint(){ list.innerHTML=res.length?res.map(row).join(''):'<div class="cp-none">Nothing matches \u2014 try a concept, field or space name.</div>';
-    $$('.cp-row',list).forEach(function(r){ r.addEventListener('click',function(){ sel=+r.dataset.i; exec(); });
-      r.addEventListener('mousemove',function(){ if(sel!==+r.dataset.i){ sel=+r.dataset.i; var on=list.querySelector('.cp-row.on'); if(on)on.classList.remove('on'); r.classList.add('on'); } }); }); }
-  function refresh(){ var q=inp.value.trim().toLowerCase(); sel=0; var i;
-    if(!q){ var rs=recents(),out=[]; rs.forEach(function(r){ for(var j=0;j<ix.length;j++){ if(ix[j].k===r.k&&ix[j].id===r.id){ out.push(ix[j]); break; } } });
-      if(Me.d.lastTopic){ var lt=topicById(Me.d.lastTopic); if(lt){ var dup=false; for(i=0;i<out.length;i++){ if(out[i].k==='lesson'&&out[i].id===lt.id){ dup=true; break; } } if(!dup){ var dm=DMAP[lt.domain]||{}; out.unshift({k:'lesson',id:lt.id,n:lt.name,sub:'Continue \u00b7 '+(dm.n||''),c:dm.c}); } } }
-      res=out.slice(0,7); if(!res.length){ res=ix.filter(function(it){ return it.k==='view'; }).slice(0,7); } paint(); return; }
-    var scored=[]; for(i=0;i<ix.length;i++){ var sc=match(q,ix[i]); if(sc>=0) scored.push({it:ix[i],sc:sc}); }
-    scored.sort(function(a,b){ return b.sc-a.sc; }); res=scored.slice(0,9).map(function(r){ return r.it; }); paint(); }
-  function exec(){ var it=res[sel]; if(!it) return; pushRecent(it); close();
-    if(it.k==='view') go(it.id); else if(it.k==='lesson') go('lesson',it.id); else if(it.k==='domain') go('domain',it.id); else if(it.k==='deep') go('deep',it.id); else if(it.k==='adv') go('adv',it.id); else if(it.k==='journey') go('journey',it.id); }
-  function mountEl(){ el=ce('div'); el.id='cmdk';
-    el.innerHTML='<div class="cp-panel"><div class="cp-inwrap"><span class="cp-ic">\u2315</span><input id="cp-in" placeholder="Search concepts, fields, courses, spaces\u2026" autocomplete="off" spellcheck="false" aria-label="Search everything"/><span class="cp-esc">esc</span></div><div class="cp-list" id="cp-list" role="listbox"></div><div class="cp-foot"><span>\u2191\u2193 navigate</span><span>\u21b5 open</span><span>esc close</span></div></div>';
-    document.body.appendChild(el);
-    inp=el.querySelector('#cp-in'); list=el.querySelector('#cp-list');
-    el.addEventListener('mousedown',function(e){ if(e.target===el) close(); });
-    inp.addEventListener('input',refresh);
-    inp.addEventListener('keydown',function(e){
-      if(e.key==='ArrowDown'){ e.preventDefault(); if(res.length){ sel=(sel+1)%res.length; paint(); } }
-      else if(e.key==='ArrowUp'){ e.preventDefault(); if(res.length){ sel=(sel-1+res.length)%res.length; paint(); } }
-      else if(e.key==='Enter'){ e.preventDefault(); exec(); }
-      else if(e.key==='Escape'){ e.preventDefault(); close(); } });
+  function pushRecent(it){try{var r=recents().filter(function(x){return !(x.k===it.k&&x.id===it.id);});r.unshift({k:it.k,id:it.id});localStorage.setItem(RKEY,JSON.stringify(r.slice(0,6)));}catch(e){}}
+  function build(){ix=[];
+    DB.forEach(function(t){var dm=DMAP[t.domain]||{};ix.push({k:'lesson',id:t.id,n:t.name,sub:'Lesson · '+(dm.n||''),c:dm.c||'#7dd3fc',x:(t.summary||'').toLowerCase()});});
+    DOMAINS.forEach(function(d){ix.push({k:'domain',id:d.k,n:d.n,sub:'Field · '+topicsOf(d.k).length+' lessons',c:d.c,x:''});});
+    [['home','Home'],['universe','Universe'],['learn','Learn'],['solve','Solve'],['practice','Practice'],['lab','Lab'],['sandbox','Sandbox'],['research','Research'],['progress','Progress'],['review','Review'],['journeys','Journeys'],['deeps','Deep Dives'],['adv','Advanced Physics'],['settings','Settings']].forEach(function(v){ix.push({k:'view',id:v[0],n:v[1],sub:'Space',c:'#a3b1cc',x:''});});
+    try{Deep.list().forEach(function(d){if(d&&d.id)ix.push({k:'deep',id:d.id,n:d.title||d.id,sub:'Full course',c:'#fbbf24',x:''});});}catch(e){}
+    try{Adv.list().forEach(function(d){if(d&&d.id)ix.push({k:'adv',id:d.id,n:String(d.title).replace(/<[^>]+>/g,''),sub:'Advanced',c:'#a78bfa',x:''});});}catch(e){}
+    try{Object.keys(JOURNEYS).forEach(function(j){ix.push({k:'journey',id:j,n:JOURNEYS[j].title,sub:'Journey',c:JOURNEYS[j].c,x:''});});}catch(e){}
   }
-  function open(){ if(!ix) build(); if(!el) mountEl(); el.classList.add('on'); inp.value=''; refresh(); setTimeout(function(){ inp.focus(); },30); }
-  function close(){ if(el) el.classList.remove('on'); }
-  function isOpen(){ return !!(el&&el.classList.contains('on')); }
-  document.addEventListener('keydown',function(e){ if((e.ctrlKey||e.metaKey)&&(e.key==='k'||e.key==='K')){ e.preventDefault(); if(isOpen()) close(); else open(); } else if(e.key==='Escape'&&isOpen()) close(); });
-  document.addEventListener('click',function(e){ if(e.target.closest&&e.target.closest('#nav-cmdk')) open(); });
-  return { open:open, close:close, isOpen:isOpen };
+  function scoreOne(q,s){var i=s.indexOf(q);if(i===0)return 100;if(i>0)return(s.charAt(i-1)===' '?80:55)-Math.min(i,25);var qi=0,si=0;while(si<s.length&&qi<q.length){if(s.charAt(si)===q.charAt(qi))qi++;si++;}return qi===q.length?30:-1;}
+  function match(q,it){var hay=(it.n+' '+it.sub).toLowerCase(),score=0,toks=q.split(/\s+/);for(var i=0;i<toks.length;i++){if(!toks[i])continue;var sc=scoreOne(toks[i],hay);if(sc<0){var sx=it.x?scoreOne(toks[i],it.x):-1;if(sx<0)return -1;sc=sx*.3;}score+=sc;}if(it.k==='view'||it.k==='domain')score+=8;return score;}
+  function select(i,scroll){sel=i;$$('.cp-row',list).forEach(function(r){var active=+r.dataset.i===sel;r.classList.toggle('on',active);r.setAttribute('aria-selected',String(active));if(active&&scroll)r.scrollIntoView({block:'nearest',behavior:'instant'});});if(res[sel])inp.setAttribute('aria-activedescendant','cp-option-'+sel);else inp.removeAttribute('aria-activedescendant');}
+  function paint(){
+    list.innerHTML=res.map(function(it,i){return '<div class="cp-row" id="cp-option-'+i+'" role="option" aria-selected="false" data-i="'+i+'"><span class="cp-d" aria-hidden="true" style="background:'+it.c+'"></span><span class="nm">'+esc(it.n)+'</span><span class="sub">'+esc(it.sub)+'</span><span class="ret" aria-hidden="true">↵</span></div>';}).join('');
+    $('#cp-none').hidden=!!res.length;$('#cp-status').textContent=res.length?res.length+' results. Use arrow keys to choose.':'No matching concepts. Try another search or ask Entelloq.';$('#cp-ask').disabled=!inp.value.trim();
+    $$('.cp-row',list).forEach(function(r){r.addEventListener('click',function(){select(+r.dataset.i,false);exec();});r.addEventListener('pointermove',function(){if(sel!==+r.dataset.i)select(+r.dataset.i,false);});});select(sel,false);
+  }
+  function refresh(){var q=inp.value.trim().toLowerCase();sel=0;if(!q){var out=[];recents().forEach(function(r){var found=ix.find(function(it){return it.k===r.k&&it.id===r.id;});if(found)out.push(found);});if(Me.d.lastTopic){var t=ix.find(function(it){return it.k==='lesson'&&it.id===Me.d.lastTopic;});if(t&&!out.some(function(it){return it.k===t.k&&it.id===t.id;}))out.unshift(t);}res=out.slice(0,7);if(!res.length)res=ix.filter(function(it){return it.k==='view';}).slice(0,7);}else res=ix.map(function(it){return{it:it,sc:match(q,it)};}).filter(function(r){return r.sc>=0;}).sort(function(a,b){return b.sc-a.sc;}).slice(0,9).map(function(r){return r.it;});paint();}
+  function exec(){var it=res[sel];if(!it)return;pushRecent(it);close();if(it.k==='view')go(it.id);else go(it.k,it.id);var h=main.querySelector('h1');if(h){h.tabIndex=-1;h.focus({preventScroll:true});}}
+  function mountEl(){el=ce('dialog');el.id='cmdk';el.setAttribute('aria-label','Search Physics Entelloq');
+    el.innerHTML='<div class="cp-panel"><div class="cp-inwrap"><span class="cp-ic" aria-hidden="true">⌕</span><input id="cp-in" role="combobox" aria-autocomplete="list" aria-controls="cp-list" aria-expanded="false" aria-label="Search concepts, fields, courses and spaces" placeholder="Find a concept, field or space…" autocomplete="off" spellcheck="false"><button id="cp-close" type="button" aria-label="Close search">×</button></div><div class="cp-list" id="cp-list" role="listbox" aria-label="Search results"></div><div class="cp-none" id="cp-none" hidden>Nothing matches. Try another concept, field or space.</div><div class="pe-sr-only" id="cp-status" role="status"></div><div class="cp-foot"><span>↑↓ choose · Enter opens</span><button id="cp-ask" type="button" disabled>Ask Entelloq ↗</button></div></div>';
+    document.body.appendChild(el);inp=$('#cp-in');list=$('#cp-list');inp.addEventListener('input',refresh);$('#cp-close').addEventListener('click',close);$('#cp-ask').addEventListener('click',function(){var q=inp.value.trim();if(q){close();Tutor.ask(q);}});
+    el.addEventListener('click',function(e){if(e.target===el)close();});el.addEventListener('cancel',function(e){e.preventDefault();close();});
+    inp.addEventListener('keydown',function(e){if(e.isComposing)return;if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();if(res.length)select((sel+(e.key==='ArrowDown'?1:-1)+res.length)%res.length,true);}else if(e.key==='Enter'){e.preventDefault();exec();}else if(e.key==='Escape'){e.preventDefault();e.stopPropagation();close();}});
+    el.addEventListener('close',function(){el.classList.remove('on');inp.setAttribute('aria-expanded','false');if(trigger&&trigger.isConnected)trigger.focus({preventScroll:true});});
+  }
+  function blocked(){return !!document.querySelector('dialog[open]:not(#cmdk),#feature-guide:popover-open,#lab-full.on,#tutor.on,#lnd');}
+  function open(){if(blocked())return;if(isOpen()){inp.focus();return;}trigger=document.activeElement;if(!ix)build();if(!el)mountEl();el.classList.add('on');inp.value='';refresh();el.showModal();inp.setAttribute('aria-expanded','true');inp.focus();}
+  function close(){if(el&&el.open)el.close();}
+  function isOpen(){return !!(el&&el.open);}
+  document.addEventListener('keydown',function(e){if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();if(e.repeat||e.isComposing)return;if(isOpen())close();else open();}});
+  document.addEventListener('click',function(e){if(e.target.closest('#nav-cmdk'))open();});
+  return{open:open,close:close,isOpen:isOpen};
 })();
 
+/* EXPERIENCE:SEARCH:END */
 /* ===== SOLVE — type any problem, get a reasoned step-by-step solution ===== */
 var Solve=(function(){
   var level='JEE', busy=false;
@@ -6727,7 +6737,7 @@ var Research=(function(){
     host.innerHTML='<div class="rs-work fade"><button class="btn btn-ghost btn-sm" id="rs-back">‹ All experiments</button>'+
       '<div class="rs-head"><div class="rs-ic" style="color:'+e.c+';border-color:'+e.c+'55">'+e.icon+'</div><div><div class="dcd" style="color:'+e.c+'">'+esc((DMAP[e.domain]||{n:''}).n)+' · experiment</div><h2>'+esc(e.name)+'</h2></div></div>'+
       '<div class="rs-method">'+esc(e.method)+'</div>'+
-      '<div class="rs-body"><div class="rs-app"><canvas id="rs-appc"></canvas><div class="rs-ivctl"><div class="sl-wrap" style="width:100%"><span>'+esc(e.iv.label)+' = <b id="rs-ivv" style="color:'+e.c+'">'+e.iv.def+'</b> '+esc(e.iv.unit)+'</span><input class="sl" id="rs-iv" type="range" min="'+e.iv.min+'" max="'+e.iv.max+'" step="'+e.iv.step+'" value="'+e.iv.def+'" style="width:100%"/></div>'+
+      '<div class="rs-body"><div class="rs-app"><canvas id="rs-appc"></canvas><div class="rs-ivctl"><div class="sl-wrap" style="width:100%"><span>'+esc(e.iv.label)+' = <b id="rs-ivv" style="color:'+e.c+'">'+e.iv.def+'</b> '+esc(e.iv.unit)+'</span><input class="sl" id="rs-iv" type="range" aria-label="'+esc(e.iv.label+' ('+e.iv.unit+')')+'" min="'+e.iv.min+'" max="'+e.iv.max+'" step="'+e.iv.step+'" value="'+e.iv.def+'" style="width:100%"/></div>'+
         '<div class="rs-runbtns"><button class="btn btn-pri btn-sm" id="rs-run">＋ Take measurement</button><button class="mini-b" id="rs-auto">⟳ Auto-run 8 trials</button><button class="mini-b" id="rs-clear">Clear</button></div></div></div>'+
       '<div class="rs-data"><div class="rs-tabs"><button class="lvl-chip on" id="rs-raw">Raw data</button><button class="lvl-chip" id="rs-lin">Linearize &amp; fit</button></div><div class="rs-graph"><canvas id="rs-gc"></canvas></div><table class="rs-table" id="rs-tbl"></table></div></div>'+
       '<div class="rs-results" id="rs-res"></div></div>';
@@ -7962,7 +7972,7 @@ var Investigate=(function(){
     host.innerHTML='<div class="nb fade"><button class="btn btn-ghost btn-sm" id="nb-back">‹ All investigations</button>'+
       '<div class="rs-head"><div class="rs-ic" style="color:'+inv.c+';border-color:'+inv.c+'55">'+inv.icon+'</div><div><div class="dcd" style="color:'+inv.c+'">Research notebook · investigation</div><h2>'+esc(inv.q)+'</h2></div></div>'+
       sec('1','Question & hypothesis','<div class="nb-hint">Before you touch the apparatus, commit to a prediction — that is what makes this an experiment and not a demo.</div><textarea class="nb-ta" id="nb-hyp" placeholder="'+esc(inv.hyp)+'"></textarea><div class="nb-row"><button class="mini-b" id="nb-lock">Lock in hypothesis</button><span id="nb-lockmsg" class="nb-tag"></span></div>')+
-      sec('2','Apparatus & data collection','<div class="nb-collect"><div class="nb-cwrap"><canvas class="nb-cv" id="nb-sim" style="height:240px"></canvas></div><div class="nb-ctl"><div class="sl-wrap" style="width:100%"><span>'+esc(I.label)+' = <b id="nb-ivv" style="color:'+inv.c+'">'+I.def+'</b> '+esc(I.unit)+'</span><input class="sl" id="nb-iv" type="range" min="'+I.min+'" max="'+I.max+'" step="'+I.step+'" value="'+I.def+'"/></div><div class="nb-row"><button class="btn btn-pri btn-sm" id="nb-rec">＋ Record measurement</button><button class="mini-b" id="nb-sweep">⟳ Auto-sweep 10</button><button class="mini-b" id="nb-clr">Clear</button></div><table class="rs-table" id="nb-tbl"></table></div></div>')+
+      sec('2','Apparatus & data collection','<div class="nb-collect"><div class="nb-cwrap"><canvas class="nb-cv" id="nb-sim" style="height:240px"></canvas></div><div class="nb-ctl"><div class="sl-wrap" style="width:100%"><span>'+esc(I.label)+' = <b id="nb-ivv" style="color:'+inv.c+'">'+I.def+'</b> '+esc(I.unit)+'</span><input class="sl" id="nb-iv" type="range" aria-label="'+esc(I.label+' ('+I.unit+')')+'" min="'+I.min+'" max="'+I.max+'" step="'+I.step+'" value="'+I.def+'"/></div><div class="nb-row"><button class="btn btn-pri btn-sm" id="nb-rec">＋ Record measurement</button><button class="mini-b" id="nb-sweep">⟳ Auto-sweep 10</button><button class="mini-b" id="nb-clr">Clear</button></div><table class="rs-table" id="nb-tbl"></table></div></div>')+
       sec('3','Graph & competing models','<div class="nb-models" id="nb-mc"></div><div class="nb-cwrap"><canvas class="nb-cv" id="nb-graph" style="height:300px"></canvas></div>')+
       sec('4','Model scores & error analysis','<div id="nb-scores"></div><div class="nb-cwrap" style="margin-top:12px"><canvas class="nb-cv" id="nb-resid" style="height:150px"></canvas><div class="th-hint">residuals (measured − model) for the selected model · a good model leaves only random scatter around zero</div></div><div class="nb-insight" id="nb-ins" style="display:none"></div>')+
       sec('5','Conclusion','<textarea class="nb-ta" id="nb-con" placeholder="State what you found. Did your hypothesis hold? Which model fits, and where does the simple one break down? What is the underlying physics?"></textarea><div class="nb-row"><button class="mini-b" id="nb-soc">✦ Get Socratic feedback from Entelloq</button></div>')+
@@ -10268,10 +10278,11 @@ function nav(v){ $$('.nav-i,[data-go]').forEach(function(n){ var a=n.dataset.go=
 function setCrumb(parts){ crumb.innerHTML=parts.map(function(p,i){ return (i?'<span class="sep">›</span>':'')+(p.go?'<a data-link="'+p.go+(p.id?(':'+p.id):'')+'" style="cursor:pointer">'+esc(p.t)+'</a>':'<span>'+esc(p.t)+'</span>'); }).join(' '); }
 var homeSim=null, labThumbs=[], labMode=(typeof Style!=='undefined'&&Style.def())?Style.def().lab:'labs';
 function stopThumbs(){ labThumbs.forEach(function(h){ if(h){ if(h._ft) clearTimeout(h._ft); if(h._inst&&h._inst.stop) h._inst.stop(); } }); labThumbs=[]; }
+function stopLabViews(){stopThumbs();Research.stop();Theory.stop();Investigate.stop();DesignLab.stop();CompareDeck.stop();Grapher.stop();LabVig.stop();}
 function cinematicReveal(){ try{ if(window.matchMedia&&matchMedia('(prefers-reduced-motion:reduce)').matches) return; var grids=main.querySelectorAll('.dom-grid,.tlist,.lab-grid,.rs-grid,.rec-grid'); for(var g=0;g<grids.length;g++){ var kids=grids[g].children,i; for(i=0;i<kids.length;i++){ kids[i].style.setProperty('--rvd',(Math.min(i,14)*40)+'ms'); kids[i].classList.add('rvl'); } } }catch(e){} }
 function go(v,id){ stopSim(); try{ Track.view(v+(id?(':'+id):'')); }catch(eT){}
   if(homeSim&&homeSim.stop){ homeSim.stop(); homeSim=null; }
-  if(curView==='lab'&&v!=='lab'){ stopThumbs(); Research.stop(); Theory.stop(); Investigate.stop(); DesignLab.stop(); CompareDeck.stop(); try{ LabVig.stop(); }catch(e){} }
+  if(curView==='lab'&&v!=='lab') stopLabViews();
   if(curView==='lesson'&&v!=='lesson'){ try{ Lens.stop(); }catch(e){} }
   if(curView==='universe'&&v!=='universe') Uni.stop();
   if(curView==='sandbox'&&v!=='sandbox') Sandbox.stop();
@@ -12055,7 +12066,7 @@ var CompareDeck=(function(){
   function mountCell(i){ var c=cells[i]; if(!c)return; if(c.inst&&c.inst.stop){ try{c.inst.stop();}catch(e){} } var st=$('#cmp-st'+i,host); if(st){ st.innerHTML=''; try{ c.inst=SIMS[c.type](st); }catch(e){ c.inst=null; st.innerHTML='<div class="cmp-err">sim unavailable</div>'; } } }
   function render(){ if(!host)return;
     host.innerHTML='<div class="cmp"><div class="cmp-bar"><div class="cmp-h">⇄ Multi-Sim Comparison Deck</div><div class="cmp-tx"><button class="mini-b" id="cmp-restart">▸ Restart all</button><button class="mini-b" id="cmp-pause">‖ Pause all</button>'+(cells.length<4?'<button class="mini-b" id="cmp-add">＋ Panel</button>':'')+'</div></div>'+
-      '<div class="cmp-grid c'+cells.length+'">'+cells.map(function(c,i){ return '<div class="cmp-cell"><div class="cmp-pick"><select class="cmp-sel" data-i="'+i+'">'+TYPES.map(function(t){return '<option value="'+t+'"'+(t===c.type?' selected':'')+'>'+esc(SIM_META[t]?SIM_META[t].n:t)+'</option>';}).join('')+'</select>'+(cells.length>1?'<button class="cmp-x" data-i="'+i+'" title="remove panel">✕</button>':'')+'</div><div class="cmp-stage" id="cmp-st'+i+'"></div></div>'; }).join('')+'</div>'+
+      '<div class="cmp-grid c'+cells.length+'">'+cells.map(function(c,i){ return '<div class="cmp-cell"><div class="cmp-pick"><select aria-label="Simulation for panel '+(i+1)+'" class="cmp-sel" data-i="'+i+'">'+TYPES.map(function(t){return '<option value="'+t+'"'+(t===c.type?' selected':'')+'>'+esc(SIM_META[t]?SIM_META[t].n:t)+'</option>';}).join('')+'</select>'+(cells.length>1?'<button class="cmp-x" data-i="'+i+'" aria-label="Remove panel '+(i+1)+'" title="Remove panel">✕</button>':'')+'</div><div class="cmp-stage" id="cmp-st'+i+'"></div></div>'; }).join('')+'</div>'+
       '<div class="cmp-hint">Drop any simulation into each panel and run them side by side — compare how different systems behave at a glance. <b>Restart all</b> syncs every panel back to the start.</div></div>';
     cells.forEach(function(c,i){ mountCell(i); });
     var rb=$('#cmp-restart',host); if(rb) rb.addEventListener('click',function(){ cells.forEach(function(c,i){ mountCell(i); }); });
@@ -12385,7 +12396,7 @@ var Expt=(function(){
   return { hub:hub, discover:discover };
 })();
 function viewLab(){
-  stopSim(); CompareDeck.stop(); setCrumb([{t:'Lab'}]);
+  stopSim(); stopLabViews(); setCrumb([{t:'Lab'}]);
   var MODES=[['labs','∇ Labs'],['graphs','∿ Graphs'],['play','⊚ Playground'],['theory','∮ Theory Lab'],['research','∴ Research Lab'],['investigate','∫ Investigate'],['design','⧉ Design'],['compare','⇄ Compare'],['discover','✦ Discover']];
   var _MO=(function(){ var sl=(typeof Style!=='undefined'&&Style.def())?Style.def().lab:null; if(!sl) return MODES;
     return MODES.filter(function(m){ return m[0]===sl; }).concat(MODES.filter(function(m){ return m[0]!==sl; })); })();
@@ -12465,7 +12476,7 @@ function viewLab(){
   var html='<div class="wrap fade"><div class="eyebrow">Playground</div><h1 class="h-hello" style="font-size:30px">No objectives. Just build.</h1><div class="h-sub">Pure exploration — '+order.length+' live simulations plus the multi-physics Sandbox. Nothing to complete, nothing to submit. Break things and see what the universe does.</div>'+toggle+
     '<div class="cont" style="margin-bottom:26px"><div class="inner"><div class="body"><div class="lab">Multi-physics Sandbox</div><h2>Build a universe from scratch</h2><p>Gravity, charge, magnetic fields, springs, rods, ropes, pulleys — one engine, your rules. Author the constants, sling planets, lace a cat’s cradle, or grab it all with your bare hands via the webcam.</p><button class="btn btn-pri" id="pg-sbx">☉ Open the Sandbox</button></div></div></div>'+
     '<div class="lab-grid">'+
-    order.map(function(s){ return '<div class="lab-card" data-sim="'+s+'"><div class="thumb" id="thumb-'+s+'"></div><div class="lc-b"><h4>'+esc(SIM_META[s].n)+'</h4><p>'+esc(SIM_META[s].d)+'</p></div></div>'; }).join('')+
+    order.map(function(s){ return '<div class="lab-card" role="button" tabindex="0" aria-label="Open '+esc(SIM_META[s].n)+'" data-sim="'+s+'"><div class="thumb" id="thumb-'+s+'"></div><div class="lc-b"><h4>'+esc(SIM_META[s].n)+'</h4><p>'+esc(SIM_META[s].d)+'</p></div></div>'; }).join('')+
     '</div></div>';
   main.innerHTML=html;
   wireToggle();
@@ -12478,7 +12489,7 @@ function viewLab(){
     host.addEventListener('pointerenter', play); host.addEventListener('pointerleave', freeze);
     return host;
   });
-  $$('.lab-card').forEach(function(card){ card.addEventListener('click',function(){ openLabFull(card.dataset.sim); }); });
+  $$('.lab-card').forEach(function(card){ card.addEventListener('click',function(){ openLabFull(card.dataset.sim); });card.addEventListener('keydown',function(e){if(e.target===card&&(e.key==='Enter'||e.key===' ')){e.preventDefault();card.click();}}); });
 }
 var labFullInst=null;
 var SIM_THEME={superpose:'#c084fc',entangle:'#c084fc',photonslit:'#c084fc',sterngerlach:'#c084fc',orbit3d:'#fbbf24',fields3d:'#facc15',orbit:'#fbbf24',blackhole:'#f87171',sandbox:'#a78bfa',projectile:'#7dd3fc',gas:'#fb923c',magnetic:'#60a5fa',spring:'#7dd3fc',wave:'#22d3ee',standing:'#f472b6',fields:'#facc15',refraction:'#a78bfa',pendulum:'#f472b6',fourier:'#34d399',tunneling:'#a78bfa',doubleslit:'#7dd3fc',bloch:'#c084fc',rlc:'#34d399',carnot:'#fb923c',lens:'#22d3ee'};
@@ -12739,26 +12750,8 @@ function closeLabFull(){ if(labFullInst&&labFullInst.stop) labFullInst.stop(); l
 function mountMini(id,type){ var c=$('#'+id); if(c) homeSim=SIMS[type](c); }
 
 /* ===== SEARCH / PALETTE ===== */
-var Pal=(function(){
-  var box=$('#pal'),input=$('#pal-q'),res=$('#pal-r'),rows=[],sel=0;
-  function open(){ box.classList.add('on'); input.value=''; render(''); setTimeout(function(){ input.focus(); },40); }
-  function close(){ box.classList.remove('on'); }
-  function render(q){ q=q.trim(); var ql=q.toLowerCase(); rows=[]; var html='';
-    if(q){ rows.push({type:'ask',q:q}); html+='<div class="pal-row sel" data-i="0"><span class="pic" style="background:var(--violet)22;color:var(--violet)">✦</span><span class="pnm">Ask Entelloq: “'+esc(q)+'”</span><span class="pdm">enter</span></div>'; }
-    var topics=DB.filter(function(t){ return !ql||t._s.indexOf(ql)>=0; }).slice(0,9);
-    topics.forEach(function(t){ var dm=DMAP[t.domain]; rows.push({type:'topic',t:t}); html+='<div class="pal-row" data-i="'+(rows.length-1)+'"><span class="pic" style="background:'+dm.c+'22;color:'+dm.c+'">'+dm.n.charAt(0)+'</span><span class="pnm">'+esc(t.name)+'</span><span class="pdm">'+esc(dm.n)+'</span></div>'; });
-    res.innerHTML=rows.length?html:'<div style="padding:24px;text-align:center;color:var(--ink-faint)">No matches</div>'; sel=0; hl();
-    $$('.pal-row',res).forEach(function(r){ r.addEventListener('mouseenter',function(){ sel=+r.dataset.i; hl(); }); r.addEventListener('click',function(){ exec(+r.dataset.i); }); });
-  }
-  function hl(){ $$('.pal-row',res).forEach(function(r){ r.classList.toggle('sel',+r.dataset.i===sel); }); }
-  function exec(i){ var r=rows[i]; if(!r) return; close(); if(r.type==='ask') Tutor.ask(r.q); else if(r.type==='topic') go('lesson',r.t.id); }
-  input.addEventListener('input',function(){ render(input.value); });
-  input.addEventListener('keydown',function(e){ if(e.key==='ArrowDown'){ e.preventDefault(); sel=Math.min(rows.length-1,sel+1); hl(); } else if(e.key==='ArrowUp'){ e.preventDefault(); sel=Math.max(0,sel-1); hl(); } else if(e.key==='Enter'){ e.preventDefault(); exec(sel); } else if(e.key==='Escape') close(); });
-  box.addEventListener('click',function(e){ if(e.target===box) close(); });
-  return { open:open, close:close };
-})();
-document.addEventListener('keydown',function(e){ if((e.metaKey||e.ctrlKey)&&(e.key==='k'||e.key==='K')){ e.preventDefault(); Pal.open(); } });
-$('#t-search').addEventListener('focus',function(){ this.blur(); Pal.open(); });
+var Pal={open:Cmdk.open,close:Cmdk.close}; // Compatibility for existing entry points.
+$('#t-search').addEventListener('click',function(){ Cmdk.open(); });
 
 /* ===== SIDEBAR: domains + quick actions (fill the column) ===== */
 function buildSide(){
@@ -13718,8 +13711,8 @@ var Grapher=(function(){
   function lex(s){ var T=[],i=0,c;
     while(i<s.length){ c=s[i];
       if(c===' '||c==='\t'){ i++; continue; }
-      if(c>='0'&&c<='9'||c==='.'){ var j=i; while(j<s.length&&(s[j]>='0'&&s[j]<='9'||s[j]==='.'))j++;
-        var num=parseFloat(s.slice(i,j)); if(isNaN(num)) return {err:'bad number'}; T.push({t:'num',v:num}); i=j; continue; }
+      if(c>='0'&&c<='9'||c==='.'){ var literal=s.slice(i).match(/^(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?/);
+        if(!literal||s[i+literal[0].length]==='.')return {err:'bad number'};var num=Number(literal[0]);if(!Number.isFinite(num))return {err:'number is too large'};T.push({t:'num',v:num});i+=literal[0].length;continue; }
       if(/[a-zA-Z]/.test(c)){ var k=i; while(k<s.length&&/[a-zA-Z]/.test(s[k]))k++;
         T.push({t:'id',v:s.slice(i,k)}); i=k; continue; }
       if('+-*/^(),'.indexOf(c)>=0){ T.push({t:c}); i++; continue; }
@@ -13797,7 +13790,7 @@ var Grapher=(function(){
 
   /* --- state --- */
   var V={cx:0,cy:0,ppu:60};        /* world center + pixels per unit */
-  var rows=[],P={a:1,b:1,c:1},host=null,cv=null,ctx=null,hover=null;
+  var rows=[],P={a:1,b:1,c:1},host=null,cv=null,ctx=null,hover=null,observer=null;
   var EXAMPLES=[['a·x²','a*x^2'],['sin(a·x)+b','sin(a*x)+b'],['bell e^(−x²/a)','exp(-x^2/a)'],['a/x','a/x'],['tan(x)','tan(x)'],['damped wave','exp(-a*x/4)*sin(b*x)']];
 
   function niceStep(raw){ var m=Math.pow(10,Math.floor(Math.log(raw)/Math.LN10)),n=raw/m;
@@ -13882,7 +13875,7 @@ var Grapher=(function(){
     box.innerHTML='';
     need.forEach(function(k){
       var w=ce('div','gx-sl');
-      w.innerHTML='<span class="k">'+k+'</span><input type="range" min="-5" max="5" step="0.1" value="'+P[k]+'"><b>'+P[k]+'</b>';
+      w.innerHTML='<span class="k">'+k+'</span><input type="range" aria-label="Parameter '+k+'" min="-5" max="5" step="0.1" value="'+P[k]+'"><b>'+P[k]+'</b>';
       var inp=w.querySelector('input');
       inp.addEventListener('input',function(){ P[k]=+inp.value; w.querySelector('b').textContent=inp.value; draw(); });
       box.appendChild(w);
@@ -13944,7 +13937,7 @@ var Grapher=(function(){
     cv.addEventListener('dblclick',function(){ V.cx=0;V.cy=0;V.ppu=60; draw(); });
   }
   function mount(h2){
-    host=h2; rows=[]; V={cx:0,cy:0,ppu:60};
+    stop();host=h2; rows=[]; V={cx:0,cy:0,ppu:60};
     host.innerHTML='<div class="gx-wrap">'+
       '<div class="gx-side">'+
         '<div class="gx-ph">EXPRESSIONS</div><div id="gx-rows"></div>'+
@@ -13969,10 +13962,11 @@ var Grapher=(function(){
     addRow('a*x^2'); addRow('sin(a*x)+b');
     draw();
     /* re-fit on container resize */
-    if(window.ResizeObserver){ var ro=new ResizeObserver(function(){ draw(); }); ro.observe(cv.parentElement); }
+    if(window.ResizeObserver){ observer=new ResizeObserver(function(){ draw(); }); observer.observe(cv.parentElement); }
   }
   window.__peqGx={ compile:function(s){ return compile(s); }, view:function(){ return V; }, params:function(){ return P; }, redraw:draw };
-  return { mount:mount };
+  function stop(){if(observer){observer.disconnect();observer=null;}host=null;cv=null;ctx=null;}
+  return { mount:mount, stop:stop };
 })();
 
 /* ===== LABVIG — living vignettes for every lab-tab card =====

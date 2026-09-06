@@ -1,6 +1,7 @@
 /* Reference-matched opening scene. Counts come from the app; controls are native. */
 function observatoryMarkup(){return `
 <a class="pe-skip" href="#pe-title">Skip to the launch content</a>
+<div class="obs-continuum" aria-hidden="true"></div>
 <main id="pe-main"><div class="obs-mast">
   <div class="obs-backdrop" aria-hidden="true"><img src="__OBSERVATORY_BACKGROUND__" alt="" width="1536" height="1024" fetchpriority="high" decoding="async"></div>
   <canvas id="pe-orbit-canvas" class="obs-motion" role="img" aria-label="Animated predicted orbital trajectory. Mass, speed and calculated orbit type are available in the controls."></canvas>

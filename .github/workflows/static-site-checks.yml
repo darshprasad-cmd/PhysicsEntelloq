@@ -39,3 +39,5 @@ jobs:
         run: node --test .github/test-advanced.js
       - name: Check observatory orbit and accessible launch contracts
         run: node --test .github/test-observatory.js
+      - name: Check observatory palette continuity and text contrast
+        run: node --test .github/test-observatory-theme.js

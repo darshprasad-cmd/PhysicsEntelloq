@@ -21,6 +21,8 @@ var Observatory=(function(){
     var mass=root.querySelector('#pe-mass'),speed=root.querySelector('#pe-velocity'),preset=root.querySelector('#pe-trajectory'),pause=root.querySelector('#pe-pause'),state=root.querySelector('#pe-orbit-state');
     var media=matchMedia('(prefers-reduced-motion: reduce)'),paused=media.matches||/still/.test(location.search),visible=true,stopped=false,raf=0,time=0,last=0,phase=.75;
     var picture=root.querySelector('.obs-backdrop img'),tiltX=0,tiltY=0,targetX=0,targetY=0,model;
+    // Reuse the decoded hero artwork; no second download or generated image.
+    root.querySelector('.obs-continuum').style.backgroundImage='url("'+picture.src+'")';
     function read(){
       model=LaunchOrbitModel.describe(+mass.value,+speed.value);
       root.querySelector('#pe-mass-value').textContent=(5.9722*+mass.value).toFixed(2)+' × 10²⁴ kg';

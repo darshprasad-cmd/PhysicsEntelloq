@@ -1,0 +1,91 @@
+/* One material palette, sampled from the approved observatory artwork.
+   Scientific category/trace/status colours remain independent of interface chrome. */
+:root{
+  --obs-night:#020509;--obs-panel:#091119;--obs-raised:#121d29;
+  --obs-ink:#eef2f7;--obs-muted:#bbc6d3;--obs-dim:#9caec3;
+  --obs-blue:#9bc3ff;--obs-gold:#dfba86;--obs-border:#2c3d50;
+}
+html.pe-refined{
+  --bg:var(--obs-night);--bg-1:#060b10;--bg-2:var(--obs-raised);
+  --card:var(--obs-panel);--card-2:var(--obs-raised);
+  --bg-app:var(--obs-night);--bg-panel:var(--obs-panel);--bg-raise:var(--obs-raised);
+  --ink:var(--obs-ink);--ink-dim:var(--obs-muted);--ink-faint:var(--obs-dim);--ink-ghost:var(--obs-dim);
+  --blue:var(--obs-blue);--blue-2:var(--obs-blue);--amber:var(--obs-gold);
+  --line:rgba(185,207,235,.18);--line-2:rgba(185,207,235,.11);
+  --pe-surface:var(--obs-panel);--pe-surface-2:var(--obs-raised);--pe-border:var(--obs-border);
+  --pe-night:var(--bg);--pe-panel:var(--pe-surface);--pe-paper:var(--ink);
+  --pe-muted:var(--ink-dim);--pe-force:var(--blue);--pe-energy:var(--amber);--pe-line:var(--line);
+}
+/* Keep the learner's light/system choice, using the same blue and warm-metal hues. */
+html.pe-refined[data-theme=light]{
+  --bg:#edf2f8;--bg-1:#f5f8fc;--bg-2:#e0e8f2;--card:#fbfcfe;--card-2:#e8eff7;
+  --bg-app:#edf2f8;--bg-panel:#fbfcfe;--bg-raise:#e8eff7;
+  --ink:#152536;--ink-dim:#435a72;--ink-faint:#516982;--ink-ghost:#516982;
+  --blue:#305f96;--blue-2:#305f96;--amber:#835d33;
+  --line:#c7d4e3;--line-2:#d6e0ec;
+  --pe-surface:#fbfcfe;--pe-surface-2:#e8eff7;--pe-border:#b5c7dd;
+}
+html.pe-refined body{background:var(--bg)}
+.pe-refined .app,.pe-refined .topbar{background:var(--bg)}
+.pe-refined .side,.pe-refined .mtab{background:var(--bg-1)}
+/* Match the app's tablet navigation breakpoint, not the switcher's phone breakpoint. */
+@media(max-width:850px){body:not(.pe-landing-open) #eqx-fab,body:not(.pe-landing-open) #eqx-panel{bottom:calc(78px + env(safe-area-inset-bottom,0px))}}
+.pe-refined .side .nav-i.on{background:var(--pe-surface-2);border-color:var(--pe-border)}
+.pe-refined .btn-pri,.pe-refined .cc-hero .btn{background:var(--blue);border-color:var(--blue);color:var(--bg)}
+.pe-refined .cc-home{--cc-line:var(--line)}
+.pe-refined .cc-hero small,.pe-refined .cc-world .cc-ic,.pe-refined .cc-map-head small{color:var(--blue)}
+.pe-refined .cc-art svg{stroke:var(--blue)}
+.pe-refined .cc-home button:focus-visible{outline-color:var(--blue)}
+.pe-refined .side-act,.pe-refined .t-search{background:var(--bg-1);border-color:var(--line);color:var(--ink-dim)}
+.pe-refined #tutor-fab{background:var(--blue);border-color:var(--pe-border);color:var(--bg)}
+.pe-refined .welcome-highlight{border-color:var(--blue)}
+.pe-refined .sim-stage,.pe-refined .xg-thumb,.pe-refined .lf-stage{background:var(--bg-1)}
+.pe-refined .xg-badge{background:var(--pe-surface-2);color:var(--blue);border-color:var(--pe-border)}
+.pe-refined #lab-full{background:var(--bg)}
+/* Sandbox already uses a dark instrument in light mode. Keep that contract,
+   including its notebook, so calibrated traces and text share one contrast field. */
+html.pe-refined .sbx{
+  --bg:var(--obs-night);--bg-1:#060b10;--ink:var(--obs-ink);--ink-dim:var(--obs-muted);--ink-faint:var(--obs-dim);
+  --blue:var(--obs-blue);--amber:var(--obs-gold);--line:rgba(185,207,235,.18);
+  --pe-surface:var(--obs-panel);--pe-surface-2:var(--obs-raised);--pe-border:var(--obs-border);background:var(--obs-night);
+}
+.pe-refined .sbx-tools,.pe-refined .sbx-side,.pe-refined .sbx-foot,.pe-refined .sbx-tool{background:var(--pe-surface);border-color:var(--line)}
+.pe-refined .sbx-tool.on{background:var(--pe-surface-2);border-color:var(--blue);color:var(--blue);box-shadow:none}
+.pe-refined .sbx-stage{background:var(--bg)}
+.pe-refined .cr-lab{background:var(--pe-surface);color:var(--ink);border-color:var(--line)}
+.pe-refined .cr-lab h2,.pe-refined .cr-lab h3,.pe-refined .cr-stats strong{color:var(--ink)}
+.pe-refined .cr-lab p,.pe-refined .cr-lab label,.pe-refined .cr-lab details,.pe-refined .cr-stats small{color:var(--ink-dim)}
+.pe-refined .cr-overline{color:var(--blue)}
+.pe-refined .cr-lab label b{color:var(--amber)}
+.pe-refined .cr-stats span{color:var(--ink-dim)}
+.pe-refined .cr-row button{color:var(--ink);background:var(--pe-surface-2);border-color:var(--pe-border)}
+.pe-refined .cr-question,.pe-refined .cr-feedback{background:var(--bg-1);border-color:var(--line);color:var(--ink-dim)}
+.pe-refined .cr-lab input[type=range]::-webkit-slider-runnable-track{background:var(--pe-border)}
+.pe-refined .cr-lab input[type=range]::-webkit-slider-thumb{background:var(--blue);border-color:var(--blue)}
+.pe-refined .cr-lab input[type=range]::-moz-range-track{background:var(--pe-border)}
+.pe-refined .cr-lab input[type=range]::-moz-range-thumb{background:var(--blue);border-color:var(--blue)}
+.pe-refined .as-index,.pe-refined .as-reading,.pe-refined .as-gate{--as-gold:var(--amber)}
+.pe-refined:not([data-theme=light]) #cmdk{background:rgba(2,5,9,.86)}
+/* The launch remains dark even when the workspace is explicitly set to light. */
+.pe-launch{
+  --pe-night:var(--obs-night);--pe-panel:var(--obs-panel);--pe-paper:var(--obs-ink);
+  --pe-muted:var(--obs-muted);--pe-force:var(--obs-blue);--pe-energy:var(--obs-gold);
+  --pe-line:rgba(185,207,235,.18);background:var(--obs-night);color:var(--obs-ink);
+}
+/* A stationary, full-viewport plate continues behind every scroll section.
+   The first-screen artwork, motion and geometry stay exactly where they were. */
+.obs-continuum{position:fixed;inset:0;z-index:-1;pointer-events:none;background-color:var(--obs-night);background-size:cover;background-position:center top;background-repeat:no-repeat}
+.obs-continuum::after{content:'';position:absolute;inset:0;background:rgba(2,5,9,.78)}
+.pe-launch #pe-main>section,.pe-launch .pe-footer{position:relative;background:transparent;border-color:var(--pe-line)}
+.pe-launch .pe-world,.pe-launch .pe-conversation{background:rgba(6,13,20,.9);border-color:rgba(185,207,235,.22)}
+.pe-launch .pe-world-visual{background:rgba(3,9,15,.38)}
+.pe-launch .pe-question{background:rgba(18,29,41,.95);border-color:#304457}
+.pe-launch .pe-context,.pe-launch .pe-thought{border-color:var(--pe-line)}
+.pe-launch .pe-kicker,.pe-launch .pe-world-meta,.pe-launch .pe-world-copy small,.pe-launch .pe-context,.pe-launch .pe-ai-star,.pe-launch .pe-science-grid article>span{color:var(--obs-blue)}
+.pe-launch .pe-loop b,.pe-launch .obs-advanced-art{color:var(--obs-gold)}
+.pe-launch .pe-loop p,.pe-launch .pe-world-copy p,.pe-launch .pe-world-meta,.pe-launch .pe-tutor-section p,.pe-launch .pe-science-grid p,.pe-launch .pe-faq p,.pe-launch .pe-founder-copy>p,.pe-launch .pe-account-note,.pe-launch .pe-footer p,.pe-launch .pe-context-foot,.pe-launch .pe-thought{color:var(--obs-muted)}
+.pe-launch .pe-founder blockquote,.pe-launch .pe-founder figcaption,.pe-launch .pe-footer-expanded>div>span{color:var(--obs-ink)}
+.pe-launch .pe-founder figcaption span,.pe-launch .pe-footer a{color:var(--obs-muted)}
+.pe-launch .obs-advanced p,.pe-launch .obs-advanced-art small{color:var(--obs-muted)}
+.pe-launch .pe-final h2,.pe-launch .pe-faq h2{font-weight:400}
+@media(max-width:700px){.obs-continuum{background-position:65% top}}

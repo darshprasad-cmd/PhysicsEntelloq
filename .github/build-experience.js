@@ -24,7 +24,7 @@ embed('LIBRARY','library-entry.js','function viewLearn(){','var domFilter=');
 embed('SEARCH','search.js','var Cmdk=(function(){','/* ===== SOLVE — type any problem');
 embed('ADVANCED','advanced-studio.js','function viewAdv(id){','/* #adv deep link');
 const cssStart='<!-- EXPERIENCE:CSS:START -->',cssEnd='<!-- EXPERIENCE:CSS:END -->';
-const css=cssStart+'\n<style id="experience-css">\n'+['experience.css','app-design.css','welcome.css','advanced-studio.css','observatory.css'].map(file=>fs.readFileSync(path.join(root,'experience',file),'utf8')).join('\n').replace('__OBSERVATORY_REFERENCE__','data:image/webp;base64,'+fs.readFileSync(path.join(root,'assets','observatory-reference.webp')).toString('base64'))+'\n</style>\n'+cssEnd;
+const css=cssStart+'\n<style id="experience-css">\n'+['experience.css','app-design.css','welcome.css','advanced-studio.css','observatory.css','observatory-theme.css'].map(file=>fs.readFileSync(path.join(root,'experience',file),'utf8')).join('\n').replace('__OBSERVATORY_REFERENCE__','data:image/webp;base64,'+fs.readFileSync(path.join(root,'assets','observatory-reference.webp')).toString('base64'))+'\n</style>\n'+cssEnd;
 if(html.includes(cssStart)){const a=html.indexOf(cssStart),b=html.indexOf(cssEnd,a);html=html.slice(0,a)+css+html.slice(b+cssEnd.length);}
 else html=html.replace('</head>',css+'\n</head>');
 const guideStart='<!-- FEATURE-GUIDE:START -->',guideEnd='<!-- FEATURE-GUIDE:END -->';

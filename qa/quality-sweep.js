@@ -3,6 +3,7 @@ const{chromium}=require('playwright'),fs=require('node:fs'),path=require('node:p
 const phase=process.argv[2]||'sweep-before',out=path.join(__dirname,'results'),report=[];fs.mkdirSync(out,{recursive:true});
 (async()=>{const browser=await chromium.launch({headless:true});try{for(const[device,width,height]of[['desktop',1440,1000],['tablet',768,1024],['small',320,740]]){
  const context=await browser.newContext({viewport:{width,height},reducedMotion:'reduce'});await context.route(/clarity\.ms/,r=>r.abort());await context.addInitScript(()=>{localStorage.setItem('peq_entered','1');localStorage.setItem('peq_onboarded','1');});
+ if(process.argv.includes('--staged'))await context.route('https://physics.entelloq.com/**',r=>r.request().resourceType()==='document'?r.fulfill({status:200,contentType:'text/html',body:fs.readFileSync(path.join(__dirname,'../index.html'),'utf8')}):r.continue());
  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto('https://physics.entelloq.com/?still&quality='+phase,{waitUntil:'load',timeout:45000});await page.addScriptTag({path:require.resolve('axe-core/axe.min.js')});
  async function route(r){await page.locator('#pe-explore').click();const more=page.locator('[data-explore-go="'+r+'"]');if(await more.count())await more.click();else{await page.keyboard.press('Escape');await page.locator((width<=850?'.mtab':'.side')+' [data-go="'+r+'"]').first().click();}}
  async function scan(name,selector='#main'){

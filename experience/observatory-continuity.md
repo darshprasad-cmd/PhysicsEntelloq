@@ -11,6 +11,7 @@ Keep the approved observatory composition and motion. Continue its photographic 
 - Sandbox retains its existing dark-instrument contract even in light mode; its Cradle notebook now shares that contrast field. A regression check preserves the home illustration's radial gradient.
 - The ecosystem switcher now clears the bottom navigation through the app's 850px breakpoint, fixing a tablet overlap discovered by real pointer-click testing. Its destinations and founder information are unchanged.
 - Browser chrome follows the selected palette. Saved light/system preferences still work; launch remains photographic and dark regardless of workspace preference.
+- Final visual review also replaces legacy teal lower-page headline/labels, skip-link and primary hover colours, with computed-style regression checks for those details.
 
 The founder portrait and biography, signup tutorial, eight-step tour, Advanced Studio warning and voluntary entry, scientific calculations, camera controls and tutor providers are preserved. The original founder JPEG remains SHA-256 `f30b43e4e3f72223f4ae9d043e22c0cc8218ea2c014451c9bd0c1022a44f4e90`.
 

@@ -83,6 +83,10 @@ html.pe-refined .sbx{
 .pe-launch .pe-context,.pe-launch .pe-thought{border-color:var(--pe-line)}
 .pe-launch .pe-kicker,.pe-launch .pe-world-meta,.pe-launch .pe-world-copy small,.pe-launch .pe-context,.pe-launch .pe-ai-star,.pe-launch .pe-science-grid article>span{color:var(--obs-blue)}
 .pe-launch .pe-loop b,.pe-launch .obs-advanced-art{color:var(--obs-gold)}
+.pe-launch .pe-statement h2 span,.pe-launch .pe-world-badge,.pe-launch .pe-world-copy h3 span{color:var(--obs-blue)}
+.pe-launch{scrollbar-color:var(--obs-border) var(--obs-night)}
+.pe-launch .pe-skip{background:var(--obs-blue);color:var(--obs-night)!important}
+@media(hover:hover) and (pointer:fine){.pe-launch .pe-button.pe-primary:hover{background:var(--obs-blue);border-color:var(--obs-blue)}}
 .pe-launch .pe-loop p,.pe-launch .pe-world-copy p,.pe-launch .pe-world-meta,.pe-launch .pe-tutor-section p,.pe-launch .pe-science-grid p,.pe-launch .pe-faq p,.pe-launch .pe-founder-copy>p,.pe-launch .pe-account-note,.pe-launch .pe-footer p,.pe-launch .pe-context-foot,.pe-launch .pe-thought{color:var(--obs-muted)}
 .pe-launch .pe-founder blockquote,.pe-launch .pe-founder figcaption,.pe-launch .pe-footer-expanded>div>span{color:var(--obs-ink)}
 .pe-launch .pe-founder figcaption span,.pe-launch .pe-footer a{color:var(--obs-muted)}

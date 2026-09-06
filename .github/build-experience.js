@@ -6,11 +6,14 @@ function embed(name,file,firstStart,firstEnd){
   const start='/* EXPERIENCE:'+name+':START */',end='/* EXPERIENCE:'+name+':END */';
   let source=fs.readFileSync(path.join(root,'experience',file),'utf8');
   if(file==='launch.js')source=source.replace('__FOUNDER_PORTRAIT__','data:image/jpeg;base64,'+fs.readFileSync(path.join(root,'assets','darsh-prasad.jpg')).toString('base64'));
+  if(file==='observatory-markup.js')source=source.replace('__OBSERVATORY_BACKGROUND__','data:image/webp;base64,'+fs.readFileSync(path.join(root,'assets','observatory-background.webp')).toString('base64'));
   const value=start+'\n'+source+'\n'+end;
   if(html.includes(start)) {const a=html.indexOf(start),b=html.indexOf(end,a);if(b<0)throw Error(name);html=html.slice(0,a)+value+html.slice(b+end.length);}
   else {const a=html.indexOf(firstStart),b=firstEnd?html.indexOf(firstEnd,a):a;if(a<0||b<0)throw Error('Missing insertion point '+name);html=html.slice(0,a)+value+'\n'+html.slice(b);}
 }
 embed('LAUNCH','launch.js','var Landing=(function(){','/* ===== SANDBOX WORKSPACE UX');
+embed('OBSERVATORY','observatory.js','/* EXPERIENCE:LAUNCH:START */');
+embed('OBSERVATORY-MARKUP','observatory-markup.js','/* EXPERIENCE:LAUNCH:START */');
 embed('MODEL','cradle-model.js','var Sandbox=(function(){');
 embed('STUDIO','cradle-studio.js','  function accel(){ var n=B.length');
 embed('HOME','home.js','function viewHome(){','function recCard(');
@@ -21,7 +24,7 @@ embed('LIBRARY','library-entry.js','function viewLearn(){','var domFilter=');
 embed('SEARCH','search.js','var Cmdk=(function(){','/* ===== SOLVE — type any problem');
 embed('ADVANCED','advanced-studio.js','function viewAdv(id){','/* #adv deep link');
 const cssStart='<!-- EXPERIENCE:CSS:START -->',cssEnd='<!-- EXPERIENCE:CSS:END -->';
-const css=cssStart+'\n<style id="experience-css">\n'+['experience.css','app-design.css','welcome.css','advanced-studio.css'].map(file=>fs.readFileSync(path.join(root,'experience',file),'utf8')).join('\n')+'\n</style>\n'+cssEnd;
+const css=cssStart+'\n<style id="experience-css">\n'+['experience.css','app-design.css','welcome.css','advanced-studio.css','observatory.css'].map(file=>fs.readFileSync(path.join(root,'experience',file),'utf8')).join('\n').replace('__OBSERVATORY_REFERENCE__','data:image/webp;base64,'+fs.readFileSync(path.join(root,'assets','observatory-reference.webp')).toString('base64'))+'\n</style>\n'+cssEnd;
 if(html.includes(cssStart)){const a=html.indexOf(cssStart),b=html.indexOf(cssEnd,a);html=html.slice(0,a)+css+html.slice(b+cssEnd.length);}
 else html=html.replace('</head>',css+'\n</head>');
 const guideStart='<!-- FEATURE-GUIDE:START -->',guideEnd='<!-- FEATURE-GUIDE:END -->';

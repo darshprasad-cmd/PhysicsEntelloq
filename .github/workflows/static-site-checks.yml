@@ -37,3 +37,5 @@ jobs:
         run: node --test .github/test-quality.js
       - name: Check voluntary Advanced Studio entry and treatment contracts
         run: node --test .github/test-advanced.js
+      - name: Check observatory orbit and accessible launch contracts
+        run: node --test .github/test-observatory.js

@@ -49,6 +49,11 @@ var AppDesign=(function(){
   function enterLab(){labTrigger=document.activeElement;$('.app').inert=true;$('.mtab').inert=true;$('#lf-back').focus();}
   function exitLab(){$('.app').inert=false;$('.mtab').inert=false;$('#lab-full').classList.remove('pe-stage-focus');if(labTrigger&&labTrigger.isConnected)labTrigger.focus({preventScroll:true});}
   function init(){
+    // The same embedded artwork also loads for returning users who skip launch.
+    if(!$('#obs-workspace')){
+      var backdrop=ce('div');backdrop.id='obs-workspace';backdrop.setAttribute('aria-hidden','true');
+      backdrop.style.backgroundImage='url("'+OBSERVATORY_ARTWORK+'")';document.body.prepend(backdrop);
+    }
     makeNavigation();enhance(document.body);
     var fab=$('#tutor-fab');if(fab){fab.innerHTML=icon('tutor');fab.setAttribute('aria-label','Ask Entelloq');fab.title='Ask Entelloq';}
     document.addEventListener('keydown',function(e){if((e.key==='Enter'||e.key===' ')&&e.target.matches('.nav-i[role=button],.side-card[role=button]')){e.preventDefault();focusNext=true;e.target.click();}var lab=$('#lab-full.on');if(lab&&!$('#tutor.on')){if(e.key==='Escape')closeLabFull();if(e.key==='Tab'){var items=$$('button,input,textarea,select,[tabindex="0"]',lab).filter(function(n){return !n.disabled&&n.getClientRects().length;});var first=items[0],last=items[items.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}}});

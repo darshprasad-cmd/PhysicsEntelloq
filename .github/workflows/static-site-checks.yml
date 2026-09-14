@@ -27,6 +27,8 @@ jobs:
         run: node .github/validate-inline-scripts.js
       - name: Verify generated experience is current
         run: node .github/build-experience.js --check
+      - name: Check shared AI requests, streaming and structured responses
+        run: node --test .github/test-ai.js
       - name: Check cradle physics against analytical results
         run: node --test .github/test-cradle.js
       - name: Check application design contracts

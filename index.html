@@ -2797,7 +2797,7 @@ html.pe-refined .sbx{
 <button id="tutor-fab" aria-label="Ask the AI tutor"><span class="av">✦</span><span class="lbl">Ask tutor</span></button>
 <div id="tutor-scrim"></div>
 <aside id="tutor" role="dialog" aria-label="AI tutor">
-  <div class="tu-head"><canvas class="av tu-orb" aria-hidden="true"></canvas><div class="ti"><span id="tu-name">Entelloq</span><div class="s" id="tu-role">your physics tutor</div></div><button class="tu-spk" id="tu-wake" aria-label="Wake-word listening" title="Wake word — say a tutor's name to switch">◎</button><button class="tu-spk" id="tu-spk" aria-label="Read answers aloud" title="Read answers aloud">⊘</button><button class="tu-spk" id="tu-key" aria-label="Set AI key" title="Set your Groq AI key — free at console.groq.com — stored only in this browser">※</button><button class="x" id="tu-close" aria-label="Close">✕</button></div>
+  <div class="tu-head"><canvas class="av tu-orb" aria-hidden="true"></canvas><div class="ti"><span id="tu-name">Entelloq</span><div class="s" id="tu-role">your physics tutor</div></div><button class="tu-spk" id="tu-wake" aria-label="Wake-word listening" title="Wake word — say a tutor's name to switch">◎</button><button class="tu-spk" id="tu-spk" aria-label="Read answers aloud" title="Read answers aloud">⊘</button><button class="x" id="tu-close" aria-label="Close">✕</button></div>
   <details class="tu-specialists"><summary>Specialist modes</summary><div class="tu-roster" id="tu-roster"></div></details>
   <div class="tu-empty" id="tu-empty">
     <div class="big">✦</div>
@@ -2826,19 +2826,13 @@ html.pe-refined .sbx{
 <script>
 (function(){
 "use strict";
-var AI_PROXY="https://groq-proxy.physicsedge.workers.dev";/* Cloudflare Worker holding the shared Groq key -> keyless AI for every visitor (same proxy quant.entelloq.com uses). */
+var AI_PROXY="https://groq-proxy.physicsedge.workers.dev";/* The shared Groq key stays in the server-side Worker. */
 var CLARITY_PROJECT_ID="xtmb8q6s43";  /* Microsoft Clarity project id (clarity.microsoft.com > project > Settings > Overview) — public, set to enable analytics; or localStorage peq_clarity_id */
 var GOOGLE_CLIENT_ID="939725315910-jkgb2qsde0q5us6r4j8raoe1aff3dq32.apps.googleusercontent.com";  /* public OAuth Web client id — set it (or localStorage peq_gid_client) to switch on Continue with Google; origins must include https://physics.entelloq.com */
-var GROQ_KEY="", GROQ_URL="https://api.groq.com/openai/v1/chat/completions", GROQ_MODEL="llama-3.3-70b-versatile";
-function aiURL(){ if(navigator.onLine===false){ try{ toast('Offline — the AI faculty needs a connection','⌁'); }catch(e){} throw new Error('offline'); } var k=''; try{k=(localStorage.getItem('peq_groq_key')||'').trim();}catch(e){} return (!k&&AI_PROXY)?(AI_PROXY.replace(/\/+$/,'')+'/v1/chat/completions'):GROQ_URL; }
+var GROQ_MODEL="openai/gpt-oss-120b";
+function aiURL(){ if(navigator.onLine===false){ try{ toast('Offline — the AI faculty needs a connection','⌁'); }catch(e){} throw new Error('offline'); } return AI_PROXY.replace(/\/+$/,'')+'/v1/chat/completions'; }
 function aiText(j){ return (j&&j.choices&&j.choices[0]&&j.choices[0].message&&j.choices[0].message.content) || (j&&(j.content||j.text)) || ''; }
-function aiHeaders(){ var k=''; try{k=(localStorage.getItem('peq_groq_key')||'').trim();}catch(e){} var h={'Content-Type':'application/json'}; if(!(!k&&AI_PROXY)) h['Authorization']='Bearer '+(k||GROQ_KEY); return h; }/* proxy holds the key + its CORS forbids the Authorization header, so omit it there; send it only on the direct-to-Groq personal-key path */
-window.PEQ_setAIKey=function(){ var cur=""; try{cur=localStorage.getItem("peq_groq_key")||"";}catch(e){}
-  var k=prompt("Optional \u2014 the AI already works with no key. Paste your OWN free Groq key (console.groq.com) only if you'd rather use your own quota. Stored ONLY in this browser; leave blank to clear.", cur);
-  if(k===null) return; k=k.trim();
-  try{ if(k){ localStorage.setItem("peq_groq_key",k); } else { localStorage.removeItem("peq_groq_key"); } }catch(e){}
-};
-document.addEventListener("click",function(e){ var t=e.target; if(t&&(t.id==="tu-key"||(t.closest&&t.closest("#tu-key")))) window.PEQ_setAIKey(); });
+function aiHeaders(){ return {'Content-Type':'application/json'}; }
 var reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 var STILL=reduced||/still/.test(location.search+location.hash);
 function $(s,r){ return (r||document).querySelector(s); }
@@ -4450,20 +4444,27 @@ var Tutor=(function(){
   function closeP(){ $('#tutor').classList.remove('on'); $('#tutor-scrim').classList.remove('on'); }
   function sys(){ var p=Personas.get(); var st=(typeof Style!=='undefined'&&Style.def())?(' The student is '+Style.def().tutor+'.'):''; return p.sys+st+(ctxNote?(" The student is currently studying: "+ctxNote+"."):""); }
   function addMsg(cls){ empty.style.display='none'; thread.style.display='flex'; var m=ce('div','bub '+cls); if(cls==='a') m.innerHTML='<span class="av">✦</span><span class="bd"></span>'; thread.appendChild(m); thread.scrollTop=thread.scrollHeight; return cls==='a'?m.querySelector('.bd'):m; }
-  function key(){ try{ return (localStorage.getItem('peq_groq_key')||'').trim()||GROQ_KEY; }catch(e){ return GROQ_KEY; } }
   function offline(q){ var ql=q.toLowerCase().replace(/[^a-z0-9\s]/g,' '),best=null,bs=0; DB.forEach(function(t){ var sc=0; ql.split(/\s+/).forEach(function(w){ if(w.length>3&&t._s.indexOf(w)>=0) sc++; }); if(sc>bs){ bs=sc; best=t; } });
-    if(best&&bs>0) return "I can't reach the live AI right now, but the closest concept is:\n\n"+best.name+" — "+best.summary+"\n\nOpen it from Learn for the full lesson."; return "I can't reach the live AI right now (add a Groq key in the tutor, or check your connection). Try the Learn tab in the meantime."; }
+    if(best&&bs>0) return "I can't reach the live AI right now, but the closest concept is:\n\n"+best.name+" — "+best.summary+"\n\nOpen it from Learn for the full lesson."; return "I can't reach the live AI right now. Check your connection or try again in a moment. The Learn tab is available in the meantime."; }
   async function ask(q){ if(busy) return; busy=true; var u=addMsg('u'); u.textContent=q; var bd=addMsg('a'); bd.innerHTML='<span class="cur"></span>';
     Voice.setState('thinking'); Me.award(10,'Asked Entelloq'); history.push({role:'user',content:q}); var msgs=[{role:'system',content:sys()}].concat(history.slice(-8)); var acc='';
-    try{ var resp=await fetch(aiURL(),{method:'POST',headers:aiHeaders(),body:JSON.stringify({model:GROQ_MODEL,messages:msgs,stream:true,temperature:.6,max_tokens:850})});
-      if(!resp.ok||!resp.body) throw new Error('http'); var rd=resp.body.getReader(),dec=new TextDecoder(),buf='';
-      while(true){ var r=await rd.read(); if(r.done) break; buf+=dec.decode(r.value,{stream:true}); var lines=buf.split('\n'); buf=lines.pop();
-        for(var i=0;i<lines.length;i++){ var ln=lines[i].trim(); if(ln.indexOf('data:')!==0) continue; var pl=ln.slice(5).trim(); if(pl==='[DONE]') break;
-          try{ var j=JSON.parse(pl),dc=j.choices&&j.choices[0]&&j.choices[0].delta&&j.choices[0].delta.content; if(dc){ acc+=dc; bd.textContent=acc; bd.insertAdjacentHTML('beforeend','<span class="cur"></span>'); thread.scrollTop=thread.scrollHeight; } }catch(e){} } }
-      if(!acc) throw new Error('empty'); bd.textContent=acc; history.push({role:'assistant',content:acc}); Voice.speak(acc);
-    }catch(e){ bd.textContent=offline(q); Voice.setState('idle'); } busy=false;
+    var controller=new AbortController(),rd=null,timer=setTimeout(function(){controller.abort();},45000);
+    try{ var resp=await fetch(aiURL(),{method:'POST',headers:aiHeaders(),signal:controller.signal,body:JSON.stringify({model:GROQ_MODEL,messages:msgs,stream:true,temperature:.6,max_completion_tokens:2048,include_reasoning:false,reasoning_effort:'low'})});
+      if(!resp.ok||!resp.body) throw new Error('http'); rd=resp.body.getReader(); var dec=new TextDecoder(),buf='',complete=false;
+      while(!complete){ var r=await rd.read(); buf+=r.done?dec.decode():dec.decode(r.value,{stream:true}); var lines=buf.split('\n'); buf=lines.pop();
+        if(r.done&&buf.trim()){lines.push(buf);buf='';}
+        for(var i=0;i<lines.length;i++){ var ln=lines[i].trim(); if(ln.indexOf('event:')===0&&ln.slice(6).trim()==='error')throw new Error('provider'); if(ln.indexOf('data:')!==0) continue; var pl=ln.slice(5).trim(); if(pl==='[DONE]'){complete=true;break;}
+          var j=JSON.parse(pl); if(j.error||j.type==='error')throw new Error('provider'); var choice=j.choices&&j.choices[0],dc=choice&&choice.delta&&choice.delta.content;
+          if(dc){if(typeof dc!=='string')throw new Error('invalid');acc+=dc;bd.textContent=acc;bd.insertAdjacentHTML('beforeend','<span class="cur"></span>');thread.scrollTop=thread.scrollHeight;}
+          if(choice&&choice.finish_reason&&choice.finish_reason!=='stop')throw new Error('incomplete');
+        }
+        if(r.done)break;
+      }
+      if(!complete||!acc.trim()) throw new Error('incomplete'); bd.textContent=acc; history.push({role:'assistant',content:acc}); Voice.speak(acc);
+    }catch(e){ bd.textContent=acc.trim()?('Incomplete answer — this response could not finish. Please try again.\n\n'+acc):offline(q); Voice.setState('idle'); }
+    finally{clearTimeout(timer);controller.abort();if(rd){try{await rd.cancel();}catch(e){}try{rd.releaseLock();}catch(e){}}busy=false;}
   }
-  return { init:init, open:openP, ask:function(q,note){ openP(note); ask(q); }, setContext:function(n){ ctxNote=n; }, persona:function(id,announce){ if(id) setPersona(id,!!announce); } };
+  return { init:init, open:openP, ask:function(q,note){ openP(note); return ask(q); }, setContext:function(n){ ctxNote=n; }, persona:function(id,announce){ if(id) setPersona(id,!!announce); } };
 })();
 
 /* ===== SIX LENSES — see every concept from a child's story to the research frontier =====
@@ -4808,7 +4809,7 @@ var Lens=(function(){
     var sysP='You are Entelloq, a brilliant and accurate physics teacher. Answer ONLY with the explanation, no preamble, no restating the question.';
     var usr=lens.p.replace(/%T/g,t.name)+' (Field: '+((typeof DMAP!=='undefined'&&DMAP[t.domain])?DMAP[t.domain].n:t.domain)+'.)';
     try{
-      var resp=await fetch(aiURL(),{method:'POST',headers:aiHeaders(),body:JSON.stringify({model:GROQ_MODEL,messages:[{role:'system',content:sysP},{role:'user',content:usr}],temperature:.5,max_tokens:520})});
+      var resp=await fetch(aiURL(),{method:'POST',headers:aiHeaders(),body:JSON.stringify({model:GROQ_MODEL,messages:[{role:'system',content:sysP},{role:'user',content:usr}],temperature:.5,max_completion_tokens:2048,include_reasoning:false,reasoning_effort:'low'})});
       if(!resp.ok) throw 0; var j=await resp.json(); var txt=aiText(j);
       if(txt){ txt=txt.trim(); try{ localStorage.setItem(ck,txt); }catch(e){} if(document.body.contains(el)) el.innerHTML=fmt(txt); return; }
     }catch(e){}
@@ -6240,7 +6241,7 @@ var Practice=(function(){
     diff=diff||2; var dom=DMAP[domKey]; var topics=topicsOf(domKey).map(function(t){return t.name;}).slice(0,8).join(', ');
     try{
       var resp=await fetch(aiURL(),{method:'POST',headers:aiHeaders(),
-        body:JSON.stringify({model:GROQ_MODEL,temperature:.85,response_format:{type:'json_object'},max_tokens:430,messages:[
+        body:JSON.stringify({model:GROQ_MODEL,temperature:.85,response_format:{type:'json_object'},max_completion_tokens:2048,include_reasoning:false,reasoning_effort:'low',messages:[
           {role:'system',content:'You write one physics multiple-choice question at a specified difficulty. Return ONLY JSON: {"q":"question","o":["A","B","C","D"],"a":<0-3 index of correct>,"e":"one-sentence explanation"}. Exactly 4 options, exactly one correct.'},
           {role:'user',content:'Topic area: '+dom.n+' (covers: '+topics+'). Difficulty — '+DIFF[diff]+' Use plain-text math (e.g. v = sqrt(2gh)).'}]})});
       if(!resp.ok) throw new Error('http'); var j=await resp.json(); var c=aiText(j); var o=JSON.parse(c);
@@ -6866,16 +6867,15 @@ var Solve=(function(){
     '"steps":[{"title":"what this step does","reasoning":"why we do it","math":"the plain-text equation or substitution, e.g. v = sqrt(2*g*h) = 14 m/s"}],'+
     '"answer":"final answer with units","intuition":"one vivid sentence of physical intuition","mistakes":["a common mistake students make here"],"realworld":"one real application"}. '+
     'Reason carefully and correctly. Plain-text math only (sqrt, ^, *, /). 3-6 steps. Difficulty level: '+level+'.'+((typeof Style!=='undefined'&&Style.def())?(' The student is '+Style.def().tutor+'.'):''); }
-  function key(){ try{ return (localStorage.getItem('peq_groq_key')||'').trim()||GROQ_KEY; }catch(e){ return GROQ_KEY; } }
   async function run(q,host){
     if(busy) return; busy=true;
     host.innerHTML='<div class="sv-load"><div class="sv-orb"></div><div>Entelloq is reasoning through it…</div></div>';
     try{
       var resp=await fetch(aiURL(),{method:'POST',headers:aiHeaders(),
-        body:JSON.stringify({model:GROQ_MODEL,temperature:.35,response_format:{type:'json_object'},max_tokens:1500,messages:[{role:'system',content:sysP()},{role:'user',content:q}]})});
+        body:JSON.stringify({model:GROQ_MODEL,temperature:.35,response_format:{type:'json_object'},max_completion_tokens:4096,include_reasoning:false,reasoning_effort:'low',messages:[{role:'system',content:sysP()},{role:'user',content:q}]})});
       if(!resp.ok) throw new Error('http'); var j=await resp.json(); var o=JSON.parse(aiText(j));
       render(o,host,q); Me.award(14,'Solved a problem');
-    }catch(e){ host.innerHTML='<div class="sv-err">△ Couldn\'t reach the solver. Check your connection (or add a Groq key in the tutor ✦). You can still ask the tutor directly.</div>'; }
+    }catch(e){ host.innerHTML='<div class="sv-err">△ Couldn\'t reach the solver. Check your connection or try again in a moment. You can still explore the Learn tab.</div>'; }
     busy=false;
   }
   function li(a){ return (a||[]).map(function(x){ return '<li>'+esc(x)+'</li>'; }).join(''); }

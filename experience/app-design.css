@@ -160,6 +160,10 @@ html.pe-refined[data-theme=light] .field-art{filter:brightness(.63) saturate(.8)
 .pe-refined .pt,.pe-refined .callout,.pe-refined .l-sec p{font-size:16px;line-height:1.9;color:var(--ink-dim)}
 .pe-refined .eq{border:1px solid var(--line);background:var(--pe-surface);border-radius:7px;padding:20px;box-shadow:none}
 .pe-refined .eq .f{font-size:21px;color:var(--ink);text-shadow:none}.pe-refined .eq .d{font-size:13px;color:var(--ink-dim)}
+/* Wrap long equations and captions within the lesson without clipping notation. */
+.pe-refined .l-eqs .eq{flex-wrap:wrap}
+.pe-refined .l-eqs .eq .f{min-width:0;max-width:100%;white-space:normal;overflow-wrap:anywhere}
+.pe-refined .l-eqs .eq .d{min-width:0;overflow-wrap:anywhere}
 .pe-refined .l-sim{border:1px solid var(--line);border-radius:10px;box-shadow:none;margin-top:28px}
 .pe-refined .sim-stage{min-height:340px;background:#0d1c26}
 .pe-refined .sim-foot{padding:17px;background:var(--pe-surface)}.pe-refined .sim-foot .cap{font-size:14px;line-height:1.7;color:var(--ink-dim)}

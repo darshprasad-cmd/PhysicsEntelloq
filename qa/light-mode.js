@@ -1,4 +1,4 @@
-/* Exercise real theme controls and lazily opened learning surfaces, not just page shells. */
+/* Exercise real theme controls and visible multi-mode learning surfaces, not just page shells. */
 const {chromium}=require('playwright'),fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
 const root=path.join(__dirname,'..'),out=path.join(__dirname,'results'),live=process.argv.includes('--live');fs.mkdirSync(out,{recursive:true});
 const topics=[['mechanics','newton-laws'],['mechanics','projectile'],['waves','wave-basics'],['thermo','first-law'],['optics','lenses'],['electrostatics','e-field'],['current','ohms-law'],['magnetism','em-induction'],['modern','photoelectric']];
@@ -11,13 +11,8 @@ const topics=[['mechanics','newton-laws'],['mechanics','projectile'],['waves','w
   async function scan(name,selector='#main'){const result=await p.evaluate(async selector=>{const el=document.querySelector(selector);return{violations:(await axe.run(el,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa','wcag22aa']}})).violations.map(v=>({id:v.id,nodes:v.nodes.map(n=>({target:n.target,summary:n.failureSummary}))})),overflow:document.querySelector('#main-scroll').scrollWidth>document.querySelector('#main-scroll').clientWidth+1};},selector);report.push({width,name,...result});console.log(width,name,JSON.stringify(result));}
   async function nav(name){await p.locator('#pe-explore').click();const target=p.locator('[data-explore-go="'+name+'"]');if(await target.count())await target.click();else{await p.keyboard.press('Escape');await p.locator((width<=850?'.mtab':'.side')+' [data-go="'+name+'"]').first().click();}}
   for(const [domain,id] of topics){await nav('learn');await p.locator('#main [data-link="domain:'+domain+'"]').click();await p.locator('#main [data-link="lesson:'+id+'"]').click();
-    await p.locator('[data-lf="check"]').click();await p.locator('[data-answer="0"]').click();await scan(id+'-feedback');
-    const extras=p.locator('.learn-extra');for(let i=0;i<await extras.count();i++){
-      const d=extras.nth(i);await d.locator('summary').click();await p.waitForTimeout(90);
-      if(await d.locator('#lens-host').count())for(const k of 'ABCDEF'){await d.locator('.lens-tab[data-k="'+k+'"]').click();await scan(id+'-lens-'+k);if(id==='newton-laws'&&k==='C')await p.screenshot({path:path.join(out,'light-lens-'+width+'.png')});}
-      else await scan(id+'-extra-'+i);
-      await d.locator('summary').click();
-    }
+    assert.equal(await p.locator('.learn-flow,.learn-extra').count(),0,'The step-by-step redesign stays removed');
+    for(const k of 'ABCDEF'){await p.locator('.lens-tab[data-k="'+k+'"]').click();await scan(id+'-lens-'+k);if(id==='newton-laws'&&k==='C')await p.screenshot({path:path.join(out,'light-lens-'+width+'.png')});}
   }
   for(const name of ['home','universe','learn','solve','practice','lab','research','progress','settings','sandbox','journeys','deeps']){await nav(name);await scan(name);if(name==='sandbox')await p.screenshot({path:path.join(out,'light-sandbox-'+width+'.png')});}
   await p.locator('#tutor-fab').click();await scan('tutor','#tutor');await p.locator('#tu-close').click();

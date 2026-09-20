@@ -1,5 +1,7 @@
 # Concise Learn and light-mode repair — 2026-09-20
 
+**Historical release note:** The user subsequently requested restoration of visual-first Learn. The guided-card/checkpoint layer described below has been removed. The original lesson renderer, visible six lenses, multiple representations, experiments and companion are restored; light-mode fixes and the clearer background are retained. Current restoration checks are `.github/test-visual-learn.js`, `qa/visual-learn.js` and the updated `qa/light-mode.js`.
+
 ## Scope
 
 - 66 Foundation/Intermediate Learn lessons: one core idea at a time, 197 authored two-choice recall checks, immediate feedback, retry/review/skip and a visit-only summary. Checks do not write scores, award XP or assert mastery.

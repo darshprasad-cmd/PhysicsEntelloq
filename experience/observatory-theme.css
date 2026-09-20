@@ -20,8 +20,8 @@ html.pe-refined{
 html.pe-refined[data-theme=light]{
   --bg:#edf2f8;--bg-1:#f5f8fc;--bg-2:#e0e8f2;--card:#fbfcfe;--card-2:#e8eff7;
   --bg-app:#edf2f8;--bg-panel:#fbfcfe;--bg-raise:#e8eff7;
-  --ink:#152536;--ink-dim:#435a72;--ink-faint:#516982;--ink-ghost:#516982;
-  --blue:#305f96;--blue-2:#305f96;--amber:#835d33;
+  --ink:#152536;--ink-dim:#344b61;--ink-faint:#385269;--ink-ghost:#385269;
+  --blue:#244f80;--blue-2:#244f80;--amber:#624520;
   --line:#c7d4e3;--line-2:#d6e0ec;
   --pe-surface:#fbfcfe;--pe-surface-2:#e8eff7;--pe-border:#b5c7dd;
 }
@@ -30,7 +30,7 @@ html.pe-refined body{background:var(--bg);isolation:isolate}
 #obs-workspace{position:fixed;inset:0;z-index:-1;pointer-events:none;background-color:var(--obs-night);background-size:cover;background-position:center top;background-repeat:no-repeat}
 #obs-workspace::after{content:'';position:absolute;inset:0;background:rgba(2,5,9,.78)}
 .pe-landing-open #obs-workspace{visibility:hidden}
-html.pe-refined[data-theme=light] #obs-workspace::after{background:rgba(237,242,248,.96)}
+html.pe-refined[data-theme=light] #obs-workspace::after{background:rgba(237,242,248,.82)}
 .pe-refined .app{background:transparent}
 .pe-refined .topbar{background:var(--bg)}
 .pe-refined .side,.pe-refined .mtab{background:var(--bg-1)}

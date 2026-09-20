@@ -1,0 +1,34 @@
+/* Runtime learning tools have their own old dark-only styles and inline accents.
+   Keep light reading surfaces, legible instrument islands and the shared artwork. */
+html.pe-refined[data-theme=light] .lx-step>span:first-child,
+html.pe-refined[data-theme=light] .lx-card .k2{color:var(--blue)!important}
+html.pe-refined[data-theme=light] .lx-slider>b{color:var(--amber)!important}
+html.pe-refined[data-theme=light] .lx-stat .v3>span,
+html.pe-refined[data-theme=light] .lx-apps>span:first-child{color:var(--ink-dim)!important}
+html.pe-refined[data-theme=light] .lw-n{color:var(--blue)}
+html.pe-refined[data-theme=light] .kg-row .ty{color:var(--blue)!important;border-color:var(--pe-border)!important}
+html.pe-refined[data-theme=light] .jn-kind{color:var(--blue)}
+html.pe-refined[data-theme=light] #ph-e,
+html.pe-refined[data-theme=light] #nb-ivv{color:var(--blue)!important}
+html.pe-refined[data-theme=light] .sbx{
+  --card:var(--obs-panel);--card-2:var(--obs-raised);
+  --bg-app:var(--obs-night);--bg-panel:var(--obs-panel);--bg-raise:var(--obs-raised);
+  color:var(--ink);
+}
+/* The first two panels contain light-coloured canvas traces, not reading text. */
+.pe-refined .mr-cell:nth-child(-n+2)>.t{color:var(--obs-dim)}
+html.pe-refined[data-theme=light] .lf-shell,
+html.pe-refined[data-theme=light] .l-sim,
+html.pe-refined[data-theme=light] .lx-stage,
+html.pe-refined[data-theme=light] .cmp-cell,
+html.pe-refined[data-theme=light] .rs-app,
+html.pe-refined[data-theme=light] .eqviz .ev-graph{
+  --bg:var(--obs-night);--bg-1:#060b10;--bg-2:var(--obs-raised);
+  --card:var(--obs-panel);--card-2:var(--obs-raised);
+  --bg-app:var(--obs-night);--bg-panel:var(--obs-panel);--bg-raise:var(--obs-raised);
+  --ink:var(--obs-ink);--ink-dim:var(--obs-muted);--ink-faint:var(--obs-dim);--ink-ghost:var(--obs-dim);
+  --blue:var(--obs-blue);--amber:var(--obs-gold);
+  --line:rgba(185,207,235,.18);--line-2:rgba(185,207,235,.11);
+  --pe-surface:var(--obs-panel);--pe-surface-2:var(--obs-raised);--pe-border:var(--obs-border);
+  color-scheme:dark;
+}

@@ -19,5 +19,7 @@ test('Workspace scrims protect shared text over even white or black image pixels
   const dark=css.match(/#obs-workspace::after\{[^}]*background:rgba\(2,5,9,([.\d]+)\)/)[1];
   const light=css.match(/\[data-theme=light\] #obs-workspace::after\{background:rgba\(237,242,248,([.\d]+)\)/)[1];
   for(const ink of['ink','muted','dim','blue','gold'])assert.ok(contrast(colour(ink),composite('#ffffff','#020509',+dark))>=4.5,ink+' over brightest photograph pixel');
-  for(const ink of['#152536','#435a72','#516982','#305f96','#835d33'])assert.ok(contrast(ink,composite('#000000','#edf2f8',+light))>=4.5,ink+' over darkest light-mode pixel');
+  const lightTokens=css.match(/html\.pe-refined\[data-theme=light\]\{([^}]+)\}/)[1];
+  for(const token of['ink','ink-dim','ink-faint','blue','amber']){const ink=lightTokens.match(new RegExp('--'+token+':(#[a-f0-9]{6})'))[1];assert.ok(contrast(ink,composite('#000000','#edf2f8',+light))>=4.5,token+' over darkest light-mode pixel');}
+  assert.ok(+light<=.85,'The light veil must leave the planet visible');
 });

@@ -33,6 +33,8 @@ jobs:
         run: node --test .github/test-cradle.js
       - name: Check application design contracts
         run: node --test .github/test-app-design.js
+      - name: Check concise Learn content and optional checkpoints
+        run: node --test .github/test-learn.js
       - name: Check founder restoration and first-account tutorial
         run: node --test .github/test-welcome.js
       - name: Check search, graph parsing and simulation cleanup regressions
@@ -43,3 +45,5 @@ jobs:
         run: node --test .github/test-observatory.js
       - name: Check observatory palette continuity and text contrast
         run: node --test .github/test-observatory-theme.js
+      - name: Check light-mode learning surfaces and instrument contrast
+        run: node --test .github/test-light-mode.js

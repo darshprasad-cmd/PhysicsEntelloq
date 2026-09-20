@@ -2635,8 +2635,8 @@ html.pe-refined{
 html.pe-refined[data-theme=light]{
   --bg:#edf2f8;--bg-1:#f5f8fc;--bg-2:#e0e8f2;--card:#fbfcfe;--card-2:#e8eff7;
   --bg-app:#edf2f8;--bg-panel:#fbfcfe;--bg-raise:#e8eff7;
-  --ink:#152536;--ink-dim:#435a72;--ink-faint:#516982;--ink-ghost:#516982;
-  --blue:#305f96;--blue-2:#305f96;--amber:#835d33;
+  --ink:#152536;--ink-dim:#344b61;--ink-faint:#385269;--ink-ghost:#385269;
+  --blue:#244f80;--blue-2:#244f80;--amber:#624520;
   --line:#c7d4e3;--line-2:#d6e0ec;
   --pe-surface:#fbfcfe;--pe-surface-2:#e8eff7;--pe-border:#b5c7dd;
 }
@@ -2645,7 +2645,7 @@ html.pe-refined body{background:var(--bg);isolation:isolate}
 #obs-workspace{position:fixed;inset:0;z-index:-1;pointer-events:none;background-color:var(--obs-night);background-size:cover;background-position:center top;background-repeat:no-repeat}
 #obs-workspace::after{content:'';position:absolute;inset:0;background:rgba(2,5,9,.78)}
 .pe-landing-open #obs-workspace{visibility:hidden}
-html.pe-refined[data-theme=light] #obs-workspace::after{background:rgba(237,242,248,.96)}
+html.pe-refined[data-theme=light] #obs-workspace::after{background:rgba(237,242,248,.82)}
 .pe-refined .app{background:transparent}
 .pe-refined .topbar{background:var(--bg)}
 .pe-refined .side,.pe-refined .mtab{background:var(--bg-1)}
@@ -2717,6 +2717,94 @@ html.pe-refined .sbx{
 .pe-launch .pe-final h2,.pe-launch .pe-faq h2{font-weight:400}
 @media(max-width:700px){.obs-continuum,#obs-workspace{background-position:65% top}}
 @media print{#obs-workspace{display:none}}
+
+/* Progressive disclosure in Learn; all colours inherit the observatory palette. */
+.pe-refined .lesson.learn-guided{display:block;max-width:940px}
+.pe-refined .learn-guided .l-main{display:block;min-width:0}
+.pe-refined .learn-guided .intuition{max-width:64ch;margin-bottom:24px}
+.pe-refined .learn-flow{border:1px solid var(--pe-border);border-radius:16px;background:var(--pe-surface);margin:24px 0 14px;overflow:hidden;scroll-margin:24px}
+.pe-refined .learn-flow-top{display:flex;justify-content:space-between;gap:12px;padding:20px 24px 16px;font-size:11px;letter-spacing:.12em;color:var(--blue)}
+.pe-refined .learn-count{font-variant-numeric:tabular-nums;white-space:nowrap}
+.pe-refined .learn-steps{display:flex;gap:8px;padding:0 24px 20px;border-bottom:1px solid var(--line)}
+.pe-refined .learn-steps button{flex:1;display:flex;align-items:center;justify-content:center;gap:10px;min-height:44px;border:1px solid var(--line);border-radius:8px;background:transparent;color:var(--ink-dim);font:inherit;font-size:13px;cursor:pointer}
+.pe-refined .learn-steps button[aria-current]{color:var(--blue);border-color:var(--blue);background:var(--pe-surface-2)}
+.pe-refined .learn-card{padding:28px 28px 24px}
+.pe-refined .learn-kicker{font-size:11px;letter-spacing:.14em;color:var(--ink-faint);margin-bottom:10px}
+.pe-refined .learn-card h2{font-size:24px;font-weight:450;line-height:1.2;letter-spacing:-.025em;margin:0 0 18px;color:var(--ink)}
+.pe-refined .learn-card p{line-height:1.65;color:var(--ink-dim);max-width:65ch}
+.pe-refined .learn-card .learn-idea{font-size:20px;line-height:1.6;color:var(--ink);margin:0 0 20px;text-wrap:pretty;overflow-wrap:anywhere}
+.pe-refined .learn-card .learn-scope{font-size:12px;border-left:2px solid var(--amber);padding-left:12px;margin:0 0 22px}
+.pe-refined .learn-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
+.pe-refined .learn-actions .btn{min-height:44px;white-space:normal;text-align:center}
+.pe-refined .learn-options{display:grid;gap:10px}
+.pe-refined .learn-option{display:flex;align-items:center;gap:12px;min-height:52px;width:100%;padding:14px 16px;border:1px solid var(--pe-border);border-radius:9px;background:var(--pe-surface-2);font:inherit;text-align:left;color:var(--ink);cursor:pointer;overflow-wrap:anywhere}
+.pe-refined .learn-option>span{font-size:11px;color:var(--ink-faint)}
+.pe-refined .learn-option>b{margin-left:auto;font-size:11px;font-weight:500;white-space:nowrap}
+.pe-refined .learn-option:disabled{opacity:1;cursor:default}
+.pe-refined .learn-option.is-correct{border-color:var(--blue);color:var(--blue)}
+.pe-refined .learn-option.is-wrong{border-style:dashed}
+.pe-refined .learn-feedback{border-left:2px solid var(--blue);padding:0 0 0 14px;margin-top:24px;color:var(--ink)}
+.pe-refined .learn-feedback p{font-size:14px;margin:6px 0 0}
+.pe-refined .learn-extra{border:1px solid var(--line);border-radius:12px;margin:10px 0;background:var(--pe-surface)}
+.pe-refined .learn-extra>summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:18px;padding:18px 22px;min-height:68px;cursor:pointer;color:var(--ink);border-radius:inherit}
+.pe-refined .learn-extra>summary::-webkit-details-marker{display:none}
+.pe-refined .learn-extra summary strong{display:block;font-size:15px;font-weight:500}
+.pe-refined .learn-extra summary small{display:block;color:var(--ink-faint);font-size:12px;margin-top:5px;line-height:1.5}
+.pe-refined .learn-extra .learn-plus{font-size:21px;color:var(--blue)}
+.pe-refined .learn-extra[open]>summary .learn-plus{transform:rotate(45deg)}
+.pe-refined .learn-extra-body{padding:0 22px 22px;min-width:0}
+.pe-refined .learn-extra-body:empty{display:none}
+.pe-refined .learn-curiosity{border-color:var(--pe-border)}
+.pe-refined .learn-curiosity summary strong{color:var(--amber)}
+.pe-refined .learn-curiosity .l-exam{margin:0;background:transparent;border:0;padding:0;color:var(--ink-dim)}
+.pe-refined .learn-extra-body .l-sec{margin-top:8px}
+.pe-refined .learn-extra-body .l-sim{margin:0}
+.pe-refined .learn-extra-body .eq{min-width:0;max-width:100%;flex-wrap:wrap}
+.pe-refined .learn-extra-body .eq .f{min-width:0;max-width:100%;white-space:normal;overflow-wrap:anywhere}
+.pe-refined .learn-extra-body .eq .d{min-width:0;max-width:100%}
+.pe-refined .learn-guided .l-foot{flex-wrap:wrap;gap:10px}
+.pe-refined .learn-guided.rd-lg .learn-idea{font-size:23px}
+.pe-refined .learn-guided.rd-sm .learn-idea{font-size:18px}
+.pe-refined .learn-flow button:focus-visible,.pe-refined .learn-extra summary:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+.pe-refined .learn-flow button:active:not(:disabled){transform:scale(.98)}
+@media(hover:hover) and (pointer:fine){.pe-refined .learn-option:hover:not(:disabled),.pe-refined .learn-extra>summary:hover{background:var(--pe-surface-2)}}
+@media(max-width:600px){.pe-refined .learn-flow-top{padding:18px 16px 14px;font-size:10px}.pe-refined .learn-steps{padding:0 16px 16px;gap:6px}.pe-refined .learn-steps button{gap:6px;font-size:12px}.pe-refined .learn-card{padding:24px 18px}.pe-refined .learn-card h2{font-size:22px}.pe-refined .learn-card .learn-idea{font-size:18px}.pe-refined .learn-extra>summary{padding:16px}.pe-refined .learn-extra-body{padding:0 14px 16px}.pe-refined .learn-option{flex-wrap:wrap;padding:12px}.pe-refined .learn-option>b{white-space:normal}}
+@media(prefers-reduced-motion:reduce){.pe-refined .learn-flow button:active:not(:disabled){transform:none}}
+
+/* Runtime learning tools have their own old dark-only styles and inline accents.
+   Keep light reading surfaces, legible instrument islands and the shared artwork. */
+html.pe-refined[data-theme=light] .lx-step>span:first-child,
+html.pe-refined[data-theme=light] .lx-card .k2{color:var(--blue)!important}
+html.pe-refined[data-theme=light] .lx-slider>b{color:var(--amber)!important}
+html.pe-refined[data-theme=light] .lx-stat .v3>span,
+html.pe-refined[data-theme=light] .lx-apps>span:first-child{color:var(--ink-dim)!important}
+html.pe-refined[data-theme=light] .lw-n{color:var(--blue)}
+html.pe-refined[data-theme=light] .kg-row .ty{color:var(--blue)!important;border-color:var(--pe-border)!important}
+html.pe-refined[data-theme=light] .jn-kind{color:var(--blue)}
+html.pe-refined[data-theme=light] #ph-e,
+html.pe-refined[data-theme=light] #nb-ivv{color:var(--blue)!important}
+html.pe-refined[data-theme=light] .sbx{
+  --card:var(--obs-panel);--card-2:var(--obs-raised);
+  --bg-app:var(--obs-night);--bg-panel:var(--obs-panel);--bg-raise:var(--obs-raised);
+  color:var(--ink);
+}
+/* The first two panels contain light-coloured canvas traces, not reading text. */
+.pe-refined .mr-cell:nth-child(-n+2)>.t{color:var(--obs-dim)}
+html.pe-refined[data-theme=light] .lf-shell,
+html.pe-refined[data-theme=light] .l-sim,
+html.pe-refined[data-theme=light] .lx-stage,
+html.pe-refined[data-theme=light] .cmp-cell,
+html.pe-refined[data-theme=light] .rs-app,
+html.pe-refined[data-theme=light] .eqviz .ev-graph{
+  --bg:var(--obs-night);--bg-1:#060b10;--bg-2:var(--obs-raised);
+  --card:var(--obs-panel);--card-2:var(--obs-raised);
+  --bg-app:var(--obs-night);--bg-panel:var(--obs-panel);--bg-raise:var(--obs-raised);
+  --ink:var(--obs-ink);--ink-dim:var(--obs-muted);--ink-faint:var(--obs-dim);--ink-ghost:var(--obs-dim);
+  --blue:var(--obs-blue);--amber:var(--obs-gold);
+  --line:rgba(185,207,235,.18);--line-2:rgba(185,207,235,.11);
+  --pe-surface:var(--obs-panel);--pe-surface-2:var(--obs-raised);--pe-border:var(--obs-border);
+  color-scheme:dark;
+}
 
 </style>
 <!-- EXPERIENCE:CSS:END -->
@@ -6017,6 +6105,7 @@ var Lens=(function(){
       dd.textContent='§ Deep Dive — the full 12-section course on '+t.name;
       dd.addEventListener('click',function(){ go('deep',t.id); });
       panel.appendChild(dd); } }catch(e){}
+    if(typeof AppDesign!=='undefined')AppDesign.enhance(panel);
     try{ window.dispatchEvent(new CustomEvent('lens:mode',{detail:{k:k,n:lens.n,init:!!init}})); }catch(e){}
   }
   function mount(host,t){ if(!host||!t) return; css();
@@ -6217,7 +6306,7 @@ var MultiRep=(function(){
       raf=requestAnimationFrame(frame); }
     if(!STILL) raf=requestAnimationFrame(frame);
   }
-  return { mount:mount };
+  return { mount:mount, has:function(t){return !!M[t.domain];}, stop:function(){cancelAnimationFrame(raf);raf=0;} };
 })();
 
 /* ===== AI PRACTICE ===== */
@@ -12175,6 +12264,202 @@ function viewDomain(k){
 /* context-aware sandbox: lesson → the RIGHT preset, never a blank canvas */
 var SBX_TOPIC={gravitation:'solar','circular-motion':'solar','black-holes':'binary','general-relativity':'binary'};
 var SBX_DOM={mechanics:'atwood',waves:'wavestring',thermo:'gas',electrostatics:'dipole',current:'dipole',magnetism:'cyclotron',relativity:'binary',optics:null,modern:null,quantum:null};
+/* EXPERIENCE:LEARN:START */
+/* Short, optional recall checks for Foundation and Intermediate Learn only.
+   Authored alternatives, no generated distractors, grading service or stored scores. */
+var LearnFlow=(function(){
+  // One targeted recall check per core idea: exact phrase, plausible alternative.
+  var pairs={
+    'kinematics':[['independently','as the same motion'],['velocity','displacement'],['displacement','acceleration']],
+    'projectile':[['45°','90°'],['zero','maximum'],['equals','is greater than']],
+    'newton-laws':[['inertial','accelerating'],['different bodies','the same body'],['on one chosen body','exerted by that body on others']],
+    'friction':[['harder','easier'],['independent','directly proportional to the size'],['perpendicular','parallel']],
+    'work-energy':[['area','slope'],['−dU/dx','+dU/dx'],['rate','total amount']],
+    'momentum':[['vector','scalar'],['e = 0','e = 1'],['external','internal']],
+    'circular-motion':[['not a new force','an additional force'],['direction changes','direction stays fixed'],['rotating','inertial']],
+    'shm':[['independent of','proportional to'],['kinetic and potential','mass and charge'],['equilibrium','the extremes']],
+    'fluids':[['weight','volume'],['lower','higher'],['faster','slower']],
+    'elasticity':[['permanent','fully reversible'],['volume','temperature'],['½','2']],
+    'wave-basics':[['medium','amplitude'],['⟂','∥'],['amplitude²','amplitude']],
+    'superposition':[['add','cancel'],['constant phase relationship','identical amplitudes'],['redistributed','destroyed']],
+    'standing-waves':[['zero','maximum'],['Boundary conditions','Colour'],['odd','even']],
+    'doppler':[['higher','lower'],['medium matters','medium does not matter'],['relative velocity','motion relative to air']],
+    'sound-intensity':[['×10','×2'],['1/r²','1/r'],['rising','falling']],
+    'beats':[['equal','widely separated'],['average','sum']],
+    'temp-heat':[['constant','steadily increasing'],['1 kg','1 m³'],['radiation','refraction']],
+    'kinetic-theory':[['translational KE','momentum'],['½k_BT','k_BT²'],['high pressure / low temperature','low pressure / high temperature']],
+    'first-law':[['Q = 0','W = 0'],['W = 0','Q = 0'],['state function','path-dependent quantity']],
+    'heat-engines':[['Carnot','100% at any temperatures'],['colder','hotter'],['reverse','thermal equilibrium']],
+    'thermal-expansion':[['buckling','evaporation'],['bend','remain straight'],['expands','contracts']],
+    'heat-transfer':[['no medium','a material medium'],['absorber and emitter','reflector only'],['electricity','sound only']],
+    'reflection':[['converge','diverge'],['consistent','different for every ray'],['virtual','real']],
+    'refraction':[['toward','away from'],['above','below'],['wavelength','intensity']],
+    'lenses':[['f > 0','f < 0'],['inverted','erect'],['adds','multiplies']],
+    'interference-optics':[['increases','decreases'],['widens','narrows'],['constructive','destructive']],
+    'polarization':[['perpendicular','parallel'],['partially polarized','always unpolarized'],['cannot','can']],
+    'optical-instruments':[['long objective','short objective'],['converging','diverging'],['lens shape','retina position']],
+    'charge':[['conserved','created'],['Conductors','Insulators'],['induction','nuclear fusion only']],
+    'coulomb':[['inverse-square','inverse-cube'],['vector sum','sum of magnitudes'],['stronger','weaker']],
+    'e-field':[['away from positive','toward positive'],['never cross','cross at every charge'],['E = 0','E is maximum']],
+    'potential':[['scalar','vector'],['perpendicular','parallel'],['equipotentials','surfaces of varying potential']],
+    'capacitance':[['C = ΣCᵢ','1/C = Σ1/Cᵢ'],['increases','decreases'],['½ε₀E²','½ε₀E']],
+    'dielectrics':[['opposing','reinforcing'],['raise','reduce'],['align','lose all charge']],
+    'ohms-law':[['shape too','material only'],['rises','falls'],['tiny','near c']],
+    'resistor-networks':[['same current','same voltage'],['less','greater'],['no current','maximum current']],
+    'kirchhoff':[['charge','voltage'],['voltage drops','resistances'],['opposite way','physically impossible direction']],
+    'power-electrical':[['I²R','IR²'],['minimizes','increases'],['watts','joules']],
+    'emf-internal':[['energy per unit charge','force per unit charge'],['equals','is much greater than'],['no current','maximum current']],
+    'rc-circuits':[['63%','100%'],['slower','faster'],['steady DC','all changing signals']],
+    'magnetic-field':[['right-hand','left-hand for positive charges'],['no force','maximum force'],['no work','positive work']],
+    'em-induction':[['opposes','reinforces'],['larger','smaller'],['braking','perpetual motion']],
+    'inductance':[['current changes','steady current'],['magnetic','gravitational'],['Mutual','Zero']],
+    'ac-circuits':[['minimum','maximum'],['cosφ','sinφ'],['lead','lag']],
+    'transformers':[['decreases','increases'],['changing flux','constant flux'],['eddy currents','perfect energy conservation']],
+    'em-waves':[['perpendicular','parallel'],['regardless of','proportional to'],['radio','gamma']],
+    'photoelectric':[['no electrons','many electrons'],['number of electrons','max KE'],['instantaneous','delayed until energy accumulates']],
+    'bohr-model':[['quantized','continuous'],['discrete','continuous'],['one-electron','many-electron']],
+    'matter-waves':[['momentum','charge'],['tiny electron wavelength','large electron size'],['universal','exclusive to light']],
+    'atomic-spectra':[['bright','dark'],['unique','identical'],['bremsstrahlung','total internal reflection']],
+    'radioactivity':[['helium nucleus','electron'],['constant','rapidly temperature-dependent'],['1 decay/s','1 joule/s']],
+    'nuclear-binding':[['iron and nickel','hydrogen only'],['release','always absorb'],['931.5 MeV','931.5 eV']],
+    'fission-fusion':[['critical','arbitrarily small'],['Coulomb repulsion','magnetic attraction'],['reaction','name of the process alone']],
+    'center-of-mass':[['accelerate','affect any internal motion without moving'],['no net external force','any external force'],['uniform density','any density distribution']],
+    'terminal-velocity':[['zero','maximum'],['higher','lower'],['larger A','smaller A']],
+    'resonance':[['right frequency','any frequency equally'],['limits','increases without bound'],['musical instruments','static equilibrium only']],
+    'damped-oscillation':[['shrinking','growing'],['no overshoot','repeated overshoots'],['near-critical','zero']],
+    'degrees-of-freedom':[['f = 3','f = 5'],['½kT','kT²'],['high','absolute-zero']],
+    'dispersion-prisms':[['violet','red'],['recombine','remove'],['internal reflection','nuclear emission']],
+    'human-eye':[['focal length','retina size'],['diverging','converging'],['converging','diverging']],
+    'electric-dipole':[['no net force','a net force'],['1/r³','1/r²'],['aligned','anti-aligned']],
+    'van-de-graaff':[['outside','inside surface'],['ionizes','cools'],['accelerate','create']],
+    'wheatstone':[['no current','maximum current'],['independent','directly proportional to the size'],['Wheatstone bridge','transformer']],
+    'drift-velocity':[['tiny','near light speed'],['finite','infinite'],['relaxation time','wire colour']],
+    'semiconductors':[['forward bias','reverse bias'],['rises','falls'],['potential barrier','permanent current source']],
+    'carbon-dating':[['falls','rises'],['age','temperature'],['50,000','5 billion']]
+  };
+  // Qualify compact teaching statements without changing shared content or models.
+  var corrections={
+    'newton-laws':{1:'Action–reaction pairs act on different bodies, not on the same free-body diagram.',2:'A free-body diagram shows the external forces on one chosen body, not the forces it exerts on other bodies.'},
+    'fluids':{0:'A body floating at rest has buoyant force equal to its weight.',1:'At equal height along a streamline, faster ideal steady flow has lower pressure.'},
+    'standing-waves':{2:'An ideal pipe closed at one end and open at the other supports only odd harmonics.'},
+    'temp-heat':{0:'For a pure substance at fixed pressure, temperature stays constant during an equilibrium phase change.'},
+    'refraction':{0:'At oblique incidence, light bends toward the normal on entering a higher-index medium.',1:'Total internal reflection occurs above the critical angle when travelling from higher to lower refractive index.'},
+    'matter-waves':{0:'De Broglie wavelength is h/p: it grows as momentum decreases, not simply as mass decreases.'},
+    'radioactivity':{1:'For a given isotope in ordinary introductory decay models, half-life is constant.'},
+    'nuclear-binding':{0:'Binding energy per nucleon peaks in the iron and nickel region.',1:'Suitable fusion reactions of light nuclei and fission of heavy nuclei release energy.',2:'The rest energy of 1 atomic mass unit is about 931.5 MeV.'},
+    'fission-fusion':{2:'Energy yield and radioactive products depend on the specific reaction; fusion is not automatically radiation-free.'},
+    'center-of-mass':{0:'Internal forces alone cannot accelerate the centre of mass of an isolated system.',1:'In an explosion from rest with no net external force, the centre of mass stays put.',2:'For a symmetric body with uniform density, the centre of mass is at its geometric centre.'},
+    'terminal-velocity':{1:'With other parameters fixed in a quadratic-drag model, more mass or less drag gives higher terminal speed.'},
+    'wheatstone':{2:'A meter bridge is a practical Wheatstone bridge; a potentiometer instead uses a voltage-null comparison.'},
+    'drift-velocity':{1:'The electromagnetic signal propagates at a finite speed through the circuit, much faster than electron drift.'},
+    'semiconductors':{0:'A p–n diode conducts readily in forward bias and has small reverse leakage below breakdown.'},
+    'carbon-dating':{0:'After an organism dies and carbon exchange stops, its C-14 ratio falls through radioactive decay.',1:'Comparing the remaining ratio with a calibrated starting ratio estimates the age.'}
+  };
+  var scope={
+    'projectile':'Model: no air resistance, uniform gravity; range comparisons use the same launch speed and landing height.',
+    'circular-motion':'The constant-speed statement describes uniform circular motion.',
+    'fluids':'Model: steady, incompressible, inviscid flow; continuity assumes a pipe without leaks.',
+    'elasticity':'The energy formula assumes linear elastic behaviour.',
+    'sound-intensity':'Inverse-square spreading assumes an isotropic point source without absorption or reflections.',
+    'kinetic-theory':'Model: a classical ideal gas; equipartition applies to active quadratic energy terms.',
+    'first-law':'Model: ideal gas with pressure–volume work only. Q is heat in; W is work done by the gas.',
+    'thermal-expansion':'Water statement: liquid water between 0 and 4 °C at ordinary pressure.',
+    'reflection':'Convergence statements refer to rays parallel and close to the optical axis.',
+    'lenses':'Model: thin lenses in air; the beyond-2f image is for a converging lens and a real object.',
+    'interference-optics':'Model: coherent, in-phase double slits, distant screen and small angles.',
+    'potential':'Conductors are equipotentials in electrostatic equilibrium.',
+    'capacitance':'Field-energy formula: vacuum. Dielectric comparison assumes the same geometry, fully filled.',
+    'dielectrics':'Breakdown strength depends on the chosen material and conditions.',
+    'ohms-law':'Temperature trends are typical, not universal; semiconductor behaviour depends on doping and temperature.',
+    'resistor-networks':'Resistance comparisons assume positive, finite resistances.',
+    'kirchhoff':'Model: lumped circuits without unaccounted changing magnetic flux.',
+    'emf-internal':'Model: fixed EMF with a positive, constant internal resistance.',
+    'rc-circuits':'Model: ideal series RC circuit; charging begins uncharged with a constant source.',
+    'ac-circuits':'Resonance statement: a series RLC circuit driven sinusoidally at fixed voltage.',
+    'transformers':'Voltage/current ratios assume an ideal transformer; steady DC gives no sustained induction.',
+    'em-waves':'Field geometry describes a plane electromagnetic wave in vacuum.',
+    'photoelectric':'Model: ordinary single-photon photoemission from a fixed material.',
+    'bohr-model':'A historical, non-relativistic model for hydrogen-like atoms, not a general quantum theory.',
+    'electric-dipole':'The 1/r³ dependence is the far field, well beyond the dipole separation.',
+    'van-de-graaff':'Charge distribution assumes electrostatic equilibrium with no charge left inside the cavity.',
+    'dispersion-prisms':'Colour ordering assumes ordinary glass with normal dispersion in visible light.'
+  };
+  function eligible(t){return !!t&&(t.lvl===1||t.lvl===2)&&!!pairs[t.id];}
+  function cards(t){return (t.points||[]).map(function(point,i){
+    var idea=corrections[t.id]&&corrections[t.id][i]||point,pair=pairs[t.id][i];
+    var order=(t.id.length+i)%2,options=order?[pair[1],pair[0]]:pair.slice();
+    return {idea:idea,prompt:idea.replace(pair[0],'_____'),options:options,answer:order};
+  });}
+  function mount(t,resources){
+    if(!eligible(t))return;
+    var root=document.querySelector('#main .lesson'),column=root.querySelector('.l-main');
+    root.classList.add('learn-guided');
+    var companion=root.querySelector('.l-comp');if(companion)companion.remove();
+    var note=column.querySelector('.l-style-note');if(note)note.remove();
+    var core=column.querySelector('.l-pts'),host=document.createElement('section');
+    host.className='learn-flow';host.setAttribute('aria-label','Guided ideas and checkpoints');
+    core.replaceWith(host);column.insertBefore(host,column.querySelector('#lens-host'));
+    var deck=cards(t),at=0,phase='idea',answers=deck.map(function(){return null;});
+    host.innerHTML='<div class="learn-flow-top"><span>LEARN · ONE IDEA AT A TIME</span><span class="learn-count"></span></div>'+
+      '<nav class="learn-steps" aria-label="Lesson ideas"></nav><div class="learn-card"></div>';
+    var panel=host.querySelector('.learn-card'),steps=host.querySelector('.learn-steps');
+    function button(action,label,primary){return '<button type="button" class="btn '+(primary?'btn-pri':'btn-ghost')+'" data-lf="'+action+'">'+label+'</button>';}
+    function draw(focus){
+      host.querySelector('.learn-count').textContent=phase==='end'?'Review':(at+1)+' / '+deck.length;
+      steps.innerHTML=deck.map(function(c,i){return '<button type="button" data-step="'+i+'"'+(i===at&&phase!=='end'?' aria-current="step"':'')+' aria-label="Idea '+(i+1)+(answers[i]===null?'':answers[i]==='skip'?', skipped':answers[i]===c.answer?', checked correctly':', revisit')+'">'+(i+1)+'<span>'+(answers[i]===null?'Idea':answers[i]==='skip'?'Skipped':answers[i]===c.answer?'Checked':'Revisit')+'</span></button>';}).join('');
+      var c=deck[at],picked=answers[at],answered=typeof picked==='number';
+      if(phase==='end'){
+        var checked=deck.filter(function(d,i){return answers[i]===d.answer;}).length;
+        panel.innerHTML='<h2 tabindex="-1">A moment to connect it.</h2><p>You checked '+checked+' of '+deck.length+' ideas correctly in this visit. These are practice checks, not a mastery score.</p><p>Try explaining '+esc(t.name)+' in your own words, or open an exploration below.</p><div class="learn-actions">'+button('restart','Review the ideas',false)+'</div>';
+      }else if(phase==='idea'){
+        panel.innerHTML='<div class="learn-kicker">IDEA '+(at+1)+'</div><h2 tabindex="-1">The short version.</h2><p class="learn-idea">'+esc(c.idea)+'</p>'+(scope[t.id]?'<p class="learn-scope">'+esc(scope[t.id])+'</p>':'')+'<div class="learn-actions">'+button('check','Check this idea →',true)+button('skip','Skip check',false)+'</div>';
+      }else{
+        panel.innerHTML='<div class="learn-kicker">CHECKPOINT '+(at+1)+'</div><h2 tabindex="-1">What completes this idea?</h2><p class="learn-idea">'+esc(c.prompt)+'</p>'+(scope[t.id]?'<p class="learn-scope">'+esc(scope[t.id])+'</p>':'')+'<div class="learn-options" role="group" aria-label="Choose an answer">'+c.options.map(function(o,i){return '<button type="button" data-answer="'+i+'"'+(answered?' disabled':'')+' class="learn-option'+(answered&&i===c.answer?' is-correct':answered&&i===picked?' is-wrong':'')+'"><span aria-hidden="true">'+String.fromCharCode(65+i)+'</span>'+esc(o)+(answered&&i===c.answer?' <b>Correct</b>':answered&&i===picked?' <b>Your answer</b>':'')+'</button>';}).join('')+'</div>'+
+          (answered?'<div class="learn-feedback" tabindex="-1" role="status"><strong>'+(picked===c.answer?'That’s it.':'Not quite — here’s the idea.')+'</strong><p>'+esc(c.idea)+'</p></div>':'')+
+          '<div class="learn-actions">'+(answered?button('next',at===deck.length-1?'Finish checks →':'Next idea →',true)+(picked!==c.answer?button('retry','Try again',false):''):button('skip','Skip check',false))+button('review','Review idea',false)+'</div>';
+      }
+      if(focus){var target=panel.querySelector(focus==='feedback'?'.learn-feedback':'h2');if(target)target.focus({preventScroll:true});host.scrollIntoView({block:'nearest',behavior:'instant'});}
+    }
+    host.addEventListener('click',function(e){
+      var b=e.target.closest('button');if(!b||!host.contains(b))return;
+      if(b.hasAttribute('data-step')){at=+b.dataset.step;phase='idea';draw(true);return;}
+      if(b.hasAttribute('data-answer')){if(typeof answers[at]==='number')return;answers[at]=+b.dataset.answer;draw('feedback');return;}
+      var action=b.dataset.lf;
+      if(action==='check')phase='check';
+      if(action==='review')phase='idea';
+      if(action==='retry'){answers[at]=null;phase='check';}
+      if(action==='restart'){at=0;phase='idea';}
+      if(action==='skip'||action==='next'){if(action==='skip'&&answers[at]===null)answers[at]='skip';if(at===deck.length-1)phase='end';else{at++;phase='idea';}}
+      draw(true);
+    });draw(false);
+    // Defer visual tools until their actual container is visible. No hidden canvases.
+    function disclosure(selector,title,description,start,stop){
+      var node=column.querySelector(selector);if(!node)return;
+      var detail=document.createElement('details');detail.className='learn-extra';
+      detail.innerHTML='<summary><span><strong>'+esc(title)+'</strong><small>'+esc(description)+'</small></span><span class="learn-plus" aria-hidden="true">+</span></summary><div class="learn-extra-body"></div>';
+      node.replaceWith(detail);detail.lastElementChild.appendChild(node);
+      var ready=false;
+      detail.addEventListener('toggle',function(){
+        if(!detail.isConnected)return;
+        if(detail.open&&!ready&&start){start();ready=true;if(typeof AppDesign!=='undefined')AppDesign.enhance(detail);}
+        if(!detail.open&&stop){stop();ready=false;}
+      });return detail;
+    }
+    var extra=disclosure('.l-exam','Did you know?','Small details that help the idea stick.');
+    if(extra){extra.classList.add('learn-curiosity');var heading=extra.querySelector('.h');if(heading)heading.remove();column.insertBefore(extra,host.nextSibling);}
+    disclosure('#lens-host','Explore this idea','Experience · predict · visual · math · frontier · real world',resources.lens,resources.stopLens);
+    disclosure('.l-sim','See it in motion','A live model. Change something and watch what happens.',resources.sim,resources.stopSim);
+    disclosure('#expt-host','Try a small experiment','A practical way to test this concept.',resources.experiment);
+    disclosure('#eqviz-host','Change the variables','Explore how the equation responds.',resources.equation);
+    disclosure('.l-eqs','Formula notebook','The equations, here when you need them.');
+    disclosure('#mrep-host','Another way to see it','Words, diagrams and mathematical representations.',resources.representations,resources.stopRepresentations);
+    disclosure('#ways-host','Choose another route','Different ways into the same concept.',resources.ways);
+    disclosure('#conn-host','Connect the dots','Prerequisites and neighbouring ideas.',resources.connections);
+  }
+  return {eligible:eligible,cards:cards,mount:mount};
+})();
+
+/* EXPERIENCE:LEARN:END */
 function viewLesson(id){
   var t=topicById(id); if(!t){ go('learn'); return; } Me.d.lastTopic=id; Me.save(); renderSide();
   var dm=DMAP[t.domain]; var ts=topicsOf(t.domain); var idx=ts.indexOf(t);
@@ -12236,14 +12521,33 @@ function viewLesson(id){
       '<button class="btn btn-pri btn-sm" id="complete-btn">'+(Me.isDone(id)?(next?'Next lesson →':'Done ✓'):'Mark complete →')+'</button>'+
     '</div></div></div>'+comp+'</div>';
   main.innerHTML=html;
+  if(LearnFlow.eligible(t)){
+    Lens.stop();
+    MultiRep.stop();
+    if(!ExpKit.bank[id])$('#expt-host').remove();
+    if(!Ways.bank[id])$('#ways-host').remove();
+    if(!MultiRep.has(t))$('#mrep-host').remove();
+    LearnFlow.mount(t,{
+      lens:function(){ Lens.mount($('#lens-host'),t); },stopLens:function(){ Lens.stop(); },
+      ways:function(){ Ways.render($('#ways-host'),id,t); },
+      experiment:function(){ ExpKit.render($('#expt-host'),id,t); },
+      representations:function(){ MultiRep.mount($('#mrep-host'),t); },
+      stopRepresentations:function(){ MultiRep.stop(); },
+      connections:function(){ Graph.renderConnections($('#conn-host'),id); },
+      sim:function(){ $('#lesson-sim').innerHTML='';$('#lesson-ctl').innerHTML='';var inst=SIMS[simType]($('#lesson-sim'));activeSim=inst;if(inst.controls)inst.controls($('#lesson-ctl')); },
+      stopSim:function(){ stopSim(); },
+      equation:function(){ mountEqViz($('#eqviz-host'),IEQ[t.id]); }
+    });
+  }else{
   try{ Lens.mount($('#lens-host'),t); }catch(e){}
   try{ Ways.render($('#ways-host'),id,t); }catch(e){}
   try{ ExpKit.render($('#expt-host'),id,t); }catch(e){}
-  try{ if(window.ReadPref) ReadPref.mount(); }catch(e){}
   try{ MultiRep.mount($('#mrep-host'),t); }catch(e){}
   try{ Graph.renderConnections($('#conn-host'),id); }catch(e){}
   if(simType){ var inst=SIMS[simType]($('#lesson-sim')); activeSim=inst; if(inst.controls) inst.controls($('#lesson-ctl')); }
   if(IEQ[t.id]){ mountEqViz($('#eqviz-host'), IEQ[t.id]); }
+  }
+  try{ if(window.ReadPref) ReadPref.mount(); }catch(e){}
   $('#ask-this').addEventListener('click',function(){ Tutor.open(t.name); Tutor.ask('Explain '+t.name+' simply, with the key intuition.', t.name); });
   $('#complete-btn').addEventListener('click',function(){ var cb=this;
     if(Me.isDone(id)){ if(next) go('lesson',next.id); else go('domain',t.domain); return; }

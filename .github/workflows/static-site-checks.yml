@@ -31,6 +31,8 @@ jobs:
         run: node --test .github/test-ai.js
       - name: Check cradle physics against analytical results
         run: node --test .github/test-cradle.js
+      - name: Check camera physics evidence and scientific model boundaries
+        run: node --test .github/test-camera-physics.js .github/test-camera-lifecycle.js
       - name: Check application design contracts
         run: node --test .github/test-app-design.js
       - name: Check restored visual-first Learn experience

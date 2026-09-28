@@ -15,6 +15,11 @@ embed('LAUNCH','launch.js','var Landing=(function(){','/* ===== SANDBOX WORKSPAC
 embed('OBSERVATORY','observatory.js','/* EXPERIENCE:LAUNCH:START */');
 embed('OBSERVATORY-MARKUP','observatory-markup.js','/* EXPERIENCE:LAUNCH:START */');
 embed('MODEL','cradle-model.js','var Sandbox=(function(){');
+embed('CAMERA-PHYSICS','camera-physics/physics.js','var Sandbox=(function(){');
+embed('CAMERA-VISION','camera-physics/vision.js','var Sandbox=(function(){');
+embed('CAMERA-RENDERING','camera-physics/rendering.js','var Sandbox=(function(){');
+embed('CAMERA-PANEL','camera-physics/ui.js','var Sandbox=(function(){');
+embed('SANDBOX-STUDIO','sandbox-studio.js','function viewSandbox(){');
 embed('STUDIO','cradle-studio.js','  function accel(){ var n=B.length');
 embed('HOME','home.js','function viewHome(){','function recCard(');
 embed('APPDESIGN','app-design.js','/* ===== SANDBOX WORKSPACE UX');
@@ -24,7 +29,7 @@ embed('LIBRARY','library-entry.js','function viewLearn(){','var domFilter=');
 embed('SEARCH','search.js','var Cmdk=(function(){','/* ===== SOLVE — type any problem');
 embed('ADVANCED','advanced-studio.js','function viewAdv(id){','/* #adv deep link');
 const cssStart='<!-- EXPERIENCE:CSS:START -->',cssEnd='<!-- EXPERIENCE:CSS:END -->';
-const css=cssStart+'\n<style id="experience-css">\n'+['experience.css','app-design.css','welcome.css','advanced-studio.css','observatory.css','observatory-theme.css','light-mode.css'].map(file=>fs.readFileSync(path.join(root,'experience',file),'utf8')).join('\n').replace('__OBSERVATORY_REFERENCE__','data:image/webp;base64,'+fs.readFileSync(path.join(root,'assets','observatory-reference.webp')).toString('base64'))+'\n</style>\n'+cssEnd;
+const css=cssStart+'\n<style id="experience-css">\n'+['experience.css','app-design.css','welcome.css','advanced-studio.css','observatory.css','observatory-theme.css','light-mode.css','sandbox-studio.css'].map(file=>fs.readFileSync(path.join(root,'experience',file),'utf8')).join('\n').replace('__OBSERVATORY_REFERENCE__','data:image/webp;base64,'+fs.readFileSync(path.join(root,'assets','observatory-reference.webp')).toString('base64'))+'\n</style>\n'+cssEnd;
 if(html.includes(cssStart)){const a=html.indexOf(cssStart),b=html.indexOf(cssEnd,a);html=html.slice(0,a)+css+html.slice(b+cssEnd.length);}
 else html=html.replace('</head>',css+'\n</head>');
 const guideStart='<!-- FEATURE-GUIDE:START -->',guideEnd='<!-- FEATURE-GUIDE:END -->';

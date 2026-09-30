@@ -22,3 +22,17 @@ test('Instrument dialog exposes keyboard controls without changing scientific mo
  assert.match(html,/AppDesign\.enterLab\(\)/);assert.match(html,/AppDesign\.exitLab\(\)/);
  assert.match(html,/Live simulations/);assert.match(html,/Practical protocols/);
 });
+test('Sandbox studio uses natural page flow instead of the legacy scroll lock',()=>{
+ const css=fs.readFileSync(path.join(root,'experience/sandbox-studio.css'),'utf8');
+ assert.match(css,/\.main\.sbx-active\{display:block;overflow-y:auto;overflow-x:hidden\}/);
+ assert.match(css,/#sbx-host\.sandbox-studio\{height:auto\}/);
+ assert.match(html,/Scroll the page; Alt \+ scroll to zoom/);
+});
+test('Sandbox wheel scrolls by default and only zooms with an explicit modifier',()=>{
+ const source=html.slice(html.indexOf('  function onWheel(ev)'),html.indexOf('  function now(){',html.indexOf('  function onWheel(ev)')));
+ const ctx={cam:{s:1,x:0,y:0},canvas:{getBoundingClientRect:()=>({left:0,top:0})},wx:x=>x,wy:y=>y,STILL:false,Math};
+ vm.createContext(ctx);vm.runInContext(source,ctx);
+ let prevented=false;const event={clientX:100,clientY:100,deltaY:-100,preventDefault(){prevented=true;}};
+ ctx.onWheel(event);assert.equal(prevented,false);assert.equal(ctx.cam.s,1);
+ for(const key of ['altKey','ctrlKey','metaKey']){prevented=false;const before=ctx.cam.s;ctx.onWheel({...event,[key]:true});assert.equal(prevented,true);assert.ok(ctx.cam.s>before);}
+});

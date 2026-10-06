@@ -28,7 +28,7 @@ jobs:
       - name: Verify generated experience is current
         run: node .github/build-experience.js --check
       - name: Check shared AI requests, streaming and structured responses
-        run: node --test .github/test-ai.js
+        run: node --test .github/test-ai.js .github/test-answer-format.js
       - name: Check cradle physics against analytical results
         run: node --test .github/test-cradle.js
       - name: Check camera physics evidence and scientific model boundaries

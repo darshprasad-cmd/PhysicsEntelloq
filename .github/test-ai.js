@@ -5,8 +5,8 @@ const html=fs.readFileSync(path.join(__dirname,'..','index.html'),'utf8');
 const endpoint='https://groq-proxy.physicsedge.workers.dev/v1/chat/completions';
 function section(start,end){const a=html.indexOf(start),b=html.indexOf(end,a);assert.ok(a>=0&&b>a,'source section exists: '+start);return html.slice(a,b);}
 function element(){
-  const children=[],events={},classes=new Set();
-  return {children,events,style:{},textContent:'',innerHTML:'',value:'',dataset:{},scrollHeight:0,
+  const children=[],events={},classes=new Set();let plain='',markup='';
+  return {children,events,style:{},get textContent(){return plain;},set textContent(v){plain=v;markup=v;},get innerHTML(){return markup;},set innerHTML(v){markup=v;plain=v.replace(/<[^>]*>/g,'').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&amp;/g,'&').replace(/&#39;/g,"'");},value:'',dataset:{},scrollHeight:0,
     classList:{add:k=>classes.add(k),remove:k=>classes.delete(k),toggle(){},contains:k=>classes.has(k)},
     addEventListener:(name,fn)=>events[name]=fn,appendChild(node){children.push(node);node.parentNode=this;},
     querySelector(){return this.body||(this.body=element());},insertAdjacentHTML(){},focus(){}};
@@ -23,6 +23,9 @@ function fixture(response){
     DB:[{name:'Energy',summary:'Energy is conserved.',_s:'energy conserved'}],DMAP:{mechanics:{n:'Mechanics'}},topicsOf:()=>[{name:'Energy'}],
     fetch:async(url,options)=>{requests.push({url,headers:options.headers,body:JSON.parse(options.body)});return typeof response==='function'?response(url,options):response;}};
   vm.createContext(ctx);
+  ctx.katex=require('../experience/vendor/katex.min.js');
+  vm.runInContext(fs.readFileSync(path.join(__dirname,'../experience/answer-format.js'),'utf8'),ctx);
+  vm.runInContext(fs.readFileSync(path.join(__dirname,'../experience/practice-answers.js'),'utf8'),ctx);
   vm.runInContext(section('var AI_PROXY=','var reduced='),ctx);
   vm.runInContext(section('var Personas=(function(){','var Voice=(function(){'),ctx);
   vm.runInContext(section('var Tutor=(function(){','/* ===== SIX LENSES'),ctx);
@@ -163,7 +166,7 @@ test('Lesson enrichment consumes standard completion text and caches it per lens
 });
 test('Practice preserves structured question output and falls back if JSON is invalid',async()=>{
   let valid=true;
-  const item={q:'What is conserved?',o:['Energy','Speed','Force','Position'],a:0,e:'Energy is conserved in an isolated system.'};
+  const item={kind:'conceptual',q:'What is conserved in an isolated system?',o:['Energy','Speed','Force','Position'],a:0,e:'Energy is conserved in an isolated system because no energy crosses its boundary. The forms of energy may change without changing the total.',solution:{assumptions:'The system is isolated.',steps:[{reason:'Apply conservation of total energy to the entire system.'}],check:'Internal transfers do not change the total energy.'}};
   const f=fixture(()=>completion(valid?JSON.stringify(item):'invalid JSON'));
   const question=await f.ctx.Practice.generate('mechanics',3);
   assertRequest(f.requests[0],{json:true});
@@ -184,7 +187,9 @@ test('Solver renders JSON steps and units, escapes provider text, and recovers f
   await f.ctx.Solve.run('Find the force.',host);
   assertRequest(f.requests[0],{json:true,tokens:4096});
   assert.match(f.requests[0].body.messages[0].content,/Difficulty level: Olympiad/);
-  assert.match(host.innerHTML,/F = 2 \* 3 = 6 N/);
+  assert.match(host.innerHTML,/<math /);
+  assert.match(host.innerHTML,/×/);
+  assert.doesNotMatch(host.innerHTML,/F = 2 \* 3/);
   assert.match(host.innerHTML,/&lt;script&gt;bad\(\)&lt;\/script&gt;/);
   assert.doesNotMatch(host.innerHTML,/<script>/);
   fail=true;await f.ctx.Solve.run('Try again.',host);

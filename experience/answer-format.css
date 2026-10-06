@@ -1,0 +1,27 @@
+/* Answer surfaces inherit the existing observatory palette in both themes. */
+.answer-prose{font-family:var(--sans,inherit);font-size:inherit;line-height:1.75;white-space:normal;overflow-wrap:anywhere;min-width:0;color:inherit}
+.answer-prose p{margin:0 0 .85em}.answer-prose>:last-child{margin-bottom:0}
+.answer-prose h4,.answer-section h4{font-family:var(--sans,inherit);font-size:1em;line-height:1.45;color:var(--ink);margin:1.15em 0 .45em;font-weight:650;letter-spacing:0;text-transform:none}
+.answer-prose h4:first-child,.answer-section h4:first-child{margin-top:0}
+.answer-prose ul,.answer-prose ol{margin:.5em 0 1em;padding-left:1.4em}.answer-prose li+li{margin-top:.5em}
+.answer-prose hr{border:0;border-top:1px solid var(--line);margin:1.25em 0}
+.answer-prose code{font-size:.9em}.answer-prose pre,.answer-source code{display:block;overflow:auto;white-space:pre-wrap;max-width:100%}
+.answer-table{max-width:100%;overflow:auto;margin:16px 0}.answer-table table{width:100%;border-collapse:collapse;font-size:.9em}.answer-table th,.answer-table td{padding:9px 12px;text-align:left;border:1px solid var(--line)}.answer-table th{font-weight:650;background:var(--pe-surface)}
+.answer-math{color:inherit;white-space:normal}.answer-math math{font-size:1.08em}
+.answer-display{display:block;max-width:100%;overflow-x:auto;overflow-y:hidden;padding:14px 3px;margin:8px 0;overscroll-behavior-x:contain}
+.answer-display math{min-width:max-content;text-align:left;margin:0}
+.answer-display:focus-visible{outline:2px solid var(--blue,#a8c7ff);outline-offset:2px;border-radius:5px}
+.answer-math-error,.answer-note{color:var(--ink-dim);font-size:.9em}.answer-source{font-size:.85em}.answer-source summary{cursor:pointer}
+.bub.a .bd{display:block;min-width:0;max-width:100%;white-space:normal;flex:1}.bub.a{min-width:0}
+.answer-diagram{margin:20px 0;padding:16px;border:1px solid var(--line);border-radius:14px;background:var(--pe-surface,rgba(127,157,204,.05));color:var(--ink);max-width:100%}
+.answer-diagram svg{display:block;width:100%;max-width:480px;height:auto;margin:0 auto;color:var(--ink)}
+.answer-diagram text{font:15px system-ui,sans-serif}.answer-diagram figcaption{font-size:12px;line-height:1.6;color:var(--ink-dim);margin-top:8px}
+.worked-answer{font-size:14px;line-height:1.75;color:var(--ink-dim);min-width:0}.answer-section+.answer-section{margin-top:18px}
+.answer-steps{padding-left:1.4em;margin:18px 0}.answer-steps>li{padding-left:5px;margin:15px 0}.answer-steps>li::marker{color:var(--ink);font-weight:650}
+.pr-exp .answer-status{display:block;color:var(--ink);font-size:15px;margin-bottom:18px}.pr-exp{white-space:normal}
+.sv-sc,.sv-av,.sv-result,.sv-prob,.sv-con{min-width:0}.sv-sm{font-family:inherit;font-size:16px;line-height:1.6;color:var(--ink);background:rgba(127,157,204,.06)}
+.sv-ans .sv-av{color:var(--ink);font-size:19px}.sv-chip{white-space:normal}.sv-callout .answer-prose{display:block;margin-top:5px}
+.sv-section-copy{color:var(--ink-dim);font-size:14px;line-height:1.75}
+[data-theme="light"] .sv-sm{color:var(--ink);background:rgba(46,82,128,.06)}
+html.pe-refined[data-theme="light"] .sv-con b{color:var(--ink)}
+@media(max-width:600px){.sv-ans{flex-direction:column;align-items:flex-start}.answer-diagram{padding:10px}.answer-display{font-size:.93em}.worked-answer{font-size:13px}}

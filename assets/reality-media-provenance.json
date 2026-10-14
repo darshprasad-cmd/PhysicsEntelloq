@@ -4,5 +4,5 @@
   "footage":{"file":"reality-sandbox.mp4","poster":"reality-sandbox-poster.webp","source":"Existing user-provided Physics Entelloq Chrome recording, 2026-09-20 21-41-58","sourceIntervalSeconds":[25,37],"durationSeconds":12,"dimensions":[1280,704],"fps":24,"codec":"H.264/yuv420p","audio":false,"bytes":512724,"treatment":"Existing verified corporate-site edit; authentic product frames, browser chrome cropped, no invented frames"},
   "screenshots":{"files":["reality-learn.webp","reality-map.webp"],"source":"Current working Physics Entelloq application with the authorized matching workspace style, Chromium viewport 1440x960 on 2026-10-14","outputWidth":1200,"treatment":"Screen capture, resize, WebP compression only; no invented UI"},
   "liveScenes":{"technique":"Original Canvas 2D rendering","hero":"Illustrative orbital frame and satellite; no measurement claims","orbit":"Unchanged LaunchOrbitModel analytic Newtonian conic; screen geometry and playback are illustrative","wave":"Original linear travelling sinusoid; one highlighted material point oscillates vertically; no measured units"},
-  "founder":"Existing unchanged assets/darsh-prasad.jpg; displayed in grayscale with CSS"
+  "founder":"Existing unchanged assets/darsh-prasad.jpg; displayed in original color without a CSS filter"
 }

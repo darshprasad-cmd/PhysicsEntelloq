@@ -1,9 +1,9 @@
 /* One material palette, sampled from the approved observatory artwork.
    Scientific category/trace/status colours remain independent of interface chrome. */
 :root{
-  --obs-night:#020509;--obs-panel:#091119;--obs-raised:#121d29;
-  --obs-ink:#eef2f7;--obs-muted:#bbc6d3;--obs-dim:#9caec3;
-  --obs-blue:#9bc3ff;--obs-gold:#dfba86;--obs-border:#2c3d50;
+  --obs-night:#080b0d;--obs-panel:#10181d;--obs-raised:#17242c;
+  --obs-ink:#f4f1e9;--obs-muted:#bac7cf;--obs-dim:#9fb1bc;
+  --obs-blue:#91c9ee;--obs-gold:#ddba88;--obs-border:#354751;
 }
 html.pe-refined{
   --bg:var(--obs-night);--bg-1:#060b10;--bg-2:var(--obs-raised);

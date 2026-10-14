@@ -6,13 +6,21 @@ function contrast(a,b){const x=luminance(a),y=luminance(b);return(Math.max(x,y)+
 test('Observatory text and accents remain readable on the darkest and raised surfaces',()=>{for(const ink of['ink','muted','dim','blue','gold'])for(const surface of['night','panel','raised'])assert.ok(contrast(colour(ink),colour(surface))>=4.5,ink+' on '+surface);assert.ok(contrast('#305f96','#edf2f8')>=4.5);});
 test('Shared palette does not flatten scientific categories, statuses or SVG gradients',()=>{assert.doesNotMatch(css,/--(?:red|emerald|magenta|cyan|violet):/);assert.doesNotMatch(css,/\.cc-art circle\s*\{/);assert.match(css,/html\.pe-refined\[data-theme=light\]/);assert.match(css,/--pe-force:var\(--blue\)/);});
 test('Persistent launch reuses the original image and stays behind content without animation',()=>{const js=fs.readFileSync(path.join(root,'experience/observatory.js'),'utf8'),markup=fs.readFileSync(path.join(root,'experience/observatory-markup.js'),'utf8');assert.match(js,/querySelector\('\.obs-continuum'\).*picture.src/);assert.match(markup,/class="obs-continuum" aria-hidden="true"/);assert.match(css,/\.obs-continuum\{position:fixed;inset:0;z-index:-1;pointer-events:none/);assert.doesNotMatch(css,/@keyframes|animation:|hue-rotate|saturate\(/);const build=fs.readFileSync(path.join(root,'.github/build-experience.js'),'utf8');assert.match(build,/'observatory.css','observatory-theme.css'/);});
-test('Launch and returning-user workspace share one embedded artwork payload',()=>{
-  const html=fs.readFileSync(path.join(root,'index.html'),'utf8'),image=fs.readFileSync(path.join(root,'assets/observatory-background.webp')).toString('base64');
+test('Launch and returning-user workspace reuse the single optimized cinematic artwork payload',()=>{
+  const html=fs.readFileSync(path.join(root,'index.html'),'utf8'),image=fs.readFileSync(path.join(root,'assets/reality-orbit.webp')).toString('base64');
   const app=fs.readFileSync(path.join(root,'experience/app-design.js'),'utf8'),markup=fs.readFileSync(path.join(root,'experience/observatory-markup.js'),'utf8');
   assert.equal(html.split(image).length-1,1,'Do not duplicate the embedded artwork');
-  assert.match(markup,/src="\$\{OBSERVATORY_ARTWORK\}"/);assert.match(app,/backdrop.style.backgroundImage=.*OBSERVATORY_ARTWORK/);
+  assert.match(markup,/var OBSERVATORY_ARTWORK=CINEMATIC_ORBIT_ARTWORK/);assert.match(markup,/src="\$\{CINEMATIC_ORBIT_ARTWORK\}"/);assert.match(app,/backdrop.style.backgroundImage=.*OBSERVATORY_ARTWORK/);
   assert.match(app,/if\(!\$\('#obs-workspace'\)\)/);assert.match(app,/backdrop.setAttribute\('aria-hidden','true'\)/);
   assert.match(css,/#obs-workspace\{position:fixed;inset:0;z-index:-1;pointer-events:none/);
+});
+test('The matching interior adds no animation, image payload, backdrop blur or model filter',()=>{
+  const workspace=fs.readFileSync(path.join(root,'experience/reality-workspace.css'),'utf8');
+  assert.doesNotMatch(workspace,/@keyframes|animation\s*:|url\(|backdrop-filter|\bfilter\s*:|canvas\s*\{/);
+  assert.match(workspace,/html\.pe-refined\[data-theme=light\]/);
+  assert.match(workspace,/--bg:#f0f2f2/);
+  for(const name of ['observatory-background.webp','observatory-reference.webp'])assert.equal(htmlHas(fs.readFileSync(path.join(root,'assets',name))),false,'Retired image must not remain in the browser transfer');
+  function htmlHas(bytes){return fs.readFileSync(path.join(root,'index.html'),'utf8').includes(bytes.toString('base64'));}
 });
 test('Workspace scrims protect shared text over even white or black image pixels',()=>{
   function composite(art,veil,alpha){const channels=h=>h.slice(1).match(/../g).map(v=>parseInt(v,16));const a=channels(art),b=channels(veil);return '#'+a.map((v,i)=>Math.round(v*(1-alpha)+b[i]*alpha).toString(16).padStart(2,'0')).join('');}

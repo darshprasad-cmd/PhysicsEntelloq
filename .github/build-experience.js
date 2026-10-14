@@ -6,7 +6,8 @@ function embed(name,file,firstStart,firstEnd){
   const start='/* EXPERIENCE:'+name+':START */',end='/* EXPERIENCE:'+name+':END */';
   let source=fs.readFileSync(path.join(root,'experience',file),'utf8');
   if(file==='launch.js')source=source.replace('__FOUNDER_PORTRAIT__','data:image/jpeg;base64,'+fs.readFileSync(path.join(root,'assets','darsh-prasad.jpg')).toString('base64'));
-  if(file==='observatory-markup.js')source=source.replace('__OBSERVATORY_BACKGROUND__','data:image/webp;base64,'+fs.readFileSync(path.join(root,'assets','observatory-background.webp')).toString('base64'));
+  const launchAssets={'__CINEMATIC_ORBIT__':['image/webp','reality-orbit.webp'],'__CINEMATIC_MOBILE__':['image/webp','reality-orbit-mobile.webp'],'__SANDBOX_POSTER__':['image/webp','reality-sandbox-poster.webp'],'__SANDBOX_VIDEO__':['video/mp4','reality-sandbox.mp4'],'__LEARN_CAPTURE__':['image/webp','reality-learn.webp'],'__MAP_CAPTURE__':['image/webp','reality-map.webp']};
+  if(file==='launch.js'||file==='observatory-markup.js')for(const [token,[mime,asset]] of Object.entries(launchAssets))if(source.includes(token))source=source.replaceAll(token,'data:'+mime+';base64,'+fs.readFileSync(path.join(root,'assets',asset)).toString('base64'));
   const value=start+'\n'+source+'\n'+end;
   if(html.includes(start)) {const a=html.indexOf(start),b=html.indexOf(end,a);if(b<0)throw Error(name);html=html.slice(0,a)+value+html.slice(b+end.length);}
   else {const a=html.indexOf(firstStart),b=firstEnd?html.indexOf(firstEnd,a):a;if(a<0||b<0)throw Error('Missing insertion point '+name);html=html.slice(0,a)+value+'\n'+html.slice(b);}
@@ -32,7 +33,7 @@ embed('ANSWER-FORMAT','answer-format.js','var Tutor=(function(){');
 embed('PRACTICE-ANSWERS','practice-answers.js','var Practice=(function(){');
 embed('ADVANCED','advanced-studio.js','function viewAdv(id){','/* #adv deep link');
 const cssStart='<!-- EXPERIENCE:CSS:START -->',cssEnd='<!-- EXPERIENCE:CSS:END -->';
-const css=cssStart+'\n<style id="experience-css">\n'+['experience.css','app-design.css','welcome.css','advanced-studio.css','observatory.css','observatory-theme.css','light-mode.css','sandbox-studio.css','answer-format.css'].map(file=>fs.readFileSync(path.join(root,'experience',file),'utf8')).join('\n').replace('__OBSERVATORY_REFERENCE__','data:image/webp;base64,'+fs.readFileSync(path.join(root,'assets','observatory-reference.webp')).toString('base64'))+'\n</style>\n'+cssEnd;
+const css=cssStart+'\n<style id="experience-css">\n'+['experience.css','app-design.css','welcome.css','advanced-studio.css','observatory.css','observatory-theme.css','light-mode.css','sandbox-studio.css','answer-format.css','cinematic.css','reality-workspace.css'].map(file=>fs.readFileSync(path.join(root,'experience',file),'utf8')).join('\n')+'\n</style>\n'+cssEnd;
 if(html.includes(cssStart)){const a=html.indexOf(cssStart),b=html.indexOf(cssEnd,a);html=html.slice(0,a)+css+html.slice(b+cssEnd.length);}
 else html=html.replace('</head>',css+'\n</head>');
 const guideStart='<!-- FEATURE-GUIDE:START -->',guideEnd='<!-- FEATURE-GUIDE:END -->';

@@ -1,0 +1,9 @@
+const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict'),{execFileSync}=require('node:child_process');
+const root=path.resolve(__dirname,'../..'),baseline='619a3bfa8b14a6ff602f260482ef07fa6042c0cf',original=p=>execFileSync('git',['show',baseline+':'+p],{cwd:root,maxBuffer:15e6}).toString().replace(/\r\n/g,'\n'),current=p=>fs.readFileSync(path.join(root,p),'utf8').replace(/\r\n/g,'\n');
+function omitLaunchAndStyles(s){for(const name of ['LAUNCH','OBSERVATORY','OBSERVATORY-MARKUP'])s=s.replace(new RegExp('/\\* EXPERIENCE:'+name+':START \\*/[\\s\\S]*?/\\* EXPERIENCE:'+name+':END \\*/'),'APPROVED-LAUNCH:'+name);return s.replace(/<!-- EXPERIENCE:CSS:START -->[\s\S]*?<!-- EXPERIENCE:CSS:END -->/,'GENERATED-STYLES');}
+assert.equal(omitLaunchAndStyles(current('index.html')),omitLaunchAndStyles(original('index.html')),'Every application HTML/JavaScript byte outside the launch must remain unchanged');
+const files=execFileSync('git',['ls-tree','-r','--name-only',baseline,'experience'],{cwd:root}).toString().trim().split(/\r?\n/),allowed=['experience/launch.js','experience/observatory.js','experience/observatory-markup.js','experience/observatory.css'];
+for(const file of files.filter(f=>!allowed.includes(f)))assert.equal(current(file),original(file),file+' must remain unchanged');
+const model=s=>s.slice(s.indexOf('var LaunchOrbitModel='),s.indexOf('var Observatory='));assert.equal(model(current('experience/observatory.js')),model(original('experience/observatory.js')));
+const photo=fs.readFileSync(path.join(root,'assets/darsh-prasad.jpg')),originalPhoto=execFileSync('git',['show',baseline+':assets/darsh-prasad.jpg'],{cwd:root,maxBuffer:1e6});assert.ok(photo.equals(originalPhoto));
+console.log('PASS: all internal application HTML/JavaScript, existing app source/styles, orbit model and portrait preserved against '+baseline);

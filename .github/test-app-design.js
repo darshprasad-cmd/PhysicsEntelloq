@@ -36,3 +36,18 @@ test('Sandbox wheel scrolls by default and only zooms with an explicit modifier'
  ctx.onWheel(event);assert.equal(prevented,false);assert.equal(ctx.cam.s,1);
  for(const key of ['altKey','ctrlKey','metaKey']){prevented=false;const before=ctx.cam.s;ctx.onWheel({...event,[key]:true});assert.equal(prevented,true);assert.ok(ctx.cam.s>before);}
 });
+
+test('All existing Sandbox scenes have a shared picker outside the hidden Hands rail',()=>{
+ const studio=fs.readFileSync(path.join(root,'experience/sandbox-studio.js'),'utf8');
+ assert.match(studio,/studio-scene-select/);
+ assert.match(studio,/sim\.querySelectorAll\('button\[data-preset\]'\)/);
+ assert.match(studio,/option\.value=b\.dataset\.preset/);
+ assert.match(studio,/if\(target\)target\.click\(\)/);
+ assert.match(studio,/sceneControls\.insertBefore\(scenePicker,quick\)/);
+ assert.match(studio,/\['dpendulum','Double pendulum'\]/);
+ assert.match(studio,/\['atwood','Atwood machine'\]/);
+ assert.doesNotMatch(studio,/getUserMedia\(/);
+ const list=vm.runInNewContext('('+html.match(/var PLIST=(\[[^;]+\]);/)[1]+')');
+ assert.equal(list.length,20);assert.equal(new Set(list.map(p=>p[0])).size,20);
+ for(const key of ['dpendulum','atwood','cradle','wavestring','hangrope','gas','clear'])assert.ok(list.some(p=>p[0]===key),key);
+});

@@ -2788,6 +2788,7 @@ html.pe-refined[data-theme=light] .eqviz .ev-graph{
 @media(max-width:1000px){.sandbox-studio[data-workspace=hands] .sbx{grid-template-rows:auto minmax(380px,55vh) auto}.sandbox-studio[data-workspace=hands] .studio-hand-guide{grid-row:1}.sandbox-studio[data-workspace=hands] .sbx-stage{grid-row:2}.sandbox-studio[data-workspace=hands] .sbx-foot{grid-row:3}.studio-gestures{display:none}.studio-hand-visual{height:130px}.studio-hand-guide .studio-text-button{grid-column:2}.studio-hand-guide h3{align-self:end}}
 @media(max-width:550px){.sandbox-studio[data-workspace=hands] .sbx{grid-template-rows:auto minmax(320px,47vh) auto}.studio-hand-guide .studio-text-button{grid-column:1/-1;text-align:center;min-height:35px}.studio-hand-guide .studio-hand-visual{height:135px}.studio-hand-guide .studio-cradle-hint{display:block}.studio-more{flex-basis:100%;order:4}.studio-more-controls{position:static;width:100%;max-width:none;margin-top:8px}.sandbox-studio .sbx-tool{flex:0 0 42px}}
 @media(prefers-reduced-motion:reduce){.sandbox-studio *{transition:none!important;scroll-behavior:auto!important}}
+.studio-hand-modes{grid-column:1/-1;min-width:0;margin:8px 0}.studio-hand-modes>span{display:block;font:9px var(--mono);letter-spacing:1px;color:var(--studio-muted);margin-bottom:8px}.studio-hand-modes [role=group]{display:grid;grid-template-columns:1fr 1fr;gap:5px}.studio-hand-modes button{min-height:44px;border:1px solid var(--studio-line);border-radius:6px;background:transparent;color:var(--studio-muted);font:11px var(--sans);padding:9px 6px;cursor:pointer}.studio-hand-modes button[aria-pressed=true]{color:var(--studio-ink);background:#243a50;border-color:var(--studio-blue)}.studio-hand-modes p{font-size:12px;line-height:1.6;color:var(--studio-muted);margin:10px 0 0;min-height:3.2em;overflow-wrap:anywhere}
 
 /* Answer surfaces inherit the existing observatory palette in both themes. */
 .answer-prose{font-family:var(--sans,inherit);font-size:inherit;line-height:1.75;white-space:normal;overflow-wrap:anywhere;min-width:0;color:inherit}
@@ -9712,7 +9713,8 @@ var PIE=(function(){
     var on=false,showCam=false,hands=null,video=null,stream=null,raf=0,loading=false,hud=null;
     var SIDES=['Left','Right'],pts={Left:null,Right:null},miss={Left:99,Right:99},gest={Left:'none',Right:'none'},grab={Left:null,Right:null,Mouse:null},parts=[];
     var COL={Left:'#22d3ee',Right:'#f0f',Mouse:'#fbbf24'},D=4.6,FIELD_R=190,FIELD_STR=2400;
-    /* Build mode: an open palm moved up/down chooses an object; a fist drops it in. (When off, palm/fist = force fields.) */
+    /* Build mode: hold an open palm, aim at a wheel sector, then close to add.
+       Intermediate finger poses must not cancel an armed selection. */
     var SPAWN=[{label:'● Mass',plain:'a mass',o:{m:8,c:'#cbd5e1'}},{label:'☉ Planet',plain:'a planet',o:{m:400,c:'#fbbf24'}},{label:'⊕ Charge +',plain:'a positive charge',o:{q:70,m:12,kind:'charge',c:'#f87171'}},{label:'⊖ Charge −',plain:'a negative charge',o:{q:-70,m:12,kind:'charge',c:'#7dd3fc'}},{label:'✶ Star',plain:'a heavy star',o:{m:1600,c:'#f8fafc'}}];
     var buildSel=0,prevG={Left:'none',Right:'none'},palmAnchorY={Left:null,Right:null},lastSpawnT=0,lastCycleT=0,filt={Left:null,Right:null},holdT={Left:0,Right:0},radial={side:null,cx:0,cy:0,hot:-1,t0:0},intent={Left:null,Right:null},prevPd={Left:0,Right:0},pinchMiss={Left:0,Right:0};
     var CONN=[[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[5,9],[9,10],[10,11],[11,12],[9,13],[13,14],[14,15],[15,16],[13,17],[17,18],[18,19],[19,20],[0,17]];
@@ -9746,15 +9748,15 @@ var PIE=(function(){
         hands=new window.Hands({locateFile:function(f){return 'https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/'+f;}});
         hands.setOptions({maxNumHands:2,modelComplexity:0,minDetectionConfidence:.6,minTrackingConfidence:.5,selfieMode:true});
         hands.onResults(function(res){if(on&&ticket===cameraRun)onResults(res);});openCam(ticket);
-      }).catch(function(){if(on&&ticket===cameraRun){toast('Hand tracking failed to start. Check your connection.');off();}});
+      }).catch(function(){if(on&&ticket===cameraRun){toast('Hand tracking failed to start.');off();buildStatus('Hand model could not load. Check your connection, then start hand control again.');}});
     }
-    function openCam(ticket){if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){toast('No camera available','');off();return;}
+    function openCam(ticket){if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){toast('No camera available','');off();buildStatus('No camera is available in this browser. You can still add objects in Build.');return;}
       navigator.mediaDevices.getUserMedia({video:{width:640,height:360,facingMode:'user'},audio:false}).then(function(st){
         if(!on||ticket!==cameraRun){st.getTracks().forEach(function(t){t.stop();});return;}
         stream=st;st.getTracks().forEach(function(t){t.onended=function(){if(on&&ticket===cameraRun){toast('Camera disconnected');off();}};});
         video=$('#sbx-cam');if(!video){off();return;}video.srcObject=st;video.muted=true;video.playsInline=true;
-        return video.play().then(function(){if(!on||ticket!==cameraRun)return;applyCamVis();pump();try{HPIE.audioStart();}catch(e){}toast('Hand control on','Pinch to grab · palm pushes · fist pulls');});
-      }).catch(function(){if(on&&ticket===cameraRun){toast('Camera unavailable','Allow access, or close other camera apps');off();}});
+        return video.play().then(function(){if(!on||ticket!==cameraRun)return;applyCamVis();pump();try{HPIE.audioStart();}catch(e){}toast('Hand control on',cfg.buildMode?'Hold palm · aim at an object · close hand to add':'Pinch to grab · palm pushes · fist pulls');});
+      }).catch(function(){if(on&&ticket===cameraRun){toast('Camera unavailable');off();buildStatus('Camera unavailable. Allow camera access in browser site settings, close other camera apps, then try again.');}});
     }
     /* One request at a time; late results cannot reopen or mutate another session. */
     var pumpTick=0,sendBusy=false;
@@ -9767,7 +9769,8 @@ var PIE=(function(){
       if(stream){try{stream.getTracks().forEach(function(t){t.onended=null;t.stop();});}catch(e){}stream=null;}
       if(video){try{video.pause();video.srcObject=null;}catch(e){}}
       var previousHand=hands;hands=null;if(!sendBusy)closeHand(previousHand);
-      pts.Left=pts.Right=null;grab.Left=grab.Right=null;prevG.Left=prevG.Right='none';palmAnchorY.Left=palmAnchorY.Right=null;filt.Left=filt.Right=null;radialClose();sendBusy=false;pumpTick=0;
+      pts.Left=pts.Right=null;grab.Left=grab.Right=null;gest.Left=gest.Right='none';miss.Left=miss.Right=99;prevG.Left=prevG.Right='none';palmAnchorY.Left=palmAnchorY.Right=null;filt.Left=filt.Right=null;radialClose();sendBusy=false;pumpTick=0;
+      buildStatus('Camera off. Start hand control when you are ready.');
       try{HPIE.audioStop();}catch(e){}applyCamVis();var h=$('#sbx-hud');if(h)h.style.display='none';
     }
     function dist(a,b){ var dx=a.x-b.x,dy=a.y-b.y; return Math.sqrt(dx*dx+dy*dy); }
@@ -9784,7 +9787,8 @@ var PIE=(function(){
             arr[z2].x+=mvx; arr[z2].y+=mvy;
             if(z2===4||z2===8){ arr[z2].fx=oo.x+oo.vx*dt; arr[z2].fy=oo.y+oo.vy*dt; } }
           pts[label]=arr; miss[label]=0; found[label]=true; try{ HPIE.observe(label,arr,tNow); }catch(e){} gest[label]=detect(arr,label); handleBuild(label,arr); } }
-      SIDES.forEach(function(s){ if(!found[s]){ miss[s]++; if(miss[s]>10){ pts[s]=null; gest[s]='none'; grab[s]=null; if(filt[s])filt[s].down(); radialClose(s); } else if(pts[s]){ try{ HPIE.predictInto(s,pts[s],tNow); }catch(e){} } } }); }
+      SIDES.forEach(function(s){ if(!found[s]){ miss[s]++; if(miss[s]>10){ pts[s]=null; gest[s]='none'; grab[s]=null; if(filt[s])filt[s].down(); radialClose(s); } else if(pts[s]){ try{ HPIE.predictInto(s,pts[s],tNow); }catch(e){} } } });
+      if(cfg.buildMode&&!pts.Left&&!pts.Right)buildStatus('No hand detected. Show an open palm inside the camera view.'); }
     function detect(p,side){ var scale=dist(p[0],p[9])||1,pd=dist(p[4],p[8])/scale;
       var wasP=(gest[side]==='pinch'),TH=wasP?0.62:0.50;   /* hysteresis: releasing is harder than grabbing */
       if(pd<TH){ if(radial.side===side){ prevPd[side]=pd; return 'fist'; }   /* menu open: a closing hand DROPS (real fists read as pinch — thumb sits on the index) */
@@ -9797,7 +9801,7 @@ var PIE=(function(){
         if(ib2>=0) intent[side]={bi:ib2,t:performance.now()}; }
       else if(intent[side]&&performance.now()-intent[side].t>450) intent[side]=null;
       grab[side]=null; var ext=0; [[8,6],[12,10],[16,14],[20,18]].forEach(function(f){ if(dist(p[f[0]],p[0])>dist(p[f[1]],p[0])*1.05) ext++; });
-      if(ext>=3) return 'palm'; if(ext<=1){ if(cfg.altGrab){ acquire(side,p); return 'pinch'; } return 'fist'; } return 'none'; }
+      if(ext>=3) return 'palm'; if(ext<=1){ if(cfg.altGrab&&radial.side!==side){ acquire(side,p); return 'pinch'; } return 'fist'; } return 'none'; }
     function pinchWorld(p){ var x4=(p[4].fx!=null)?p[4].fx:p[4].x,y4=(p[4].fy!=null)?p[4].fy:p[4].y,x8=(p[8].fx!=null)?p[8].fx:p[8].x,y8=(p[8].fy!=null)?p[8].fy:p[8].y; return {x:wx((x4+x8)/2),y:wy((y4+y8)/2)}; }
     function palmWorld(p){ return {x:wx(p[9].x),y:wy(p[9].y)}; }
     /* fingertip obstacles (world coords) for rope collision — tips are landmarks 4,8,12,16,20 */
@@ -9806,21 +9810,27 @@ var PIE=(function(){
     function anchors(){ var out=[]; if(!on)return out; SIDES.forEach(function(side){ var p=pts[side]; if(!p)return; [4,20].forEach(function(ti){ out.push({x:wx(p[ti].x),y:wy(p[ti].y),side:side,lm:ti}); }); }); return out; }
     /* GestureRecognizer → radial builder: hold an open palm ≈350ms to open a holo palette around the palm,
        aim the palm at a sector to arm it, then make a fist to drop that object in (400ms cooldown). */
-    function radialClose(side){ if(side){ holdT[side]=0; if(radial.side===side){ radial.side=null; radial.hot=-1; } } else { holdT.Left=holdT.Right=0; radial.side=null; radial.hot=-1; } }
+    function buildStatus(message){var el=$('#studio-hand-feedback');if(el&&el.textContent!==message)el.textContent=message;}
+    function radialClose(side){ if(side){ holdT[side]=0; if(radial.side===side){ radial.side=null; radial.hot=-1; radial.lastPalm=0; } } else { holdT.Left=holdT.Right=0; radial.side=null; radial.hot=-1; radial.lastPalm=0; } }
     function handleBuild(side,p){ if(!cfg.buildMode){ prevG[side]=gest[side]; radialClose(side); return; } var g=gest[side],t=performance.now();
+      // A brief unclassified pose is normal while fingers curl. Keep the armed
+      // sector for 900 ms, but never commit a stale wheel after that interval.
+      if(radial.side===side&&t-radial.lastPalm>900){radialClose(side);buildStatus('Selection cancelled. Open your palm to try again.');}
       if(g==='palm'){
         if(radial.side===side){ var axv=p[9].x-radial.cx,ayv=p[9].y-radial.cy,ad=Math.sqrt(axv*axv+ayv*ayv),SECT=Math.PI*2/SPAWN.length;
-          radial.hot=(ad>26)?(Math.floor(((Math.atan2(ayv,axv)+Math.PI*2.5+SECT/2)%(Math.PI*2))/SECT)%SPAWN.length):-1; }
-        else if(!radial.side){ if(!holdT[side]) holdT[side]=t;
-          else if(t-holdT[side]>350){ radial.side=side; radial.cx=p[9].x; radial.cy=p[9].y; radial.hot=-1; radial.t0=t; } } }
+          radial.hot=(ad>26)?(Math.floor(((Math.atan2(ayv,axv)+Math.PI*2.5+SECT/2)%(Math.PI*2))/SECT)%SPAWN.length):-1;radial.lastPalm=t;
+          buildStatus(radial.hot>=0?'Ready: '+SPAWN[radial.hot].label.slice(2)+'. Close your hand to add it.':'Move your palm toward an object on the wheel.'); }
+        else if(!radial.side){ if(!holdT[side]){holdT[side]=t;buildStatus('Hold your palm open to reveal the object wheel.');}
+          else if(t-holdT[side]>350){ radial.side=side; radial.cx=p[9].x; radial.cy=p[9].y; radial.hot=-1; radial.t0=t;radial.lastPalm=t;grab[side]=null;buildStatus('Move your palm toward an object on the wheel.'); } } }
       else if(g==='fist'){
         if(radial.side===side&&prevG[side]!=='fist'){
           if(radial.hot>=0&&t-lastSpawnT>400){ lastSpawnT=t; var w={x:wx(radial.cx),y:wy(radial.cy)},s=SPAWN[radial.hot],o={}; for(var k in s.o)o[k]=s.o[k];
             sel=addBody(w.x,w.y,o); refreshInspect(); if(window.PeqSbxUX)PeqSbxUX.push('hand-add');
-            spawn(radial.cx,radial.cy,s.o.c||'#7dd3fc',16); toast('Added '+s.plain,s.label); }
+            spawn(radial.cx,radial.cy,s.o.c||'#7dd3fc',16); toast('Added '+s.plain,s.label);buildStatus('Added '+s.plain+'. Open your palm to add another. Undo removes it.'); }
+          else buildStatus('No object selected. Open your palm, then move toward a wheel option.');
           radialClose(side); }
         holdT[side]=0; }
-      else if(prevG[side]!=='palm'&&prevG[side]!=='fist'){ holdT[side]=0; if(radial.side===side) radialClose(side); }
+      else {holdT[side]=0;} // No timer accumulation before opening; an open wheel has its own grace period.
       prevG[side]=g; }
     /* InteractionRenderer — canvas-drawn holo radial palette (blue instrument style, no extra rAF loop) */
     function drawRadial(c,tn,p){ var N=SPAWN.length,SECT=Math.PI*2/N,cx=radial.cx,cy=radial.cy,gr=Math.min(1,(tn-radial.t0)/140),R0=26,R1=50+36*gr;
@@ -9939,7 +9949,7 @@ var PIE=(function(){
     function applyCamVis(){ var v=$('#sbx-cam'); if(v) v.style.opacity=(on&&showCam)?'0.34':'0'; }
     function toggleCam(){ showCam=!showCam; applyCamVis(); var c=$('#sbx-camtog'); if(c)c.classList.toggle('on',showCam); }
     injectCSS();
-    function set(k,v){ cfg[k]=v; if(k==='webcam'){ showCam=v; applyCamVis(); } else if(k==='hands'){ (v&&!on)?start():((!v&&on)?off():0); } }
+    function set(k,v){ cfg[k]=v; if(k==='buildMode'){radialClose();prevG.Left=prevG.Right='none';buildStatus(v?'Hold an open palm, move toward a wheel option, then close your hand.':'Move & forces: pinch to grab, open palm to push, fist to pull.');} else if(k==='webcam'){ showCam=v; applyCamVis(); } else if(k==='hands'){ (v&&!on)?start():((!v&&on)?off():0); } }
     /* headless verification hook — synthetic hands + filter introspection (no camera needed) */
     try{ window.__peqPie={
       filterState:function(){ return { filt:filt, pts:pts, gest:gest, radial:radial, holdT:holdT, cfg:cfg }; },
@@ -11149,6 +11159,8 @@ var SandboxStudio=(function(){
     presets.forEach(function(b){b.addEventListener('click',function(){scenePicker.querySelector('#studio-scene-status').textContent='Loaded '+(b.dataset.preset==='clear'?'empty workspace':b.textContent)+'.';});});
     var guide=document.createElement('aside');guide.className='studio-hand-guide';guide.setAttribute('aria-label','Hand control guide');guide.innerHTML='<div class="studio-hand-visual">'+handArt+'<span>GESTURE GUIDE · ILLUSTRATION</span></div><h3>Put your hands<br> in the equation.</h3><div id="studio-hand-action"></div><p class="studio-camera-note">On-device hand tracking.<br>Allow your camera when prompted.</p><ol class="studio-gestures"><li><b>01 · Pinch</b><span>Grab a body. Release to let it move.</span></li><li><b>02 · Open palm</b><span>Push nearby bodies away.</span></li><li><b>03 · Close your hand</b><span>Pull nearby bodies toward you.</span></li></ol><p class="studio-cradle-hint" hidden>In Cat’s Cradle, your thumbs and little fingers guide the four rope supports. Keep both hands visible.</p><button class="studio-text-button" id="studio-open-camera">Analyze a real object instead ↗</button>';
     grid.appendChild(guide);var hand=sim.querySelector('#sbx-hand');guide.querySelector('#studio-hand-action').appendChild(hand);hand.textContent='Start hand control ↗';hand.setAttribute('aria-pressed','false');
+    var handModes=document.createElement('div');handModes.className='studio-hand-modes';handModes.innerHTML='<span>HAND ACTION</span><div role="group" aria-label="Hand action"><button type="button" data-hand-mode="move" aria-pressed="true">Move &amp; forces</button><button type="button" data-hand-mode="add" aria-pressed="false">Add objects</button></div><p id="studio-hand-feedback" role="status" aria-live="polite">Choose an action, then start hand control.</p>';
+    guide.insertBefore(handModes,guide.querySelector('.studio-gestures'));
     var more=document.createElement('details');more.className='studio-more';more.innerHTML='<summary>More controls</summary><div class="studio-more-controls"></div>';var transport=sim.querySelector('.sbx-transport');transport.appendChild(more);['sbx-shot','sbx-share','sbx-sonic','sbx-camreset','sbx-replay','sbx-rwd','sbx-rail-tg','sbx-max-tg'].forEach(function(id){var b=sim.querySelector('#'+id);if(b)more.lastChild.appendChild(b);});
     sim.querySelector('#sbx-play').setAttribute('aria-label','Play or pause simulation');sim.querySelector('#sbx-speed').setAttribute('aria-label','Simulation speed');sim.querySelectorAll('.sbx-tool').forEach(function(b){b.setAttribute('aria-label',b.title);});
     // Legacy group headers become keyboard-operable disclosures without replacing their handlers.
@@ -11158,14 +11170,15 @@ var SandboxStudio=(function(){
     function chooseRail(name){side.dataset.studioRail=name;side.classList.remove('clp-lib','clp-insp','clp-int');rail.querySelectorAll('button').forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.studioRail===name));});}
     rail.onclick=function(e){var b=e.target.closest('[data-studio-rail]');if(b)chooseRail(b.dataset.studioRail);};chooseRail('scenes');
     var pie=window.__peqSbx.pie;pie.set('buildMode',false);sim.querySelector('#sbx-pie-buildMode').checked=false;
-    function sceneState(){guide.querySelector('.studio-cradle-hint').hidden=!grid.classList.contains('cradle-mode');guide.querySelector('.studio-gestures').hidden=grid.classList.contains('cradle-mode');side.classList.remove('clp-lib','clp-insp','clp-int');var building=sim.querySelector('#sbx-pie-buildMode').checked,items=guide.querySelectorAll('.studio-gestures li span');items[1].textContent=building?'Move up or down to choose an object.':'Push nearby bodies away.';items[2].textContent=building?'Add the chosen object to your scene.':'Pull nearby bodies toward you.';}
+    function sceneState(){var building=pie.cfg.buildMode;guide.querySelector('.studio-cradle-hint').hidden=!grid.classList.contains('cradle-mode')||building;guide.querySelector('.studio-gestures').hidden=grid.classList.contains('cradle-mode')&&!building;side.classList.remove('clp-lib','clp-insp','clp-int');var items=guide.querySelectorAll('.studio-gestures li span');items[1].textContent=building?'Hold to open the wheel. Move toward an object until it highlights.':'Push nearby bodies away.';items[2].textContent=building?'Close into a fist to add the highlighted object.':'Pull nearby bodies toward you.';handModes.querySelectorAll('button').forEach(function(b){b.setAttribute('aria-pressed',String((b.dataset.handMode==='add')===building));});if(mode==='hands')host.querySelector('#studio-mode-copy').textContent=building?'Hold an open palm to reveal the wheel. Move toward an object, then make a fist to add it.':'Pinch to grab. Open your palm to push. Make a fist to pull.';}
+    handModes.addEventListener('click',function(e){var b=e.target.closest('[data-hand-mode]');if(b){pie.set('buildMode',b.dataset.handMode==='add');sim.querySelector('#sbx-pie-buildMode').checked=pie.cfg.buildMode;sceneState();}});
+    sim.querySelector('#sbx-pie-buildMode').addEventListener('change',sceneState);
     host.querySelectorAll('[data-studio-scene]').forEach(function(b){b.onclick=function(){var target=sim.querySelector('[data-preset="'+b.dataset.studioScene+'"]');if(target)target.click();sceneState();};});
     sim.addEventListener('click',function(){sceneState();});
     function switchMode(next){if(['hands','build','camera'].indexOf(next)<0)return;var prev=mode;mode=next;root.dataset.workspace=next;host.querySelectorAll('[data-workspace]').forEach(function(b){var on=b.dataset.workspace===next;b.setAttribute('aria-selected',String(on));b.tabIndex=on?0:-1;});
       host.querySelector('#studio-camera-panel').hidden=next!=='camera';host.querySelector('#studio-sim-panel').hidden=next==='camera';host.querySelector('#studio-sim-panel').setAttribute('aria-labelledby','studio-tab-'+(next==='build'?'build':'hands'));
       if(next==='camera'){Sandbox.suspendView();if(!panel)panel=CameraPhysicsPanel.mount(host.querySelector('#studio-camera-panel'));}
       else {if(panel)panel.stop();if(next==='build')pie.stop();if(prev==='camera')Sandbox.resumeView();host.querySelector('#studio-mode-label').textContent=next==='hands'?'YOUR HANDS ARE THE CONTROLLER':'A WORKBENCH FOR YOUR IDEAS';host.querySelector('#studio-mode-title').textContent=next==='hands'?'Reach into the experiment.':'Create. Change. See what holds.';host.querySelector('#studio-mode-copy').textContent=next==='hands'?'Pinch to grab. Open your palm to push. Make a fist to pull.':'Choose a scene, add a body, then change the forces. The same physics engine, fully in your hands.';window.__peqSbx.draw();}
-      if(next==='hands'&&sim.querySelector('#sbx-pie-buildMode').checked){host.querySelector('#studio-mode-copy').textContent='Pinch to grab. Open your palm to choose an object. Make a fist to add it.';}
       guide.hidden=next!=='hands';sceneState();
     }
     host.querySelectorAll('[data-workspace]').forEach(function(b){b.onclick=function(){switchMode(b.dataset.workspace);};b.onkeydown=function(e){var buttons=Array.from(host.querySelectorAll('[data-workspace]')),i=buttons.indexOf(b),next;if(e.key==='ArrowRight')next=(i+1)%3;else if(e.key==='ArrowLeft')next=(i+2)%3;else if(e.key==='Home')next=0;else if(e.key==='End')next=2;if(next!==undefined){e.preventDefault();buttons[next].focus();switchMode(buttons[next].dataset.workspace);}};});
@@ -15302,10 +15315,10 @@ if(Landing.pending())Landing.show(); // Personalisation is available from Home; 
   var steps=physics?[
     {target:'#pe-explore',title:'Find the Sandbox',path:'Physics → Explore → Sandbox',text:'Explore opens the extra workspaces, including Sandbox. Next takes you into that workspace. If you are already experimenting, your current Sandbox stays in place.'},
     {target:'#sbx-c',enter:enterSandbox,title:'Your open physics workspace',path:'Sandbox → simulation stage',text:'This is the live simulation. Drag an object with your mouse first to get a feel for the space. The guide never resets your scene or turns the camera on.'},
-    {target:'.studio-quick',title:'Choose an experiment',path:'Sandbox → quick scenes',text:'These three scenes are a starting point. Build → Scenes opens the full library. Keep the current scene, or try a different one after this guide. Choosing a scene replaces the current experiment.'},
+    {target:'.studio-scene-controls',title:'Choose an experiment',path:'Sandbox → All experiments',text:'All experiments opens the complete library in Hands and Build. The shortcuts are a starting point. Keep the current scene, or try a different one after this guide. Choosing a scene replaces the current experiment; Undo restores it.'},
     {target:'#sbx-hand',title:'Turn on hand control when ready',path:'Sandbox → Hands → Start hand control',text:'Choose Start hand control yourself, then allow camera access in the browser. Keep your hand fully visible in good light. Tracking needs a camera and an internet connection to load its model. You can also finish this guide without a camera.'},
     {target:'#sbx-c',title:'Pinch, move, release',path:'Hands → grab an object',text:'Bring your thumb and index finger together near an object to grab it. Move your hand slowly, then separate your fingers to release. Start with one hand and one object. Tracking quality depends on lighting and how clearly the camera sees your hand.'},
-    {target:'#sbx-c',title:'Palm and fist have two modes',path:'Sandbox → Build → Controls → Advanced controls',text:'Hands starts with palm pushes and fist pulls. In Build controls, enabling “Hands build objects” changes gestures: moving an open palm up or down chooses an object, and a fist adds it. These control a simulated model; they do not measure physical hand forces.'},
+    {target:'.studio-hand-modes',title:'Add objects with your hand',path:'Sandbox → Hands → Add objects',text:'Choose “Add objects”, then start hand control. Hold an open palm until the wheel appears. Move your palm toward an option until it highlights, then close into a fist to add it. “Move & forces” returns to grabbing, pushing and pulling. These control a simulated model; they do not measure physical hand forces.'},
     {target:'#sbx-hand',title:'Stop the camera, keep exploring',path:'Sandbox → Hands → Stop hand control',text:'Choose Stop hand control to stop tracking and release the camera. Switching workspaces also stops hand tracking. The separate Camera button only shows or hides the video background. If access is blocked, allow it in browser site settings or continue with the mouse.'},
     {target:'#sbx-c',title:'Your turn',path:'Try one small experiment',text:'Close the guide, start hand control if you want, and try grabbing and releasing one object. Replay this guide from the Entelloq menu → Feature tutorial. Closing the guide does not stop a camera you enabled; choose Stop hand control to stop it.'}
   ]:[

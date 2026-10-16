@@ -12,6 +12,20 @@ var SandboxStudio=(function(){
       '<section id="studio-camera-panel" role="tabpanel" aria-labelledby="studio-tab-camera" hidden></section>'+
       '<footer class="studio-footer"><span>OBSERVE → CHANGE → EXPLAIN</span><span>Camera is always your choice. Mouse and touch work too.</span></footer>';
     var sim=host.querySelector('#studio-simulation');Sandbox.mount(sim);var grid=sim.querySelector('.sbx');
+    // The full library must remain reachable when Hands hides the legacy rail.
+    // Read the engine's existing buttons; never maintain a second preset list.
+    var sceneControls=document.createElement('div');sceneControls.className='studio-scene-controls';
+    var quick=host.querySelector('.studio-quick');quick.parentNode.insertBefore(sceneControls,quick);sceneControls.appendChild(quick);
+    var scenePicker=document.createElement('div');scenePicker.className='studio-scene-picker';
+    scenePicker.innerHTML='<label for="studio-scene-select">All experiments <span id="studio-scene-count"></span></label><select id="studio-scene-select" aria-describedby="studio-scene-help"><option value="">Choose an experiment…</option></select><p id="studio-scene-help">Loading replaces your scene. Undo restores it.</p><span class="studio-scene-status" id="studio-scene-status" role="status"></span>';
+    sceneControls.insertBefore(scenePicker,quick);
+    var sceneSelect=scenePicker.querySelector('select'),presets=Array.from(sim.querySelectorAll('button[data-preset]'));
+    presets.forEach(function(b){var option=document.createElement('option');option.value=b.dataset.preset;option.textContent=b.dataset.preset==='clear'?'Empty workspace':b.textContent;sceneSelect.appendChild(option);});
+    scenePicker.querySelector('#studio-scene-count').textContent=presets.filter(function(b){return b.dataset.preset!=='clear';}).length+' experiments + empty workspace';
+    [['dpendulum','Double pendulum'],['atwood','Atwood machine']].reverse().forEach(function(p){var b=document.createElement('button');b.type='button';b.dataset.studioScene=p[0];b.textContent=p[1];quick.prepend(b);});
+    sceneSelect.addEventListener('change',function(){var target=presets.find(function(b){return b.dataset.preset===sceneSelect.value;});if(target)target.click();sceneSelect.value='';});
+    // The original click handler still owns loading, force controls and undo.
+    presets.forEach(function(b){b.addEventListener('click',function(){scenePicker.querySelector('#studio-scene-status').textContent='Loaded '+(b.dataset.preset==='clear'?'empty workspace':b.textContent)+'.';});});
     var guide=document.createElement('aside');guide.className='studio-hand-guide';guide.setAttribute('aria-label','Hand control guide');guide.innerHTML='<div class="studio-hand-visual">'+handArt+'<span>GESTURE GUIDE · ILLUSTRATION</span></div><h3>Put your hands<br> in the equation.</h3><div id="studio-hand-action"></div><p class="studio-camera-note">On-device hand tracking.<br>Allow your camera when prompted.</p><ol class="studio-gestures"><li><b>01 · Pinch</b><span>Grab a body. Release to let it move.</span></li><li><b>02 · Open palm</b><span>Push nearby bodies away.</span></li><li><b>03 · Close your hand</b><span>Pull nearby bodies toward you.</span></li></ol><p class="studio-cradle-hint" hidden>In Cat’s Cradle, your thumbs and little fingers guide the four rope supports. Keep both hands visible.</p><button class="studio-text-button" id="studio-open-camera">Analyze a real object instead ↗</button>';
     grid.appendChild(guide);var hand=sim.querySelector('#sbx-hand');guide.querySelector('#studio-hand-action').appendChild(hand);hand.textContent='Start hand control ↗';hand.setAttribute('aria-pressed','false');
     var more=document.createElement('details');more.className='studio-more';more.innerHTML='<summary>More controls</summary><div class="studio-more-controls"></div>';var transport=sim.querySelector('.sbx-transport');transport.appendChild(more);['sbx-shot','sbx-share','sbx-sonic','sbx-camreset','sbx-replay','sbx-rwd','sbx-rail-tg','sbx-max-tg'].forEach(function(id){var b=sim.querySelector('#'+id);if(b)more.lastChild.appendChild(b);});

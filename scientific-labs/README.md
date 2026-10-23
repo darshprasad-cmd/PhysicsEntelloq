@@ -7,7 +7,7 @@ Five scientific capabilities are added to the existing Physics application. Its 
 | Lab / Research | Calibrated video measurement and model comparison | OpenCV; Rapier; analytical and numerical models |
 | Lab / Research | Reactive data analysis, fits, uncertainty and sampling | marimo browser Python |
 | Solve | Symbolic calculation and equivalence with domain assumptions | SymPy through Pyodide |
-| Lab / Advanced Studio | Two-link robot geometry and recorded/live controller dynamics | Genesis World local CPU |
+| Lab / Advanced lab | Two-link robot geometry and recorded/live controller dynamics | Genesis World local CPU |
 | Advanced Studio | Six guided formal-proof puzzles | Local Lean 4 |
 
 The authored integration is in `experience/scientific-labs.js` and `.css`. Existing application routes lead to lazily loaded, same-origin tool panels under `assets/scientific-labs/`. The surrounding Physics navigation stays available. The editable computation sources, tests, setup instructions and licence notices are in this directory, one folder per tool.

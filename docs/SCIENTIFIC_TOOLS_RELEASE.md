@@ -18,20 +18,25 @@ The host distinguishes opening a document from initializing its scientific runti
 
 The following are local checks in Chrome on Windows, with 1440 × 1000 desktop and 390 × 844 mobile viewports and reduced motion. They are not deployed-site, physical-phone or assistive-technology certification.
 
+The host journey was repeated after merging the published practical release `cf62ad6` and rebuilding the scientific frontends in `c2eeee7`. A separate coexistence check used 1440 × 900 and 390 × 900 viewports. The Discovery computation figures below are from the earlier completed notebook run; the merged host check confirms its opening, theme and return behaviour without repeating that full calculation sequence.
+
 | Evidence | Result |
 | --- | --- |
-| Full existing and new Node suite | 126 tests passed |
+| Full existing and new Node suite | 156 tests passed on the merged baseline |
+| Companion transport and input boundaries | 15 tests passed, including exponent-overflow rejection |
 | Inline scripts, generated source parity, feature tutorials, whitespace | Passed |
-| Immutable published-application preservation | Original fixed SHA retained after removing only exact approved additive source/style slots |
+| Immutable published-application preservation | Three fixed hashes preserve the practical release `cf62ad6`, questionnaire release `1243d7e` and original application after removing their exact approved additive source/style slots |
 | All five tools, desktop and mobile | Open, interact, return and focus checks passed; no initial engine requests on Home |
 | Existing destinations | Nine Lab modes, simulation library, Solve input, six Advanced treatments and Learn remain reachable |
+| Merged practical library and measurement bench | Desktop/mobile: 44 Class 11 entries, search, reader, linked vernier bench, negative-zero calibration and a saved reading passed; the reading remained after opening Reality and returning |
 | History and entry | Browser Back/Forward, fresh bookmark without onboarding mutation, keyboard return passed |
 | Native Lean through Physics iframe | Actual identity proof accepted by the local checker on desktop and mobile; offline draft stayed unverified |
 | Video through Physics iframe | Synthetic local WebM calibrated and tracked by OpenCV: 30 positions, final x = 0.54 m, expected y ≈ 0.8 m; CSV and model comparison passed |
 | Robotics through Physics iframe | Target controls and included recorded Genesis replay passed; this host check does not compute a new Genesis run |
+| Rebuilt Symbolic through Physics iframe | Actual browser SymPy simplified `sin(x)^2 + cos(x)^2` to `1`; no calculation error |
 | Discovery through Physics iframe | Browser Python initialized in 12.8 seconds in the recorded run; gravity change recomputed fitted g from 9.814 to 1.601; sampling change recomputed apparent frequency from 3 to 7 Hz |
 | Themes and layout | Desktop/mobile dark and light frames inspected; document-width checks passed. Five repaired model labels measured contrast ratios from 8.90:1 to 10.39:1 |
-| Setup guide | Opens in a separate browser tab; source and companion documents resolve; original tool stays open |
+| Setup guide | Opens in a separate browser tab; all seven source and companion document links returned HTTP 200; original tool stays open |
 | Runtime exceptions | None in the completed host and notebook verification runs |
 
 The video fixture is generated test footage, documented in `scientific-labs/reality/public/fixtures/README.md`. It proves the software path for a controlled clip, not tracking accuracy on an arbitrary recording. Discovery's synthetic datasets and fit assumptions remain labelled. An accepted Lean puzzle proves only its exact generated formal statement.
@@ -48,5 +53,7 @@ node qa/scientific-notebook.cjs
 Both default to `http://127.0.0.1:5411`; set `PHYSICS_TEST_URL` to change it. `BROWSER_CHANNEL` defaults to `chrome`. Set `PHYSICS_LOCAL_ENGINES=0` only for static host smoke; that report will not claim a native proof verification. The host check also simulates an unavailable asset and an offline checker to exercise truthful recovery.
 
 JSON evidence and screenshots are generated under ignored `qa/results/scientific-labs/`: `checks.json`, `notebook.json`, per-tool desktop/mobile captures, light-theme captures and the fully initialized Discovery captures. Runtime CDN downloads can make cold notebook startup much slower than the recorded run. The notebook test records any upstream `RPC request timed out.` startup message and rejects other runtime exceptions; the completed recorded run had none.
+
+The bounded merged-release coexistence run also recorded `merged-coexistence.json`, `merged-practical-1440.png`, `merged-practical-390.png`, `merged-measurement-1440.png`, `merged-measurement-390.png` and `merged-symbolic-computation.png` in that evidence directory. It used the real companion-hosted documents and did not replace or modify the upstream practical-library or measurement test scripts. Its browser runtime error list was empty.
 
 Source/model tests, pinned dependencies, native service boundary tests, licences and asset-manifest checks remain in their individual scientific modules and root build pipeline. The host does not claim an offline browser-Python installation, universal scientific validity, hardware robotics validation, public native compute service, or live deployment verification.

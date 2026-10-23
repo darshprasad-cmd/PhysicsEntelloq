@@ -1,3 +1,6 @@
 # Preserve the exact bytes recorded in scientific-labs/asset-manifest.json.
 scientific-labs/** -text whitespace=cr-at-eol
 assets/scientific-labs/** -text whitespace=cr-at-eol linguist-generated=true
+# Keep pinned learning-engine bytes and their SHA manifests identical on every OS.
+learning-tools-source/** -text whitespace=cr-at-eol
+assets/learning-tools/** -text -whitespace linguist-generated=true

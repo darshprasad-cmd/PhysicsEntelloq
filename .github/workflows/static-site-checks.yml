@@ -60,3 +60,16 @@ jobs:
         run: node --test .github/test-observatory-theme.js
       - name: Check light-mode learning surfaces and instrument contrast
         run: node --test .github/test-light-mode.js
+      - name: Verify new learning assets and review/notebook models
+        run: |
+          python scripts/sync-learning-tools.py --check
+          node --test learning-tools-source/physics/tests/core.test.mjs
+          npm ci --prefix learning-tools-source/learning --no-audit --no-fund
+          npm test --prefix learning-tools-source/learning
+      - name: Check integrated learning workspaces in Chromium
+        env:
+          CODEX_NODE_MODULES: ${{ runner.temp }}/learning-browser/node_modules
+        run: |
+          npm install --prefix "$RUNNER_TEMP/learning-browser" --no-save playwright@1.62.1
+          "$RUNNER_TEMP/learning-browser/node_modules/.bin/playwright" install --with-deps chromium
+          node scripts/check-learning-tools-browser.cjs

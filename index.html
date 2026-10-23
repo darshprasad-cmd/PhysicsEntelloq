@@ -2943,6 +2943,17 @@ html[data-theme=light] .practical-library{--pl-ink:#172d21;--pl-muted:#425f4c;--
 @media(max-width:600px){.sci-entry{padding:14px}.sci-entry-heading{align-items:flex-start;flex-direction:column;gap:5px}.sci-card{padding:14px;gap:11px}.sci-workspace{padding:20px 12px}.sci-workspace-head{align-items:flex-start;flex-direction:column;gap:10px}.sci-back{margin-bottom:10px}.sci-frame{height:76dvh;min-height:620px}.sci-boundary{font-size:12px}.sci-source{white-space:normal}}
 @media(prefers-reduced-motion:reduce){.sci-entry *,.sci-workspace *{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 
+.lt-entry{margin:20px 0 28px;padding:20px;border:1px solid var(--pe-border,var(--line));border-radius:16px;background:var(--pe-surface,var(--bg-panel));color:var(--ink)}
+.lt-entry h2{margin:0 0 5px;font-size:20px;font-weight:600;line-height:1.3}.lt-entry>p{color:var(--ink-dim);margin:0 0 18px;max-width:70ch}
+.lt-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:12px}
+.lt-card{display:flex;flex-direction:column;gap:7px;text-align:left;min-height:110px;padding:18px;background:var(--pe-surface-2,var(--bg-raise));color:var(--ink);border:1px solid var(--pe-border,var(--line));border-radius:11px;cursor:pointer;font:inherit}
+.lt-card strong{font-size:17px}.lt-card span{font-size:13px;line-height:1.6;color:var(--ink-dim)}.lt-card small{color:var(--blue);font-size:11px;letter-spacing:.08em;text-transform:uppercase}
+.lt-card:hover{border-color:var(--blue)}.lt-card:focus-visible,.lt-workspace button:focus-visible,.lt-workspace a:focus-visible{outline:3px solid var(--blue);outline-offset:4px}
+.lt-workspace{max-width:1440px;margin:auto;padding:24px;color:var(--ink)}.lt-workspace h1{font-size:clamp(28px,5vw,44px);line-height:1.15;margin:18px 0 12px}.lt-workspace header>p{color:var(--ink-dim);line-height:1.7;max-width:85ch}.lt-workspace button{font:inherit;min-height:44px;border:1px solid var(--pe-border,var(--line));background:var(--bg-panel);color:var(--ink);padding:10px 16px;border-radius:8px;cursor:pointer}.lt-workspace a{color:var(--blue)}
+.lt-frame{width:100%;height:max(690px,78vh);border:1px solid var(--pe-border,var(--line));border-radius:12px;background:var(--bg-panel);display:block}.lt-status{min-height:28px;padding:12px 0;color:var(--ink-dim);font-size:13px}.lt-status[data-error=true]{color:var(--rose,#e69b9b)}.lt-workspace footer{display:flex;gap:16px;justify-content:space-between;align-items:center;padding:15px 0;color:var(--ink-dim);font-size:12px}.lt-handoff{padding:14px;border:1px solid var(--blue);border-radius:10px;margin:12px 0}.lt-handoff pre{white-space:pre-wrap;overflow-wrap:anywhere}
+@media(max-width:700px){.lt-entry{padding:15px}.lt-workspace{padding:14px}.lt-frame{height:83vh;min-height:620px}.lt-workspace footer{align-items:flex-start;flex-direction:column}}
+@media(prefers-reduced-motion:reduce){.lt-entry *,.lt-workspace *{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+
 </style>
 <!-- EXPERIENCE:CSS:END -->
 </head>
@@ -15745,6 +15756,61 @@ var ScientificLabs=(function(){
 })();
 
 /* EXPERIENCE:SCIENTIFIC-LABS:END */
+/* EXPERIENCE:LEARNING-TOOLS:START */
+/* Existing Physics routes own navigation and lifecycle. This adapter adds lazy
+   workspaces; it never evaluates a learner's expression or changes study data. */
+var LearningTools=(function(){
+  'use strict';
+  var tools={
+    equations:{title:'Equation studio',section:'solve',group:'physics',label:'Write mathematics',copy:'Build a structured equation, inspect its notation and carry it into a worked solution.',note:'Notation is not a correctness check. Check units, domains and assumptions when solving.'},
+    graphs:{title:'Vectors & graphs',section:'learn',group:'physics',label:'Make the relationship visible',copy:'Move vectors and graph controls while their numerical relationships stay connected.',note:'Coordinates and equations describe an ideal mathematical model. Numerical controls also work without dragging.'},
+    circuits:{title:'Circuit workbench',section:'lab',group:'physics',label:'Build & measure',copy:'Explore circuits with the CircuitJS simulator and inspect current, voltage and waveforms.',note:'The CircuitJS engine loads from its official online host. Component models are idealized and do not certify a real circuit.'},
+    review:{title:'Review queue',section:'practice',group:'learning',label:'Recall, then rate',copy:'Answer a concept prompt from memory, reveal the explanation and schedule its next review.',note:'Review timing follows your explicit retrieval ratings. It is separate from marks or a claim of mastery.'},
+    notebook:{title:'Shared experiment notes',section:'research',group:'learning',label:'Keep the evidence',copy:'Write an investigation, preserve edits and exchange a shared notebook document.',note:'The notebook explains its sharing boundary. Export important notes before clearing browser data.'},
+    search:{title:'Concept search',section:'learn',group:'learning',label:'Find the connection',copy:'Search a curated lesson collection; optionally enable an on-device semantic model.',note:'Semantic search is optional and downloads a model only when enabled. Results are retrieval suggestions, not generated answers.'}
+  };
+  var names={solve:'Solve',learn:'Learn',lab:'Lab',practice:'Practice',research:'Research',progress:'Progress'};
+  var active=null,frame=null,observer=null,timer=null,returnView=null,restore=null,initial=true,historyEvent=false,pendingEquation=null;
+  function get(id){return typeof id==='string'&&Object.prototype.hasOwnProperty.call(tools,id)?tools[id]:null;}
+  function hashId(hash){var m=/^#learning:([a-z]+)$/.exec(hash||'');return m&&get(m[1])?m[1]:null;}
+  function theme(){return document.documentElement.dataset.theme==='light'?'light':'dark';}
+  function tokens(){var s=getComputedStyle(document.documentElement);function v(k,f){return s.getPropertyValue(k).trim()||f;}return {accent:v('--blue','#8bbcf0'),surface:v('--bg-panel','#112234'),text:v('--ink','#e6eef8'),muted:v('--ink-dim','#b9c7d7'),border:v('--pe-border','#40546b')};}
+  function url(id){var t=get(id);return t?'assets/learning-tools/'+t.group+'/index.html?subject=physics&panel='+id+'&theme='+theme():null;}
+  function sync(){if(!frame)return;var palette=tokens(),message={type:'entelloq-learning:theme',theme:theme(),tokens:palette};frame.contentWindow.postMessage(message,location.origin);frame.contentWindow.postMessage({type:'entelloq:theme',theme:theme(),tokens:palette},location.origin);try{var root=frame.contentDocument.documentElement;root.dataset.theme=theme();root.dataset.physicsTheme=theme();Object.entries({'--bg':palette.surface,'--bg2':palette.surface,'--text':palette.text,'--muted':palette.muted,'--border':palette.border,'--accent':palette.accent}).forEach(function(pair){root.style.setProperty(pair[0],pair[1]);});}catch(e){}}
+  function clear(){clearTimeout(timer);timer=null;if(observer){observer.disconnect();observer=null;}if(frame){frame.remove();frame=null;}}
+  function status(message,error){var el=main.querySelector('#learning-status');if(el){el.textContent=message;el.dataset.error=error?'true':'false';}}
+  function cards(ids){var entry=document.createElement('section');entry.className='lt-entry';entry.setAttribute('aria-label','Learning tools');entry.innerHTML='<h2>Explore the idea. Keep what you learn.</h2><p>Tools connected to this part of your Physics workspace.</p><div class="lt-grid">'+ids.map(function(id){var t=get(id);return '<button type="button" class="lt-card" data-learning-open="'+id+'"><small>'+esc(t.label)+'</small><strong>'+esc(t.title)+'</strong><span>'+esc(t.copy)+'</span></button>';}).join('')+'</div>';entry.querySelectorAll('[data-learning-open]').forEach(function(b){b.onclick=function(){open(b.dataset.learningOpen);};});return entry;}
+  function decorate(){if(curView==='learning'||main.querySelector('.lt-entry'))return;var ids={solve:['equations'],learn:['graphs','search'],practice:['review'],progress:['review'],research:['notebook'],lab:['circuits','notebook']}[curView];if(!ids)return;var entry=cards(ids),anchor=main.querySelector('.sci-entry,.lm-bar,.lib-hero,.pr-diff,.rs-grid');if(anchor)anchor.after(entry);else main.prepend(entry);}
+  function view(id){var t=get(id);if(!t)return;clear();nav(t.section);setCrumb([{t:names[t.section],go:t.section},{t:t.title}]);main.innerHTML='<section class="lt-workspace"><header><button type="button" id="learning-back">← Back to '+esc(names[returnView]||names[t.section])+'</button><h1 id="learning-title" tabindex="-1">'+esc(t.title)+'</h1><p>'+esc(t.note)+'</p></header><div id="learning-status" class="lt-status" role="status">Opening '+esc(t.title)+'…</div><div id="learning-frame-host"></div><div id="learning-handoff"></div><footer><span>Saved work stays in this browser. Alt + Shift + ← returns to the section.</span><button type="button" id="learning-reload">Reload tool</button><a href="experience/learning-tools-guide.html" target="_blank" rel="noopener">Sources & setup ↗</a></footer></section>';
+    main.querySelector('#learning-back').onclick=back;main.querySelector('#learning-reload').onclick=function(){view(id);};
+    var child=document.createElement('iframe');frame=child;child.className='lt-frame';child.title=t.title;child.setAttribute('allow',"camera 'none'; microphone 'none'; geolocation 'none'");child.referrerPolicy='same-origin';
+    child.onload=function(){if(frame!==child)return;clearTimeout(timer);try{var doc=child.contentDocument;if(!doc||!doc.querySelector(t.group==='physics'?'#physics-tools':'[data-learning-entry]'))throw Error('Missing workspace');sync();doc.addEventListener('keydown',function(e){if(e.altKey&&e.shiftKey&&e.key==='ArrowLeft'){e.preventDefault();back();}});status('Tool opened. Its engine and download status appear below.');}catch(e){status('This tool could not open. Reload it or return to the section.',true);}};
+    child.onerror=function(){if(frame===child)status('The tool could not load. Reload to try again.',true);};child.src=url(id);main.querySelector('#learning-frame-host').appendChild(child);observer=new MutationObserver(sync);observer.observe(document.documentElement,{attributes:true,attributeFilter:['data-theme','style']});timer=setTimeout(function(){if(frame===child)status('Opening is taking longer than expected. You can reload or return to the section.',true);},20000);main.querySelector('#learning-title').focus({preventScroll:true});
+  }
+  function open(id){if(!get(id))return;returnView=curView==='learning'?get(id).section:curView;go('learning',id);}
+  function back(){var target=returnView||get(active).section;restore=active;historyEvent=true;try{history.replaceState(null,'',location.pathname+location.search);}catch(e){}go(target);historyEvent=false;}
+  var originalGo=go;
+  if(hashId(location.hash)){var gate=document.getElementById('cbse-entry');if(gate){if(gate.open)gate.close();gate.remove();}}
+  var originalPending=Landing.pending;Landing.pending=function(){return hashId(location.hash)?false:originalPending();};
+  go=function(v,id){var deep=initial&&hashId(location.hash);initial=false;if(deep){v='learning';id=deep;}if(v==='learning'){if(!get(id))return;clear();active=id;if(!returnView)returnView=get(id).section;if(!historyEvent&&location.hash!=='#learning:'+id)history.pushState(null,'','#learning:'+id);}else if(active){clear();active=null;returnView=null;if(!historyEvent&&hashId(location.hash))history.replaceState(null,'',location.pathname+location.search);}originalGo(v,id);};
+  var after=AppDesign.afterView;AppDesign.afterView=function(){after();if(curView==='learning'&&active&&!frame)view(active);else{decorate();if(restore){var button=main.querySelector('[data-learning-open="'+restore+'"]');restore=null;if(button)button.focus({preventScroll:true});}}};
+  var lab=viewLab;viewLab=function(){lab();decorate();};
+  function route(){var id=hashId(location.hash);historyEvent=true;try{if(id&&id!==active)go('learning',id);else if(!id&&active)go(returnView||get(active).section);}finally{historyEvent=false;}}
+  addEventListener('popstate',route);addEventListener('hashchange',route);
+  addEventListener('message',function(event){
+    if(event.origin!==location.origin)return;var data=event.data;if(!data)return;
+    if(data.type==='entelloq:reason-ready'&&pendingEquation){var reason=main.querySelector('.sci-frame');if(reason&&event.source===reason.contentWindow&&curView==='scientific'){reason.contentWindow.postMessage({type:'entelloq:reason-draft',expression:pendingEquation},location.origin);pendingEquation=null;}return;}
+    if(!frame||event.source!==frame.contentWindow||data.type!=='entelloq:equation')return;
+    var value=data.asciiMath||data.detail&&data.detail.asciiMath;if(typeof value!=='string'||value.length>2000||/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/.test(value))return;
+    var host=main.querySelector('#learning-handoff');if(!host)return;
+    host.innerHTML='<section class="lt-handoff"><h2>Equation ready for your solution</h2><pre></pre><p>Review the raw notation before solving. Use explicit * multiplication and supported variable names. Nothing runs automatically.</p><button type="button" data-copy>Copy equation</button> <button type="button" data-solve>Open in Symbolic Workbench</button></section>';
+    host.querySelector('pre').textContent=value;host.querySelector('[data-copy]').onclick=async function(){try{await navigator.clipboard.writeText(value);this.textContent='Copied';}catch(e){this.textContent='Select the equation above to copy';}};
+    var solve=host.querySelector('[data-solve]');solve.disabled=value.length>240||typeof ScientificLabs==='undefined';if(value.length>240)solve.textContent='Shorten to 240 characters before transfer';solve.onclick=function(){pendingEquation=value;ScientificLabs.open('reason');};host.scrollIntoView({block:'nearest'});
+  });
+  return {get:get,url:url,hashId:hashId,open:open,back:back,decorate:decorate};
+})();
+
+/* EXPERIENCE:LEARNING-TOOLS:END */
 /* ===== INIT ===== */
 Me.streakInit(); renderSide(); buildSide(); Tutor.init(); Theme.init(); Presence.init();AppDesign.init();AccountEntry.init();WelcomeTour.init();
 go(window.__peqShare?'sandbox':'home');

@@ -1,0 +1,15 @@
+{
+  "dependencies": {
+    "mathlive": "0.111.1",
+    "jsxgraph": "1.14.1"
+  },
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "qa": "node tests/browser.mjs",
+    "vendor": "node scripts/vendor.mjs"
+  },
+  "type": "module",
+  "private": true,
+  "version": "1.0.0",
+  "name": "entelloq-next-physics"
+}

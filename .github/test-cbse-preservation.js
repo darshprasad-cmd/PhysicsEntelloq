@@ -5,6 +5,10 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs'),path=require('node:path'),{createHash}=require('node:crypto');
 const root=path.resolve(__dirname,'..'),normalize=text=>text.replace(/\r\n/g,'\n');
 function removeScientificAdditions(text){
+  const learningSlot='/* EXPERIENCE:LEARNING-TOOLS:START */\n'+normalize(fs.readFileSync(path.join(root,'experience/learning-tools.js'),'utf8'))+'\n/* EXPERIENCE:LEARNING-TOOLS:END */\n';
+  assert.equal(text.split(learningSlot).length,2,'One exact learning-tools integration slot');text=text.replace(learningSlot,'');
+  const learningStyle='\n'+normalize(fs.readFileSync(path.join(root,'experience/learning-tools.css'),'utf8'));
+  assert.equal(text.split(learningStyle).length,2,'One exact learning-tools stylesheet');text=text.replace(learningStyle,'');
   const slot='/* EXPERIENCE:SCIENTIFIC-LABS:START */\n'+normalize(fs.readFileSync(path.join(root,'experience/scientific-labs.js'),'utf8'))+'\n/* EXPERIENCE:SCIENTIFIC-LABS:END */\n';
   assert.equal(text.split(slot).length,2,'One exact scientific integration slot');text=text.replace(slot,'');
   const style='\n'+normalize(fs.readFileSync(path.join(root,'experience/scientific-labs.css'),'utf8'));

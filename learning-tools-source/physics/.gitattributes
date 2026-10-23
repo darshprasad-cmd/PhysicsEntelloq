@@ -1,0 +1,2 @@
+# Preserve upstream distributions byte-for-byte, including original licence whitespace.
+vendor/** -text whitespace=-blank-at-eol

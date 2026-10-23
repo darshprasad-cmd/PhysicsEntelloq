@@ -1,0 +1,9 @@
+<!doctype html>
+<html lang="en" data-physics-theme="dark"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Physics tools · Entelloq</title><link rel="stylesheet" href="style.css"></head>
+<body><main id="physics-tools"></main><script type="module">
+import {mount} from './tools.mjs';
+const panel=new URLSearchParams(location.search).get('panel');
+const controller=await mount(document.getElementById('physics-tools'),{initialTab:panel==='graphs'?'trajectory':panel});
+window.addEventListener('pagehide',()=>controller.unmount(),{once:true});
+window.addEventListener('message',event=>{if(event.source!==parent||event.origin!==location.origin)return;if(event.data?.type==='entelloq:theme')document.documentElement.dataset.physicsTheme=event.data.theme==='light'?'light':'dark';});
+</script></body></html>

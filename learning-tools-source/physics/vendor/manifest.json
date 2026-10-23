@@ -1,0 +1,53 @@
+{
+  "generated": "2026-10-24",
+  "files": [
+    {
+      "path": "vendor/mathlive/mathlive.min.mjs",
+      "package": "mathlive",
+      "version": "0.111.1",
+      "sha256": "48a272a1c347c31eecefaf9baa0c317866f76fbcb83f9b2911a14e11c90e409f"
+    },
+    {
+      "path": "vendor/mathlive/mathlive-fonts.css",
+      "package": "mathlive",
+      "version": "0.111.1",
+      "sha256": "4fd7eb386f3fc1f9a13beb10123be5fbba01a8fa2fc9f1f4be979f1da86ca255"
+    },
+    {
+      "path": "vendor/mathlive/mathlive-static.css",
+      "package": "mathlive",
+      "version": "0.111.1",
+      "sha256": "889bb4f93d07e31b996b4c972c172400fd50ddb489d6d5b7f5bea0d133c48b99"
+    },
+    {
+      "path": "vendor/mathlive/LICENSE.txt",
+      "package": "mathlive",
+      "version": "0.111.1",
+      "sha256": "3caebd18611959ca725ab976a004d408017eb1d7093d6c9b9b09c5a4790eaff8"
+    },
+    {
+      "path": "vendor/jsxgraph/jsxgraphcore.mjs",
+      "package": "jsxgraph",
+      "version": "1.14.1",
+      "sha256": "29e2fda3e998f9acbc199441339277a80ecab064d4b64e27ee3754a512b6e002"
+    },
+    {
+      "path": "vendor/jsxgraph/jsxgraph.css",
+      "package": "jsxgraph",
+      "version": "1.14.1",
+      "sha256": "58ff5704eb9bb8db66e8b002d01c44a6ddfe0ced7f887ab2ef602feff2f3c0f6"
+    },
+    {
+      "path": "vendor/jsxgraph/LICENSE.MIT",
+      "package": "jsxgraph",
+      "version": "1.14.1",
+      "sha256": "43e325001487de7f09745fbe086b054bb1b70d4ab58060e87153849365b23ff1"
+    },
+    {
+      "path": "vendor/jsxgraph/jsxgraphcore.mjs.LICENSE.txt",
+      "package": "jsxgraph",
+      "version": "1.14.1",
+      "sha256": "7f15c10b7ed23971076d2eae092f817ff481e14cfe9fd9ecf61be5345e9981ca"
+    }
+  ]
+}

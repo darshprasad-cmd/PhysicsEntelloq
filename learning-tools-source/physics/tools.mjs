@@ -1,0 +1,99 @@
+import {DEFAULT_STATE,STORAGE_KEY,normalizeState,trajectory,circuitText,circuitUrl,readState,writeState} from './core.mjs';
+let sequence=0;
+const templates={newton:'F=ma',energy:'E_k=\\frac{1}{2}mv^2',trajectory:'y=v_y t-\\frac{1}{2}gt^2',oscillation:'x=A\\cos(\\omega t+\\phi)'};
+function download(name,text,type='text/plain') {const a=document.createElement('a');const url=URL.createObjectURL(new Blob([text],{type}));a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
+function localStorageOrNull(){try{return window.localStorage;}catch{return null;}}
+export async function mount(container,options={}) {
+  if (!(container instanceof HTMLElement)) throw new TypeError('mount requires an HTML element');
+  const id=++sequence,storage=options.storage===undefined?localStorageOrNull():options.storage;
+  let state=readState(storage),disposed=false,cleanup=()=>{},generation=0;
+  if(['equations','trajectory','circuits'].includes(options.initialTab))state.tab=options.initialTab;
+  container.classList.add('physics-tools');
+  container.innerHTML='<header class="pt-intro"><span class="pt-eyebrow">PHYSICS ENTELLOQ / LEARNING TOOLS</span><h1>Write it. Move it. Test it.</h1><p>Work with a mathematical expression, connect motion to its graph, or investigate a real circuit model.</p><nav class="pt-tabs" aria-label="Physics tools"><button data-tab="equations" type="button">Equation editor</button><button data-tab="trajectory" type="button">Motion & vectors</button><button data-tab="circuits" type="button">Circuit bench</button></nav></header><section class="pt-workspace"></section>';
+  const workspace=container.querySelector('.pt-workspace');
+  function persist(){return writeState(storage,state);}
+  function status(text,error=false){const el=workspace.querySelector('.pt-status');if(el){el.textContent=text;el.classList.toggle('pt-error',error);}}
+  function announceSave(){status(persist()?'Saved on this device.':'Device storage is unavailable. Export your work to keep it.',!storage);}
+  function emitEquation(detail){container.dispatchEvent(new CustomEvent('entelloq:equation',{bubbles:true,detail}));options.onEquation?.(detail);if(parent!==window)parent.postMessage({type:'entelloq:equation',...detail},location.origin);status(parent===window&&!options.onEquation?'Expression prepared below. Copy it or export it for your symbolic workbench.':'Expression sent to the host Symbolic Workbench.');}
+  async function render(tab,focus=false) {
+    cleanup();cleanup=()=>{};const token=++generation;state.tab=tab;persist();
+    container.querySelectorAll('[data-tab]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.tab===tab)));
+    workspace.innerHTML='<p class="pt-loader" role="status">Opening '+({equations:'equation editor',trajectory:'interactive graphs',circuits:'circuit bench'}[tab])+'…</p>';workspace.setAttribute('aria-busy','true');
+    try {
+      if(tab==='equations')await equations(token);
+      if(tab==='trajectory')await graphs(token);
+      if(tab==='circuits')circuits(token);
+    }catch(error){if(token!==generation||disposed)return;workspace.innerHTML='<h2 tabindex="-1">Tool could not load</h2><p class="pt-status pt-error" role="alert"></p><button type="button" data-retry>Retry loading</button>';status('The local engine could not load. Check that the complete physics tools folder was copied, then retry.',true);workspace.querySelector('[data-retry]').onclick=()=>render(tab);console.error('Physics tool load failed',error);}
+    if(token!==generation||disposed)return;workspace.removeAttribute('aria-busy');if(focus)workspace.querySelector('h2')?.focus({preventScroll:true});
+  }
+  async function equations(token) {
+    const {MathfieldElement}=await import('./vendor/mathlive/mathlive.min.mjs');
+    if(token!==generation||disposed)return;
+    MathfieldElement.fontsDirectory=new URL('./vendor/mathlive/fonts/',import.meta.url).href;
+    MathfieldElement.soundsDirectory=new URL('./vendor/mathlive/sounds/',import.meta.url).href;
+    // MathLive's optional symbolic Compute Engine is deliberately unused: the host owns SymPy validation.
+    MathfieldElement.computeEngine=null;
+    workspace.innerHTML='<div class="pt-grid"><section class="pt-panel"><h2 tabindex="-1">An equation you can work with</h2><p class="pt-muted">Type using your keyboard, or open the maths keyboard on the field.</p><label class="pt-label" for="pt-math-'+id+'">Your expression</label><math-field id="pt-math-'+id+'" aria-label="Your mathematical expression" math-virtual-keyboard-policy="manual"></math-field><div class="pt-actions"><button type="button" class="pt-primary" data-send>Use in Symbolic Workbench</button><button type="button" data-export>Export equation</button></div><p class="pt-status" role="status"></p><details open><summary>Editable LaTeX and symbolic text</summary><label class="pt-label" for="pt-latex-'+id+'">LaTeX source</label><textarea id="pt-latex-'+id+'" spellcheck="false"></textarea><span class="pt-label">ASCII maths export</span><code class="pt-preview" data-ascii></code><button type="button" data-copy>Copy symbolic text</button></details></section><aside class="pt-panel"><h3>Start from a relationship</h3><div class="pt-stack"><button type="button" data-template="newton">Force · F = ma</button><button type="button" data-template="energy">Kinetic energy · ½mv²</button><button type="button" data-template="trajectory">Projectile height · vᵧt − ½gt²</button><button type="button" data-template="oscillation">Oscillation · A cos(ωt + φ)</button></div><p class="pt-note">Writing an equation does not check it. Send the expression to Symbolic Workbench to choose an operation and state assumptions. Units and the physical model still need your reasoning.</p><p class="pt-muted">MathLive runs locally. No expression is sent to an external service by this editor.</p></aside></div>'+sources('MathLive 0.111.1','https://github.com/arnog/mathlive','MIT');
+    const field=workspace.querySelector('math-field'),latex=workspace.querySelector('textarea'),ascii=workspace.querySelector('[data-ascii]');
+    field.value=state.latex;latex.value=state.latex;
+    function sync(){state.latex=field.getValue('latex');latex.value=state.latex;ascii.textContent=field.getValue('ascii-math');announceSave();}
+    field.addEventListener('input',sync);latex.addEventListener('input',()=>{field.setValue(latex.value.slice(0,10000),{silenceNotifications:true});state.latex=field.value;ascii.textContent=field.getValue('ascii-math');announceSave();});
+    workspace.querySelectorAll('[data-template]').forEach(button=>button.onclick=()=>{field.value=templates[button.dataset.template];sync();field.focus();});
+    workspace.querySelector('[data-send]').onclick=()=>emitEquation({latex:field.getValue('latex'),asciiMath:field.getValue('ascii-math'),source:'mathlive',version:1});
+    workspace.querySelector('[data-export]').onclick=()=>{download('entelloq-equation.json',JSON.stringify({schema:'entelloq.equation.v1',latex:field.getValue('latex'),asciiMath:field.getValue('ascii-math')},null,2),'application/json');status('Equation exported.');};
+    workspace.querySelector('[data-copy]').onclick=async()=>{try{await navigator.clipboard.writeText(field.getValue('ascii-math'));status('Symbolic text copied.');}catch{status('Clipboard unavailable. Select and copy the symbolic text above.',true);}};
+    sync();cleanup=()=>{try{window.mathVirtualKeyboard?.hide();}catch{}field.removeEventListener('input',sync);};
+  }
+  async function graphs(token) {
+    const imported=await import('./vendor/jsxgraph/jsxgraphcore.mjs');
+    if(token!==generation||disposed)return;
+    const JXG=imported.default||imported.JXG||window.JXG;
+    workspace.innerHTML='<div class="pt-grid"><section class="pt-panel"><h2 tabindex="-1">Launch a vector. Read the motion.</h2><p class="pt-muted">Drag the blue velocity tip, or use the numerical controls. The trajectory and predictions update together.</p><div id="pt-trajectory-'+id+'" class="pt-board" role="img" aria-label="Projectile trajectory, horizontal distance and height in metres"></div><div class="pt-metrics"><div><span>Flight time</span><strong data-flight></strong></div><div><span>Landing x</span><strong data-range></strong></div><div><span>Peak height</span><strong data-peak></strong></div></div><p class="pt-formula">x = vₓt &nbsp; · &nbsp; y = vᵧt − ½gt²</p><p class="pt-note">Ideal point projectile, launched from y = 0 with constant downward gravity; no air resistance. Negative vₓ launches to the left. Landing is the return to y = 0.</p></section><aside class="pt-panel"><h3>Initial velocity (m/s)</h3><div id="pt-vector-'+id+'" class="pt-board pt-vector" role="img" aria-label="Draggable initial velocity vector in metres per second"></div><div class="pt-controls"><label>vₓ (m/s)<input data-key="vx" type="number" min="-20" max="20" step="0.1"></label><label>vᵧ (m/s)<input data-key="vy" type="number" min="0.1" max="20" step="0.1"></label><label>g (m/s²)<input data-key="g" type="number" min="0.1" max="25" step="0.01"></label></div><div class="pt-actions"><button type="button" data-earth>Earth · 9.81</button><button type="button" data-moon>Moon · 1.62</button><button type="button" data-download>Export samples</button></div><p class="pt-status" role="status"></p><p class="pt-muted">Use the numerical controls for keyboard access. Values persist on this device. Graphs show model predictions, not measured data.</p></aside></div>'+sources('JSXGraph 1.14.1','https://github.com/jsxgraph/jsxgraph','MIT option');
+    const textColor=()=>getComputedStyle(container).getPropertyValue('--pt-text').trim()||'#e8edf6';
+    const boardOptions={axis:true,showCopyright:false,showNavigation:false,pan:{enabled:false},zoom:{enabled:false},keepaspectratio:false,defaultAxes:{x:{strokeColor:'#71829d',ticks:{label:{strokeColor:textColor()}}},y:{strokeColor:'#71829d',ticks:{label:{strokeColor:textColor()}}}}};
+    const vb=JXG.JSXGraph.initBoard('pt-vector-'+id,{...boardOptions,boundingbox:[-23,24,23,-4]});
+    const origin=vb.create('point',[0,0],{name:'',fixed:true,visible:false});
+    const tip=vb.create('point',[state.vx,state.vy],{name:'v₀',size:6,fillColor:'#6c9bff',strokeColor:'#9dbbff',label:{strokeColor:textColor()},snapToGrid:true,snapSizeX:0.1,snapSizeY:0.1});
+    vb.create('arrow',[origin,tip],{strokeColor:'#6c9bff',strokeWidth:3});
+    const tb=JXG.JSXGraph.initBoard('pt-trajectory-'+id,{...boardOptions,boundingbox:[-2,8,20,-1]});
+    let model=trajectory(state);
+    tb.create('curve',[t=>state.vx*t,t=>state.vy*t-0.5*state.g*t*t,()=>0,()=>model.flight],{strokeColor:'#82aaff',strokeWidth:3});
+    tb.create('point',[()=>model.range,0],{name:'landing',fixed:true,size:4,fillColor:'#86d1b4',strokeColor:'#86d1b4',label:{strokeColor:textColor()}});
+    let savingTimer;
+    function update(fromDrag=false){state=normalizeState(state);model=trajectory(state);if(!fromDrag)tip.moveTo([state.vx,state.vy]);workspace.querySelectorAll('[data-key]').forEach(input=>{input.value=state[input.dataset.key];});workspace.querySelector('[data-flight]').textContent=model.flight.toFixed(2)+' s';workspace.querySelector('[data-range]').textContent=model.range.toFixed(2)+' m';workspace.querySelector('[data-peak]').textContent=model.peak.toFixed(2)+' m';const span=Math.max(4,Math.abs(model.range));tb.setBoundingBox([Math.min(0,model.range)-span*.12,Math.max(2,model.peak*1.3),Math.max(0,model.range)+span*.12,-Math.max(1,model.peak*.15)],false);tb.update();clearTimeout(savingTimer);savingTimer=setTimeout(announceSave,200);}
+    tip.on('drag',()=>{state.vx=Math.round(tip.X()*10)/10;state.vy=Math.round(tip.Y()*10)/10;const normal=normalizeState(state);if(normal.vx!==state.vx||normal.vy!==state.vy)tip.moveTo([normal.vx,normal.vy]);state=normal;update(true);});
+    workspace.querySelectorAll('[data-key]').forEach(input=>input.addEventListener('change',()=>{if(!Number.isFinite(input.valueAsNumber)){input.value=state[input.dataset.key];status('Enter a finite number within the shown range.',true);return;}state[input.dataset.key]=input.valueAsNumber;update();}));
+    workspace.querySelector('[data-earth]').onclick=()=>{state.g=9.81;update();};workspace.querySelector('[data-moon]').onclick=()=>{state.g=1.62;update();};
+    workspace.querySelector('[data-download]').onclick=()=>{const rows=['time_s,x_m,y_m'];for(let i=0;i<=100;i++){const t=model.flight*i/100,p=model.at(t);rows.push([t,p.x,p.y].map(n=>n.toPrecision(9)).join(','));}download('entelloq-projectile-model.csv',rows.join('\n'),'text/csv');status('101 model samples exported, including launch and landing.');};
+    const observer=new ResizeObserver(()=>{for(const b of [vb,tb]){const box=b.containerObj.getBoundingClientRect();if(box.width>0)b.resizeContainer(box.width,box.height);}});observer.observe(workspace.querySelector('.pt-grid'));
+    update();cleanup=()=>{clearTimeout(savingTimer);observer.disconnect();JXG.JSXGraph.freeBoard(vb);JXG.JSXGraph.freeBoard(tb);};
+  }
+  function circuits(token) {
+    if(token!==generation||disposed)return;
+    workspace.innerHTML='<section class="pt-panel"><h2 tabindex="-1">Build intuition with a working circuit</h2><p>Predict the current or charging time, then test it in CircuitJS. The simulator opens inside this bench.</p><div class="pt-controls"><label>Experiment<select data-key="circuit"><option value="ohm">Ohm’s law · DC resistor</option><option value="rc">RC charging · series resistor and capacitor</option></select></label><label>Supply (V)<input data-key="voltage" type="number" min="0.1" max="24" step="0.1"></label><label>Resistance (Ω)<input data-key="resistance" type="number" min="10" max="1000000" step="10"></label><label data-cap-label>Capacitance (µF)<input data-cap type="number" min="0.001" max="10000" step="0.1"></label></div><p class="pt-formula" data-prediction></p><div class="pt-actions"><button type="button" class="pt-primary" data-launch>Open circuit simulation</button><button type="button" data-export-circuit>Export circuit source</button><a class="pt-link" data-external target="_blank" rel="noopener noreferrer">Open simulator in a new tab ↗</a></div><p class="pt-note">CircuitJS loads from falstad.com and needs an internet connection. This sends the circuit settings shown here to that service. Your equation drafts stay on this device.</p><p class="pt-status" role="status">Ready to open. No simulator connection has been made.</p><div data-frame-host><div class="pt-placeholder">Predict first. Then open the circuit and inspect its voltage, current and components.</div></div><p class="pt-muted">These are ideal component models for learning. Circuit edits stay in the open simulator; use its File → Export as Text command to keep changes. Our settings are saved on this device. Opening again resets the simulator to these settings.</p><details><summary>What the predictions assume</summary><p class="pt-muted">DC resistor: I = V/R with an ideal voltage source. RC: an initially uncharged ideal capacitor charges through R; time constant τ = RC, and Vc(τ) ≈ 0.632V. Real tolerances, heating, leakage and supply limits are omitted. The simulator is a separate numerical engine.</p></details></section>'+sources('CircuitJS1 · official hosted engine','https://github.com/sharpie7/circuitjs1','GPL-2.0-or-later');
+    let frame=null,timer=null;
+    const host=workspace.querySelector('[data-frame-host]');
+    function update(){state=normalizeState(state);workspace.querySelectorAll('[data-key]').forEach(input=>input.value=state[input.dataset.key]);workspace.querySelector('[data-cap]').value=state.capacitance*1e6;workspace.querySelector('[data-cap-label]').hidden=state.circuit!=='rc';workspace.querySelector('[data-prediction]').textContent=state.circuit==='rc'?`Predict: τ = RC = ${(state.resistance*state.capacitance*1000).toPrecision(4)} ms; Vc(τ) ≈ ${(state.voltage*(1-Math.exp(-1))).toPrecision(4)} V`:`Predict: I = V/R = ${(state.voltage/state.resistance*1000).toPrecision(4)} mA`;workspace.querySelector('[data-external]').href=circuitUrl(state,isLight());persist();}
+    workspace.querySelectorAll('[data-key]').forEach(input=>input.addEventListener('change',()=>{if(input.dataset.key==='circuit')state.circuit=input.value;else if(Number.isFinite(input.valueAsNumber))state[input.dataset.key]=input.valueAsNumber;update();status(frame?'Settings saved. Open circuit simulation again to apply them.':'Settings saved. Ready to open.');}));
+    workspace.querySelector('[data-cap]').onchange=e=>{if(Number.isFinite(e.target.valueAsNumber))state.capacitance=e.target.valueAsNumber/1e6;update();status('Settings saved. Open circuit simulation to apply them.');};
+    function offline(){if(!navigator.onLine)status('You are offline. Connect to the internet, then open the circuit simulation again. The other tools still work.',true);}
+    workspace.querySelector('[data-launch]').onclick=()=>{
+      clearTimeout(timer);frame?.remove();frame=null;
+      if(!navigator.onLine){offline();return;}
+      frame=document.createElement('iframe');frame.className='pt-circuit-frame';frame.title='CircuitJS circuit simulator';frame.referrerPolicy='no-referrer';frame.setAttribute('sandbox','allow-scripts allow-same-origin allow-downloads');frame.setAttribute('allow',"camera 'none'; microphone 'none'; geolocation 'none'");
+      frame.src=circuitUrl(state,isLight());host.replaceChildren(frame);status('Connecting to the official CircuitJS simulator…');
+      const currentFrame=frame;
+      // Cross-origin browsers cannot inspect the engine. A navigation load is not proof that its simulation is ready.
+      frame.addEventListener('load',()=>{if(frame!==currentFrame)return;clearTimeout(timer);status('Simulator frame loaded. Wait for its circuit canvas. If it stays blank, retry or use Open simulator in a new tab.');});
+      frame.addEventListener('error',()=>{if(frame!==currentFrame)return;clearTimeout(timer);status('The simulator could not connect. Check the connection, retry, or open it in a new tab.',true);});
+      timer=setTimeout(()=>status('The simulator is taking longer to respond. Check the connection, retry, or open it in a new tab.',true),20000);
+    };
+    workspace.querySelector('[data-export-circuit]').onclick=()=>download('entelloq-'+state.circuit+'.txt',circuitText(state));
+    window.addEventListener('offline',offline);update();cleanup=()=>{clearTimeout(timer);frame?.remove();window.removeEventListener('offline',offline);};
+  }
+  function isLight(){return document.documentElement.dataset.physicsTheme==='light'||document.documentElement.dataset.theme==='light';}
+  const click=e=>{const button=e.target.closest('[data-tab]');if(button&&container.contains(button)&&button.dataset.tab!==state.tab)render(button.dataset.tab,true);};container.addEventListener('click',click);
+  await render(state.tab);
+  return {setPanel:panel=>render(panel==='graphs'?'trajectory':['equations','trajectory','circuits'].includes(panel)?panel:'equations',true),getState:()=>({...state}),unmount(){disposed=true;generation++;cleanup();container.removeEventListener('click',click);container.replaceChildren();container.classList.remove('physics-tools');}};
+}
+function sources(name,url,licence){return '<footer class="pt-source"><a href="'+url+'" target="_blank" rel="noopener">'+name+' ↗</a><span>'+licence+'</span><a href="THIRD-PARTY-NOTICES.md" target="_blank">Sources & licences</a><span>Educational models · inspect assumptions</span></footer>';}

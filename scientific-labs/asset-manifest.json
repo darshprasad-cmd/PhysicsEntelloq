@@ -56,7 +56,7 @@
         "public/THIRD_PARTY_LICENSES.txt": "cb6bcbe3c22b0c1c32c7b55311edc0271b79d85837756108078cf9c639a2a127",
         "src/MathView.tsx": "b0b3a6d6ccfd638b9d786076cdbb08218b62bfb371b6d34d814cfd67a51cf1b2",
         "src/engine.py": "73b4415d4fed5ad6169792c999be2cfe84e3f978413f685a092ab72fb620f62c",
-        "src/main.tsx": "bd6d27339d78e56c1b238b22204be945fbfd1d99db02df8fe45b56ea26ff2aee",
+        "src/main.tsx": "33c459421ae3640136d96d8d8c6bf3d38c7c41488ba86b6e2c27e214b392d814",
         "src/model.ts": "dd48fcae8a5aba6a73e2ec0e4ac82d1ca2e4795e7a12184643753bc17f3450e0",
         "src/style.css": "691dc3f500815a760d58c72dd4cdff36bc4b30bb40674e0290a9e6b21924512b",
         "src/vite-env.d.ts": "424faf9241dd699dda995b367ed36665732da1e6ec1f33b2fd40394488ecac92",
@@ -128,11 +128,13 @@
         "assets/KaTeX_Typewriter-Regular-C0xS9mPB.woff": "e14fed02b1aba7ce9f5afd5844b5d0321b22351febc720e0de8b8723527609f7",
         "assets/KaTeX_Typewriter-Regular-CO6r4hn1.woff2": "71d517d67827787cfabdf186914cc3358eda539e37931941f2b2fd4a21f68c0b",
         "assets/KaTeX_Typewriter-Regular-D3Ib7_Hf.ttf": "f01f3e87d9c6a61c0c081ceb577abd864eb00a612f7ac1620dd6915fad2ef5aa",
+        "assets/MathView-DY-RY6kP.js": "6d5ea49aa7e53ee7b083fd981815adb7742cc2f4b7f0a5c0cb8738c3865f5065",
         "assets/MathView-ZDIhIMX_.js": "61a1809734fbd2eaf1bb1f5dcfdb85635c66c42eab04c23562990cb070a7be17",
+        "assets/index-Cqq2hWDS.js": "8b05e3579d98c9bcba2102e1052d97b0eeba2a8c4c5afc225184e1b959f64f11",
         "assets/index-DzQO9nKK.css": "94deab9358f01a28745dac085dcab4b58585f3edac1341da3bccb4420cfc58b7",
         "assets/index-qrFjyr_G.js": "d8aa9b9a5f5c68bd7264618b1f36a97bf1e964742235b1e5f20450915df42437",
         "assets/worker-DQVXJTza.js": "3104c3e2d15b5b7b7beb539958d090a5cef0d8fe54fbe03bbe1d979d879d1060",
-        "index.html": "1c00d7e851b01779c68d817fd863a4277ef8fb6e8e05b294e19feea96c6ad288"
+        "index.html": "69e75f6e411dc5a8256ef2031b79e157a8d798dfc665f27633c4756d6aed27dd"
       }
     },
     "discovery": {

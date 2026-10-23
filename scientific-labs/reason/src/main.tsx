@@ -31,6 +31,21 @@ function App() {
     catch { setNotice('This browser could not save your notebook. Export it to keep a copy.'); }
   }, [entries]);
   useEffect(() => () => { worker.current?.terminate(); if (timer.current) clearTimeout(timer.current); }, []);
+  useEffect(() => {
+    function receiveDraft(event: MessageEvent) {
+      if (event.source !== parent || event.origin !== location.origin || parent === window) return;
+      const data = event.data;
+      if (data?.type !== 'entelloq:reason-draft' || typeof data.expression !== 'string' || data.expression.length > 240 || /[\u0000-\u0008\u000b\u000c\u000e-\u001f]/.test(data.expression)) return;
+      if (worker.current) return;
+      setRequest(old => ({ ...old, expression: data.expression, operation: data.expression.includes('=') ? 'solve' : old.operation }));
+      setSelected(null);
+      setNotice('Raw notation imported from Equation studio. Review multiplication, variable names and domains before calculating. Nothing has run automatically.');
+      inputRef.current?.focus();
+    }
+    addEventListener('message', receiveDraft);
+    if (parent !== window) parent.postMessage({type:'entelloq:reason-ready'}, location.origin);
+    return () => removeEventListener('message', receiveDraft);
+  }, []);
 
   function stop(message = 'Calculation cancelled. Your notebook is safe.') {
     worker.current?.terminate(); worker.current = null;

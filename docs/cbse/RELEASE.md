@@ -1,6 +1,6 @@
 # CBSE entry release — Physics
 
-Status: locally verified; PR checks, merge and live deployment verification are separate gates. Consult the pull request for the final release SHA and live evidence.
+Status: released and live-verified through PR32, merged commit1243d7eb571dfe9b324c74781b1e69eecce6d906. Required CI and Pages deployment passed. Production HTTPS bytes matched the merged Git artifact SHA-256 a65ea108cf81eb6fc017d45f103da0c190c88eac6530cbd2d229783f4c23a823 (the local working-copy hash below used CRLF line endings). Live browser checks passed at320/390/768/1440, including all class paths, preferences, accessibility, light theme, skip, corrupt/failed storage and explicit deep links. Evidence: qa/results/cbse-study/live-report.json.
 
 Local artifact source is index.html. SHA-256 at verification: 30c14fa17756f51cdf5f533134f1569e3a19ec82ac3480accaa5c12c2fecb8b2.
 

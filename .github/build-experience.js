@@ -32,10 +32,15 @@ embed('KATEX','vendor/katex.min.js','var Tutor=(function(){');
 embed('ANSWER-FORMAT','answer-format.js','var Tutor=(function(){');
 embed('PRACTICE-ANSWERS','practice-answers.js','var Practice=(function(){');
 embed('ADVANCED','advanced-studio.js','function viewAdv(id){','/* #adv deep link');
+embed('CBSE-STUDY','cbse-study.js','/* ===== INIT ===== */');
 const cssStart='<!-- EXPERIENCE:CSS:START -->',cssEnd='<!-- EXPERIENCE:CSS:END -->';
-const css=cssStart+'\n<style id="experience-css">\n'+['experience.css','app-design.css','welcome.css','advanced-studio.css','observatory.css','observatory-theme.css','light-mode.css','sandbox-studio.css','answer-format.css','observatory-realism.css','reality-workspace.css'].map(file=>fs.readFileSync(path.join(root,'experience',file),'utf8')).join('\n').replace('__OBSERVATORY_REFERENCE__','data:image/webp;base64,'+fs.readFileSync(path.join(root,'assets','observatory-reference.webp')).toString('base64'))+'\n</style>\n'+cssEnd;
+const css=cssStart+'\n<style id="experience-css">\n'+['experience.css','app-design.css','welcome.css','advanced-studio.css','observatory.css','observatory-theme.css','light-mode.css','sandbox-studio.css','answer-format.css','observatory-realism.css','reality-workspace.css','cbse-study.css'].map(file=>fs.readFileSync(path.join(root,'experience',file),'utf8')).join('\n').replace('__OBSERVATORY_REFERENCE__','data:image/webp;base64,'+fs.readFileSync(path.join(root,'assets','observatory-reference.webp')).toString('base64'))+'\n</style>\n'+cssEnd;
 if(html.includes(cssStart)){const a=html.indexOf(cssStart),b=html.indexOf(cssEnd,a);html=html.slice(0,a)+css+html.slice(b+cssEnd.length);}
 else html=html.replace('</head>',css+'\n</head>');
+const entryStart='<!-- CBSE-ENTRY:START -->',entryEnd='<!-- CBSE-ENTRY:END -->';
+const entry=entryStart+'\n'+fs.readFileSync(path.join(root,'experience/cbse-entry.html'),'utf8')+'\n'+entryEnd;
+if(html.includes(entryStart)){const a=html.indexOf(entryStart),b=html.indexOf(entryEnd,a);if(b<0)throw Error('Missing CBSE entry end');html=html.slice(0,a)+entry+html.slice(b+entryEnd.length);}
+else html=html.replace('<body>','<body>\n'+entry);
 const guideStart='<!-- FEATURE-GUIDE:START -->',guideEnd='<!-- FEATURE-GUIDE:END -->';
 const guide=guideStart+'\n<style>'+fs.readFileSync(path.join(root,'assets/feature-tutorials.css'),'utf8')+'</style>\n<script data-app="physics">'+fs.readFileSync(path.join(root,'assets/feature-tutorials.js'),'utf8')+'</script>\n'+guideEnd;
 if(html.includes(guideStart)){const a=html.indexOf(guideStart),b=html.indexOf(guideEnd,a);html=html.slice(0,a)+guide+html.slice(b+guideEnd.length);}

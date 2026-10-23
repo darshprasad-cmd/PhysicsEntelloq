@@ -1,0 +1,3 @@
+# Preserve the exact bytes recorded in scientific-labs/asset-manifest.json.
+scientific-labs/** -text whitespace=cr-at-eol
+assets/scientific-labs/** -text whitespace=cr-at-eol linguist-generated=true

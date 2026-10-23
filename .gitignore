@@ -1,3 +1,10 @@
 deploy.cmd
 qa/results/
 qa/node_modules/
+**/node_modules/
+scientific-labs/**/dist/
+scientific-labs/**/work/
+scientific-labs/**/test-results/
+scientific-labs/**/__pycache__/
+scientific-labs/**/.venv/
+scientific-labs/**/*.tsbuildinfo

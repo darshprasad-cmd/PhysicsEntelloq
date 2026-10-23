@@ -1,0 +1,99 @@
+{
+  "passed": true,
+  "results": [
+    {
+      "operation": "Simplify",
+      "expression": "sin(x)^2 + cos(x)^2",
+      "domain": "real",
+      "actual": "1"
+    },
+    {
+      "operation": "Differentiate",
+      "expression": "x^3 + 2*x",
+      "domain": "real",
+      "actual": "3*x**2 + 2"
+    },
+    {
+      "operation": "Integrate",
+      "expression": "2*x",
+      "domain": "real",
+      "actual": "x**2 + C"
+    },
+    {
+      "operation": "Solve",
+      "expression": "x^2 - 5*x + 6 = 0",
+      "domain": "real",
+      "actual": "{2, 3}"
+    },
+    {
+      "operation": "Solve",
+      "expression": "x^2 + 1 = 0",
+      "domain": "real",
+      "actual": "EmptySet"
+    },
+    {
+      "operation": "Solve",
+      "expression": "x^2 + 1 = 0",
+      "domain": "complex",
+      "actual": "{-I, I}"
+    },
+    {
+      "operation": "Solve",
+      "expression": "(x^2 - 1)/(x - 1) = 2",
+      "domain": "real",
+      "actual": "EmptySet"
+    },
+    {
+      "operation": "Solve",
+      "expression": "(x^2 - 1)/(x - 1) = 2",
+      "domain": "complex",
+      "actual": "EmptySet"
+    },
+    {
+      "operation": "Simplify",
+      "expression": "0.1234567890123456789",
+      "domain": "real",
+      "actual": "1234567890123456789/10000000000000000000"
+    },
+    {
+      "operation": "Check a step",
+      "expression": "sqrt(x^2)",
+      "domain": "real",
+      "actual": "-x + Abs(x)",
+      "verdict": "different"
+    },
+    {
+      "operation": "Check a step",
+      "expression": "sqrt(x^2)",
+      "domain": "positive",
+      "actual": "0",
+      "verdict": "equivalent"
+    },
+    {
+      "rejected": "x.real",
+      "message": "Unsupported notation. Use arithmetic and the listed mathematical functions."
+    },
+    {
+      "rejected": "open(x)",
+      "message": "Unsupported notation. Use arithmetic and the listed mathematical functions."
+    },
+    {
+      "rejected": "sin(x, x)",
+      "message": "Functions take exactly one expression, for example log(x)."
+    },
+    {
+      "rejected": "x^101",
+      "message": "Use a real numeric exponent between -100 and 100."
+    },
+    {
+      "rejected": "1/0",
+      "message": "Division by zero is undefined."
+    }
+  ],
+  "consoleErrors": [],
+  "mobileOverflow": false,
+  "keyboard": true,
+  "persistence": true,
+  "runtimeFailureRetry": true,
+  "cancellation": true
+}

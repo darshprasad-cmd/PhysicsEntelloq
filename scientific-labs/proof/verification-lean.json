@@ -1,0 +1,68 @@
+[
+  {
+    "puzzle": "identity",
+    "status": "verified",
+    "verified": true,
+    "message": "Lean accepted the complete proof.",
+    "diagnostics": "",
+    "source": "set_option maxHeartbeats 100000\nset_option maxRecDepth 512\n\ntheorem entelloq_identity (P : Prop) : P \u2192 P := by\n  intro hp\n  exact hp\n",
+    "sourceHash": "7944303247739bf4039a6b73d241ef4dbd70a679a257d62708be6efdcefd9c21",
+    "engine": "Lean (version 4.35.0, x86_64-w64-windows-gnu, commit eb6cafb7290e8bd5f2937522d8d804f58f02bafc, Release)",
+    "elapsedMs": 641
+  },
+  {
+    "puzzle": "compose",
+    "status": "verified",
+    "verified": true,
+    "message": "Lean accepted the complete proof.",
+    "diagnostics": "",
+    "source": "set_option maxHeartbeats 100000\nset_option maxRecDepth 512\n\ntheorem entelloq_compose (P Q R : Prop) (hpq : P \u2192 Q) (hqr : Q \u2192 R) : P \u2192 R := by\n  intro hp\n  apply hqr\n  exact hpq hp\n",
+    "sourceHash": "445da15ea0a4b40f366d807acfc0ca34f7ba07890694358ec27e09c1c4f4a2ab",
+    "engine": "Lean (version 4.35.0, x86_64-w64-windows-gnu, commit eb6cafb7290e8bd5f2937522d8d804f58f02bafc, Release)",
+    "elapsedMs": 750
+  },
+  {
+    "puzzle": "pair",
+    "status": "verified",
+    "verified": true,
+    "message": "Lean accepted the complete proof.",
+    "diagnostics": "",
+    "source": "set_option maxHeartbeats 100000\nset_option maxRecDepth 512\n\ntheorem entelloq_pair (P Q : Prop) (hp : P) (hq : Q) : P \u2227 Q := by\n  exact And.intro hp hq\n",
+    "sourceHash": "17d5b93eb048405402fd66a9a9bf3a846e01f3fa10e371d3670c1273ddd7e65a",
+    "engine": "Lean (version 4.35.0, x86_64-w64-windows-gnu, commit eb6cafb7290e8bd5f2937522d8d804f58f02bafc, Release)",
+    "elapsedMs": 766
+  },
+  {
+    "puzzle": "swap",
+    "status": "verified",
+    "verified": true,
+    "message": "Lean accepted the complete proof.",
+    "diagnostics": "",
+    "source": "set_option maxHeartbeats 100000\nset_option maxRecDepth 512\n\ntheorem entelloq_swap (P Q : Prop) : P \u2227 Q \u2192 Q \u2227 P := by\n  intro h\n  exact And.intro h.right h.left\n",
+    "sourceHash": "6d6f7b538083cd258008a4f91e719fdb4f56239af701e16dfa2884f9dd1a2808",
+    "engine": "Lean (version 4.35.0, x86_64-w64-windows-gnu, commit eb6cafb7290e8bd5f2937522d8d804f58f02bafc, Release)",
+    "elapsedMs": 750
+  },
+  {
+    "puzzle": "either",
+    "status": "verified",
+    "verified": true,
+    "message": "Lean accepted the complete proof.",
+    "diagnostics": "",
+    "source": "set_option maxHeartbeats 100000\nset_option maxRecDepth 512\n\ntheorem entelloq_either (P Q : Prop) (hp : P) : P \u2228 Q := by\n  left\n  exact hp\n",
+    "sourceHash": "7cbdb210ea100687f233ff679eab7016f4747a7eebdc4c65b2dae0dfb99499c5",
+    "engine": "Lean (version 4.35.0, x86_64-w64-windows-gnu, commit eb6cafb7290e8bd5f2937522d8d804f58f02bafc, Release)",
+    "elapsedMs": 781
+  },
+  {
+    "puzzle": "zero",
+    "status": "verified",
+    "verified": true,
+    "message": "Lean accepted the complete proof.",
+    "diagnostics": "",
+    "source": "set_option maxHeartbeats 100000\nset_option maxRecDepth 512\n\ntheorem entelloq_zero (n : Nat) : n + 0 = n := by\n  rfl\n",
+    "sourceHash": "dfbf161ddd77ce990105a64d5047686127e604286e1abcc63738f51bb44389b6",
+    "engine": "Lean (version 4.35.0, x86_64-w64-windows-gnu, commit eb6cafb7290e8bd5f2937522d8d804f58f02bafc, Release)",
+    "elapsedMs": 812
+  }
+]

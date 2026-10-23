@@ -1,0 +1,39 @@
+{
+  "passed": true,
+  "actualLeanProofs": [
+    {
+      "puzzle": "identity",
+      "verified": true
+    },
+    {
+      "puzzle": "compose",
+      "verified": true
+    },
+    {
+      "puzzle": "pair",
+      "verified": true
+    },
+    {
+      "puzzle": "swap",
+      "verified": true
+    },
+    {
+      "puzzle": "either",
+      "verified": true
+    },
+    {
+      "puzzle": "zero",
+      "verified": true
+    }
+  ],
+  "incorrectRejected": true,
+  "editedProofCleared": true,
+  "persistedProgress": true,
+  "proofDownload": true,
+  "mobileOverflow": false,
+  "offlineUnverified": true,
+  "extraSourceRejected": true,
+  "externalOriginRejected": true,
+  "nonJsonRejected": true,
+  "pageErrors": []
+}

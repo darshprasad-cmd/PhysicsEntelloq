@@ -27,6 +27,17 @@ jobs:
         run: node .github/validate-inline-scripts.js
       - name: Verify generated experience is current
         run: node .github/build-experience.js --check
+      - name: Verify scientific module sources and published assets
+        run: |
+          node .github/build-scientific-lab-assets.mjs --check
+          node --test .github/test-scientific-labs.js
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Check robot geometry and local companion boundaries
+        run: |
+          python -m unittest discover -s scientific-labs/robotics/tests -p 'test_*.py'
+          python -m unittest discover -s scientific-labs/tests -p 'test_*.py'
       - name: Check shared AI requests, streaming and structured responses
         run: node --test .github/test-ai.js .github/test-answer-format.js
       - name: Check cradle physics against analytical results

@@ -1,0 +1,15 @@
+{
+  "verifiedAt": "2026-10-23T19:55:22.111Z",
+  "checks": [
+    "initial geometric preview is paused and unverified",
+    "actual Genesis recording replays to measured target",
+    "JSON export contains actual complete simulation evidence",
+    "unreachable target invalidates prior evidence",
+    "recording restores valid target state",
+    "new Genesis API simulation with changed damping and payload returns non-teleported dynamics",
+    "390px mobile layout has no horizontal overflow",
+    "no browser exceptions"
+  ],
+  "errors": [],
+  "liveDynamics": true
+}

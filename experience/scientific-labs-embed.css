@@ -1,0 +1,51 @@
+/* Embedded instruments use the Physics observatory materials. Explicit chrome
+   selectors leave scientific SVG/canvas trace colours and result content intact. */
+html[data-physics-engine]{--sci-bg:#080b0d;--sci-panel:#10181d;--sci-raised:#17242c;--sci-ink:#f4f1e9;--sci-muted:#bac7cf;--sci-line:#354751;--sci-accent:#91c9ee;--sci-gold:#ddba88;--paper:var(--sci-bg);--ink:var(--sci-ink);--muted:var(--sci-muted);--line:var(--sci-line);--border:var(--sci-line);--lime:var(--sci-accent);--forest:var(--sci-panel);background:var(--sci-bg)!important;color:var(--sci-ink)!important;color-scheme:dark}
+html[data-physics-theme=light]{--sci-bg:#edf2f8;--sci-panel:#fbfcfe;--sci-raised:#e8eff7;--sci-ink:#152536;--sci-muted:#344b61;--sci-line:#b5c7dd;--sci-accent:#244f80;--sci-gold:#624520;color-scheme:light}
+html[data-physics-engine] body{background:var(--sci-bg)!important;color:var(--sci-ink)!important}
+html[data-physics-engine] :is(h1,h2,h3,h4,label,legend,.statement,.plain-statement,.result-math){color:var(--sci-ink)!important}
+html[data-physics-engine] :is(p,small,.eyebrow,.syntax-help,.engine-status,.connection,.hint,.hint-button,.check-caption,.panel-subtitle,.section-index,.private-badge,.workspace-top,.input-heading>span,.parameter>span,.range-ends,.settings label,.metrics span,.metrics p,.safety-note,.nav-section,.panel-title,.section-heading,.result-heading,.output-label,.workspace-top,.givens p,.goal,.choice,.formal-actions,.chart-key,.table-wrap,.engine-note,.principles,.notebook-list,.saved-note,.notebook-empty){color:var(--sci-muted)!important}
+html[data-physics-engine] :is(input:not([type=range]):not([type=checkbox]),textarea,select){background:var(--sci-bg)!important;border-color:var(--sci-line)!important;color:var(--sci-ink)!important}
+html[data-physics-engine] :is(input,textarea)::placeholder{color:var(--sci-muted)!important;opacity:.8}
+html[data-physics-engine] :is(button,a,summary,input,textarea,select):focus-visible{outline-color:var(--sci-accent)!important}
+html[data-physics-engine] :is(input[type=range],input[type=checkbox]){accent-color:var(--sci-accent)!important}
+html[data-physics-engine] :is(.sidebar,.control-panel,.metrics article,.insight-card,.chart-card,.notebook-card,.notebook-panel,.notebook,.guide-card,.workbench,.examples,.example-card,.library,.workspace,.formal,.controls,.trace,.principles article,.settings-panel,.result,.result-panel,.result-card,.workspace-top,.panel-title,.card,.comparison-card,.saved-card){background:var(--sci-panel)!important;border-color:var(--sci-line)!important}
+html[data-physics-engine] :is(.experiment-tab,.secondary-btn,.secondary,.operation,.choice,.puzzle-nav,.planet-select button,.presets button,.notebook-note,.reset,.formal-actions,.next-proof,.givens p,.subtle,.text-btn,.hint-button,.empty-state,.help,.syntax-guide,.example,.saved-item,.nav-item){background:var(--sci-panel)!important;color:var(--sci-ink)!important;border-color:var(--sci-line)!important}
+html[data-physics-engine] :is(.experiment-tab.active,.experiment-tab.selected,.operation.active,.choice.selected,.puzzle-nav.active,.nav-item.active,.planet-select .chosen,.chosen,.next-proof,.check-result.verified){background:var(--sci-raised)!important;color:var(--sci-accent)!important;border-color:var(--sci-accent)!important}
+html[data-physics-engine] :is(.primary-btn,.primary,.compute-button,.run-button,.check-button){background:var(--sci-accent)!important;border-color:var(--sci-accent)!important;color:var(--sci-bg)!important}
+html[data-physics-engine] :is(.formal>pre,.stage-card,.simulation-card,.transport,.playback){background:#0b1720!important;color:#dceaf3!important;border-color:#354751!important}
+html[data-physics-engine] :is(.simulation-card,.stage-card) :is(p,small,label,span){color:#bac7cf!important}
+html[data-physics-engine] :is(code,.syntax-help code){background:var(--sci-raised)!important;color:var(--sci-accent)!important}
+html[data-physics-engine] :is(.formal>pre,.formal>pre code){background:#0b1720!important;color:#dceaf3!important}
+html[data-physics-engine] :is(.metrics strong,.parameter strong,.parameter strong small,.verification-label,.puzzle-symbol,.nav-number,.section-index){color:var(--sci-accent)!important}
+html[data-physics-engine] :is(.notice,.offline,.check-result.unavailable,.check-result.rejected,.error,.error-banner){background:var(--sci-raised)!important;border-color:var(--sci-gold)!important;color:var(--sci-gold)!important}
+html[data-physics-engine] :is(.notice,.offline,.check-result.unavailable,.check-result.rejected,.error,.error-banner) :is(h3,p,small){color:var(--sci-gold)!important}
+html[data-physics-engine] :is(.hint,.result-summary,.formal-intro,.check-result,.notebook-head,.workspace-top,.settings,.formal-heading){border-color:var(--sci-line)!important}
+html[data-physics-engine] :is(.principles,.intro-note,.formal-actions,.trace,.chart-card,.notebook,.library,.workspace,.workbench,.controls,.metrics article,.panel-title,.operations,.control-group){border-color:var(--sci-line)!important}
+html[data-physics-engine] :is(.puzzle-nav strong,.puzzle-nav small,.formal-heading span,.formal-actions button,.formal-actions>span,.result-heading,.example-title,.settings label,.notebook-head,.check-caption,.input-heading>span,.comparison label span,.range-ends span,.parameter>span>small){color:var(--sci-muted)!important}
+html[data-physics-engine] :is(button,a){text-underline-offset:3px}
+/* Fixed instrument palettes need explicit text repairs on Physics surfaces. */
+html[data-physics-engine] :is(.experiment-tab span,.metric-value,.metric-sub,.large,.math-view,.result-meta span,.result-top,.result-notes,.result-foot,.engine-line,.entry-expression,.entry-answer,.entry-operation,.example-symbol,.example-top,.guide,.count,.new-page,.export-button){color:var(--sci-ink)!important}
+html[data-physics-engine] :is(.experiment-tab.selected span,.experiment-tab.active span,.experiment-symbol,.metric-value,.large){color:var(--sci-accent)!important}
+html[data-physics-engine] :is(.count,.new-page,.entry.selected,.result-meta span){background:var(--sci-raised)!important;border-color:var(--sci-line)!important}
+html[data-physics-engine] .calculate{background:var(--sci-accent)!important;color:var(--sci-bg)!important;border-color:var(--sci-accent)!important}
+html[data-physics-engine=reality] .vl-lab{color:var(--sci-ink)!important}
+html[data-physics-engine=reality] :is(.vl-private,.vl-controls,.vl-results){background:var(--sci-panel)!important;color:var(--sci-ink)!important;border-color:var(--sci-line)!important}
+html[data-physics-engine=reality] :is(.vl-help,.vl-eyebrow,.vl-scale-state,.vl-patch,.vl-limit,.vl-status,.vl-length,.vl-capture-note,.vl-capture-note strong,.vl-manual summary,.vl-manual p,.vl-manual small,.vl-step-heading>span,.vl-point-buttons button>span){color:var(--sci-muted)!important}
+html[data-physics-engine=reality] :is(.vl-controls button,.vl-result-actions button){background:var(--sci-raised)!important;color:var(--sci-ink)!important;border-color:var(--sci-line)!important}
+html[data-physics-engine=reality] :is(.vl-controls .vl-selected,.vl-controls .vl-track-button,.vl-result-actions .vl-track-button){background:var(--sci-accent)!important;color:var(--sci-bg)!important;border-color:var(--sci-accent)!important}
+html[data-physics-engine=reality] :is(.vl-divider,.vl-manual){border-color:var(--sci-line)!important}
+html[data-physics-engine=reality] .vl-error{background:var(--sci-raised)!important;color:var(--sci-gold)!important;border-color:var(--sci-gold)!important}
+html[data-physics-engine=reality] :is(.vl-dropzone,.vl-video-bar,.vl-timeline,.vl-canvas-wrap){background:#0b1720!important;color:#dceaf3!important}
+html[data-physics-engine=reality] :is(.vl-dropzone,.vl-video-bar,.vl-timeline) :is(p,small,label,span,output){color:#bac7cf!important}
+html[data-physics-engine=reality] .vl-upload{background:#91c9ee!important;color:#0b1720!important}
+html[data-physics-engine=reality] .vl-dropzone h3{color:#f4f1e9!important}
+html[data-physics-engine=reality] :is(.metrics>div,.wonder-note,.investigation-card,.info-strip,.data-details){background:var(--sci-panel)!important;border-color:var(--sci-line)!important;color:var(--sci-ink)!important}
+html[data-physics-engine=reality] :is(.parameter strong,.wonder-note strong,.segmented,.segmented button){background:var(--sci-raised)!important;color:var(--sci-ink)!important;border-color:var(--sci-line)!important}
+html[data-physics-engine=reality] :is(.metrics>div>span,.metrics>div p,.wonder-note p,.chart-caption,.chart-caption span,.data-details summary){color:var(--sci-muted)!important}
+html[data-physics-engine=proof] :is(.next-proof button,.next-proof>div>span,.library-foot a){color:var(--sci-accent)!important}
+html[data-physics-engine=reason] :is(.notebook-empty>span,.engine-line kbd,.guide-content,.result-notes li){color:var(--sci-muted)!important}
+/* marimo's editor owns its document theme; use the same blue Physics paper. */
+html[data-physics-engine=discovery]{--sci-bg:#edf2f8;--sci-panel:#fbfcfe;--sci-raised:#e8eff7;--sci-ink:#152536;--sci-muted:#344b61;--sci-line:#b5c7dd;--sci-accent:#244f80;--sci-gold:#624520;color-scheme:light}
+html[data-physics-engine=discovery] .marimo{color-scheme:light;background:#fbfcfe;color:#152536}
+@media(prefers-reduced-motion:reduce){html[data-physics-engine] *{scroll-behavior:auto!important}}

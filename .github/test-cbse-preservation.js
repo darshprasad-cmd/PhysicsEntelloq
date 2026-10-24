@@ -4,7 +4,20 @@ const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const fs=require('node:fs'),path=require('node:path'),{createHash}=require('node:crypto');
 const root=path.resolve(__dirname,'..'),normalize=text=>text.replace(/\r\n/g,'\n');
+function removeSpherometer(text){
+  for(const [name,file] of [['SPHEROMETER-MODEL','spherometer-model.js'],['SPHEROMETER-LAB','spherometer-lab.js']]){
+    const slot='/* EXPERIENCE:'+name+':START */\n'+normalize(fs.readFileSync(path.join(root,'experience',file),'utf8'))+'\n/* EXPERIENCE:'+name+':END */\n';
+    assert.equal(text.split(slot).length,2,'One exact new '+name+' slot');text=text.replace(slot,'');
+  }
+  const css='\n'+normalize(fs.readFileSync(path.join(root,'experience/spherometer-lab.css'),'utf8'));
+  assert.equal(text.split(css).length,2,'One exact spherometer stylesheet');return text.replace(css,'');
+}
+test('Spherometer preserves all published 082b458 bytes including new scientific tools',()=>{
+  const text=removeSpherometer(normalize(fs.readFileSync(path.join(root,'index.html'),'utf8')));
+  assert.equal(createHash('sha256').update(text).digest('hex'),'4dd115741d776998aa3881ad741a1aef66918e28fd71d254f3a7990f7746e3dc');
+});
 function removeScientificAdditions(text){
+  text=removeSpherometer(text);
   const learningSlot='/* EXPERIENCE:LEARNING-TOOLS:START */\n'+normalize(fs.readFileSync(path.join(root,'experience/learning-tools.js'),'utf8'))+'\n/* EXPERIENCE:LEARNING-TOOLS:END */\n';
   assert.equal(text.split(learningSlot).length,2,'One exact learning-tools integration slot');text=text.replace(learningSlot,'');
   const learningStyle='\n'+normalize(fs.readFileSync(path.join(root,'experience/learning-tools.css'),'utf8'));

@@ -1,6 +1,8 @@
 # Physics practical preparation and measurement benches
 
-Status: locally verified; required PR checks, merge, deployment and live parity remain separate gates. The PR conversation records final production evidence.
+Status: **released and live-verified**, reconciled 24 October 2026 against the [PR #33 production evidence](https://github.com/darshprasad-cmd/PhysicsEntelloq/pull/33#issuecomment-6373640411). Merge `cf62ad68f9c6899527f17c41fa4d87a05e4ab0b1`; required PR/push checks and Pages succeeded. The live 3,578,273-byte artifact matched SHA256 `9dc46003631d939464764fdc7d854f17259789c2465606d8272d4b4bba8cf562`. Both instrument and catalogue live browser suites passed. These are historical release bytes, not a claim that later releases retain the same hash.
+
+Later apparatus work is recorded separately in `SPHEROMETER-RELEASE.md` and `CHECKPOINTS.json`; the scope counts below describe PR #33 only. Biology's sibling guide release is independently verified in [PR #41](https://github.com/darshprasad-cmd/biology-entelloq/pull/41#issuecomment-6374201740): 44 standard guides, 15 accessible alternatives and 103 explained viva questions, not 59 new interactive simulations.
 
 ## Delivered scope
 

@@ -10,7 +10,7 @@
     "releaseEvidence": "RELEASE.md"
   },
   "practicalMilestone": {
-    "status": "verified-local",
+    "status": "released-live-verified",
     "inventory": "practicals.json",
     "releaseEvidence": "PRACTICAL-RELEASE.md",
     "standardPhysicsGuides": 72,
@@ -19,7 +19,33 @@
     "newInteractiveInstruments": ["vernier-calipers", "screw-gauge"],
     "fullInteractiveCoverage": false,
     "schoolPracticalCompletionClaim": false,
-    "nextAction": "Verify release and live parity, then implement the next missing apparatus such as spherometer; preserve existing synthetic Research benches. Baseline inventory statuses precede this guide release. Apparatus familiarity remains an unverified physical/accessibility assessment, not another completed experiment."
+    "releaseCommit": "cf62ad68f9c6899527f17c41fa4d87a05e4ab0b1",
+    "liveEvidence": "https://github.com/darshprasad-cmd/PhysicsEntelloq/pull/33#issuecomment-6373640411",
+    "nextAction": "Historical practicals.json capability statuses predate the guide release. Apply the release evidence and interactionMilestones below when selecting work; a guide or opened simulation is not a completed school practical. Apparatus familiarity remains an unverified physical/accessibility assessment."
+  },
+  "interactionMilestones": [
+    {
+      "id": "p11-a-e04",
+      "name": "Spherometer paired-surface measurement",
+      "status": "verified-local-awaiting-release",
+      "route": "#practical:spherometer",
+      "capability": "interactive-simulation-with-practical-preparation",
+      "sourcePage": 7,
+      "source": "https://cbseacademic.nic.in/web_material/CurriculumMain27/SecPart2/Physics_SecP2_2026-27.pdf",
+      "releaseEvidence": "SPHEROMETER-RELEASE.md",
+      "schoolPracticalCompleted": false,
+      "educatorReviewed": false
+    }
+  ],
+  "siblingPracticalBaseline": {
+    "subject": "Biology",
+    "status": "released-live-verified",
+    "standardGuides": 44,
+    "accessibleAlternatives": 15,
+    "explainedVivaQuestions": 103,
+    "newInteractiveLabsInThatRelease": 0,
+    "releaseCommit": "7c9c67783a3deba8c4d9571b8fb550d562c1c402",
+    "evidence": "https://github.com/darshprasad-cmd/biology-entelloq/pull/41#issuecomment-6374201740"
   },
   "tracks": [
     {

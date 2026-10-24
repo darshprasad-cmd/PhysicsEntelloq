@@ -1,5 +1,6 @@
 {
-  "checkedAt": "2026-10-23T20:48:30.028Z",
+  "checkedAt": "2026-10-24T05:16:14.955Z",
+  "live": null,
   "checks": [
     "Fresh Equation studio bookmark bypasses onboarding and transfers a real MathLive draft",
     "Explicit handoff opens existing Symbolic Workbench with an unexecuted draft",
@@ -11,6 +12,7 @@
     "Yjs notes survive host navigation/reload with sharing boundaries visible",
     "Keyword search works and inference assets are not downloaded before opt-in",
     "Mobile host and embedded tool fit viewport with reduced motion",
+    "Same-document and history navigation from learning and scientific tools preserves practical destinations and saved observations",
     "A missing module is reported as a recoverable error, not successful loading"
   ],
   "errors": []

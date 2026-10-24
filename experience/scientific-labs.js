@@ -89,7 +89,8 @@ var ScientificLabs=(function(){
   AppDesign.afterView=function(){originalAfter();if(curView==='scientific'&&active&&!frame)view(active);else{decorate();if(restore){var button=main.querySelector('[data-scientific-open="'+restore+'"]');restore=null;if(button)button.focus({preventScroll:true});}}};
   // Lab mode buttons render directly instead of going through go().
   var originalLab=viewLab;viewLab=function(){originalLab();decorate();};
-  window.addEventListener('popstate',function(){var id=hashId(location.hash);if(id){popping=true;go('scientific',id);popping=false;}else if(active){popping=true;var target=returnTo||{view:get(active).section};restore=target.tool;labMode=target.mode||labMode;go(target.view);popping=false;}});
+  // Let another workspace handle its nonempty hash before choosing a fallback.
+  window.addEventListener('popstate',function(){var id=hashId(location.hash);if(id){popping=true;go('scientific',id);popping=false;}else if(active&&!location.hash){popping=true;var target=returnTo||{view:get(active).section};restore=target.tool;labMode=target.mode||labMode;go(target.view);popping=false;}});
   window.addEventListener('hashchange',function(){var id=hashId(location.hash);if(id&&id!==active){popping=true;go('scientific',id);popping=false;}});
   return {get:get,url:url,hashId:hashId,open:open,back:back,view:view,decorate:decorate,embeddedCSS:embeddedCSS};
 })();

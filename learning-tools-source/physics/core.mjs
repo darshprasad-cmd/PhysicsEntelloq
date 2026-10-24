@@ -1,4 +1,5 @@
 export const STORAGE_KEY = 'entelloq.physics.tools.v1';
+export const FIELD_STORAGE_PREFIX = 'entelloq.physics.tools.v2.';
 export const DEFAULT_STATE = Object.freeze({tab:'equations', latex:'F=ma', vx:8, vy:10, g:9.81, circuit:'ohm', voltage:5, resistance:1000, capacitance:0.000001});
 export const clamp = (value,min,max,fallback=min) => Number.isFinite(Number(value)) ? Math.min(max,Math.max(min,Number(value))) : fallback;
 export function normalizeState(input={}) {
@@ -30,8 +31,20 @@ export function circuitUrl(state, light=false) {
   return url.href;
 }
 export function readState(storage) {
-  try {return normalizeState(JSON.parse(storage.getItem(STORAGE_KEY)||'{}'));} catch {return normalizeState();}
+  let saved={};
+  try {saved=normalizeState(JSON.parse(storage.getItem(STORAGE_KEY)||'{}'));} catch {saved=normalizeState();}
+  // Keep the original record intact. Each edited field supersedes only its own
+  // legacy value, so tabs editing independent tools never replace each other.
+  for(const key of Object.keys(DEFAULT_STATE)){
+    try {const value=storage.getItem(FIELD_STORAGE_PREFIX+key);if(value!==null)saved[key]=JSON.parse(value);} catch {}
+  }
+  return normalizeState(saved);
 }
-export function writeState(storage,state) {
-  try {storage.setItem(STORAGE_KEY,JSON.stringify(normalizeState(state)));return true;} catch {return false;}
+export function writeState(storage,state,fields=Object.keys(DEFAULT_STATE)) {
+  try {
+    if(!Array.isArray(fields)||fields.some(key=>!Object.hasOwn(DEFAULT_STATE,key)))return false;
+    const normalized=normalizeState(state);
+    for(const key of new Set(fields))storage.setItem(FIELD_STORAGE_PREFIX+key,JSON.stringify(normalized[key]));
+    return true;
+  } catch {return false;}
 }

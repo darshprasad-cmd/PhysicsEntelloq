@@ -4,7 +4,23 @@ const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const fs=require('node:fs'),path=require('node:path'),{createHash}=require('node:crypto');
 const root=path.resolve(__dirname,'..'),normalize=text=>text.replace(/\r\n/g,'\n');
+function removeSpherometer(text){
+  for(const [name,file] of [['SPHEROMETER-MODEL','spherometer-model.js'],['SPHEROMETER-LAB','spherometer-lab.js']]){
+    const slot='/* EXPERIENCE:'+name+':START */\n'+normalize(fs.readFileSync(path.join(root,'experience',file),'utf8'))+'\n/* EXPERIENCE:'+name+':END */\n';
+    assert.equal(text.split(slot).length,2,'One exact new '+name+' slot');text=text.replace(slot,'');
+  }
+  const css='\n'+normalize(fs.readFileSync(path.join(root,'experience/spherometer-lab.css'),'utf8'));
+  assert.equal(text.split(css).length,2,'One exact spherometer stylesheet');return text.replace(css,'');
+}
+// Integration baseline: immutable visual-tools commit 5719a0c5dd59c8b31780fed392feb40f378b44c3.
+// Its Git index.html blob is LF-normalized. Stripping only the independently
+// released spherometer slots must recover every premerge visual-tool byte.
+test('Spherometer preserves every premerge visual-tools byte (5719a0c)',()=>{
+  const text=removeSpherometer(normalize(fs.readFileSync(path.join(root,'index.html'),'utf8')));
+  assert.equal(createHash('sha256').update(text).digest('hex'),'89edbb270dd7ff79948a442016e0a4fee0a08c6f6b47737b76405bd3d64c2d27');
+});
 function removeScientificAdditions(text){
+  text=removeSpherometer(text);
   const learningSlot='/* EXPERIENCE:LEARNING-TOOLS:START */\n'+normalize(fs.readFileSync(path.join(root,'experience/learning-tools.js'),'utf8'))+'\n/* EXPERIENCE:LEARNING-TOOLS:END */\n';
   assert.equal(text.split(learningSlot).length,2,'One exact learning-tools integration slot');text=text.replace(learningSlot,'');
   const learningStyle='\n'+normalize(fs.readFileSync(path.join(root,'experience/learning-tools.css'),'utf8'));

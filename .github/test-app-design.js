@@ -5,6 +5,7 @@ require('./test-cbse-study.js');
 require('./test-cbse-preservation.js');
 require('./test-measurement.js');
 require('./test-practical-library.js');
+require('./test-spherometer-model.js');
 test('Mobile navigation has five primary destinations; expanded routes remain in Explore',()=>{
  const nav=html.match(/<nav class="mtab">([\s\S]*?)<\/nav>/)[1];
  assert.deepEqual([...nav.matchAll(/data-go="([^"]+)"/g)].map(m=>m[1]),['home','universe','learn','lab','progress']);

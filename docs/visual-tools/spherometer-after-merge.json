@@ -1,0 +1,94 @@
+[
+  {
+    "width": 320,
+    "calibration": true,
+    "contactGate": true,
+    "scaleGate": true,
+    "threeLegs": true,
+    "radiusGate": true,
+    "keyboard": true,
+    "reducedMotion": true,
+    "persisted": true,
+    "axe": true,
+    "cameraCalls": 0
+  },
+  {
+    "width": 390,
+    "calibration": true,
+    "contactGate": true,
+    "scaleGate": true,
+    "threeLegs": true,
+    "radiusGate": true,
+    "keyboard": true,
+    "reducedMotion": true,
+    "persisted": true,
+    "axe": true,
+    "cameraCalls": 0
+  },
+  {
+    "width": 768,
+    "calibration": true,
+    "contactGate": true,
+    "scaleGate": true,
+    "threeLegs": true,
+    "radiusGate": true,
+    "keyboard": true,
+    "reducedMotion": true,
+    "persisted": true,
+    "axe": true,
+    "cameraCalls": 0
+  },
+  {
+    "width": 1440,
+    "calibration": true,
+    "contactGate": true,
+    "scaleGate": true,
+    "threeLegs": true,
+    "radiusGate": true,
+    "keyboard": true,
+    "reducedMotion": true,
+    "persisted": true,
+    "axe": true,
+    "cameraCalls": 0
+  },
+  {
+    "bothSamples": true,
+    "placements": 8,
+    "duplicatesDoNotIncreaseCoverage": true,
+    "reloaded": true,
+    "csv": true,
+    "scopedClear": true
+  },
+  {
+    "catalogueEntry": true,
+    "guideEntry": true,
+    "labEntry": true,
+    "class11Entry": true,
+    "lightDesktopAndMobileAxe": true
+  },
+  {
+    "scenario": "blocked",
+    "sessionInteraction": true
+  },
+  {
+    "scenario": "corrupt",
+    "sessionInteraction": true
+  },
+  {
+    "freshQuestionnaire": "skip",
+    "deepLinkPreserved": true,
+    "usable": true
+  },
+  {
+    "freshQuestionnaire": "complete",
+    "deepLinkPreserved": true,
+    "usable": true
+  },
+  {
+    "singleFileOffline": true,
+    "networkDisconnected": true
+  },
+  {
+    "runtimeErrors": []
+  }
+]

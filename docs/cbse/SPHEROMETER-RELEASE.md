@@ -1,6 +1,8 @@
 # Spherometer: an interactive paired-reading practical
 
-Status: **locally verified**. PR, required checks, merge and live verification are separate release gates; the PR conversation is the append-only final production evidence referenced by this tracker.
+Status: **released and live-verified**, 24 October 2026. [PR #36](https://github.com/darshprasad-cmd/PhysicsEntelloq/pull/36) merged as `11db02d2cc80fdb20280ca73cf44ed4fbae01eec` after required check run `40065664770` passed. Merged push checks `40065762650` and Pages deployment `40065762611` both succeeded. The PR conversation is the append-only production evidence referenced by this tracker.
+
+Live HTTPS returned HTTP 200 with exactly **3,642,963 bytes**, SHA256 `7d7144a205b66f131a1e1b5c8b8e2adfd0fae6fc3f013d30b38b63310c238748`, identical to the merged Git artifact. The live spherometer suite passed all four widths, both specimens and all eight placements, numerical and contact gates, four entry points, persistence/CSV/scoped clearing, fresh questionnaire skip/finish retaining the incoming route, blocked/corrupt storage, light/dark scoped accessibility, keyboard/reduced motion, zero camera requests and zero runtime errors. Existing measurement and catalogue live regressions also passed. Reports: `qa/results/spherometer/live-report.json`, `qa/results/measurement-lab/live-report.json`, `qa/results/practical-library/live-report.json`.
 
 ## Scope and source audit
 

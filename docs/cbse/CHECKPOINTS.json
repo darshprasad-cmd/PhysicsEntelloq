@@ -27,12 +27,18 @@
     {
       "id": "p11-a-e04",
       "name": "Spherometer paired-surface measurement",
-      "status": "verified-local-awaiting-release",
+      "status": "released-live-verified",
       "route": "#practical:spherometer",
       "capability": "interactive-simulation-with-practical-preparation",
       "sourcePage": 7,
       "source": "https://cbseacademic.nic.in/web_material/CurriculumMain27/SecPart2/Physics_SecP2_2026-27.pdf",
       "releaseEvidence": "SPHEROMETER-RELEASE.md",
+      "releaseCommit": "11db02d2cc80fdb20280ca73cf44ed4fbae01eec",
+      "productionEvidence": "https://github.com/darshprasad-cmd/PhysicsEntelloq/pull/36",
+      "requiredCheckRun": 40065664770,
+      "deploymentRun": 40065762611,
+      "liveSha256": "7d7144a205b66f131a1e1b5c8b8e2adfd0fae6fc3f013d30b38b63310c238748",
+      "verifiedDate": "2026-10-24",
       "schoolPracticalCompleted": false,
       "educatorReviewed": false
     }

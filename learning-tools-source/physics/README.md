@@ -43,7 +43,9 @@ instance.getState();
 instance.unmount();
 ```
 
-`storage` can be overridden with a Storage-like adapter or set to `null`. Otherwise drafts and launch settings use localStorage `entelloq.physics.tools.v1`. A denied or full store leaves export usable and reports the limitation. CircuitJS editing state is external and not captured in this store; its own File → Export as Text command preserves edits.
+`storage` can be overridden with a Storage-like adapter or set to `null`. Existing values in localStorage `entelloq.physics.tools.v1` remain readable and unchanged. New edits use separate `entelloq.physics.tools.v2.<field>` records; saving an equation, graph control or circuit setting writes only the field edited. This prevents pre-opened tabs from replacing unrelated saved work. Changing panels reloads saved values while retaining any unsaved edits in the current session. Opening a tool does not resave its defaults.
+
+This is local persistence, not live collaborative editing: if two tabs edit the exact same field, the last successful write wins. A vector drag updates its two components separately. Older app versions only understand the original v1 snapshot. A denied or full store leaves export usable, retains edits in the current session, and reports the limitation. CircuitJS editing state is external and not captured in this store; its own File → Export as Text command preserves edits.
 
 ## Model boundaries
 

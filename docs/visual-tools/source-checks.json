@@ -1,0 +1,17 @@
+{
+  "checkedAt": "2026-10-24T05:25:07.250Z",
+  "live": null,
+  "checks": [
+    "A fresh Physics bookmark opens genuine Excalidraw; pointer drawing changes the exported editable force diagram",
+    "The visual scene survives an actual host reload",
+    "Host light theme and actual application colour tokens reach the visual notebook",
+    "The embedded drawing workspace fits tablet and mobile widths",
+    "Visual notebook is reachable from Solve, Lab and Research; Back restores its section and keyboard focus",
+    "An authored Manim video stays unloaded until Play, decodes real frames and exposes captions and a transcript",
+    "Chapter navigation seeks the actual rendered video and still frames provide a reduced-motion alternative",
+    "Animation workspace and embedded lesson fit tablet and mobile widths with reduced motion",
+    "Keyboard return removes the playing media document, returns to Learn and restores focus",
+    "Missing visual assets report a recoverable error with Reload and Back controls"
+  ],
+  "errors": []
+}

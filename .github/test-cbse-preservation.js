@@ -12,9 +12,12 @@ function removeSpherometer(text){
   const css='\n'+normalize(fs.readFileSync(path.join(root,'experience/spherometer-lab.css'),'utf8'));
   assert.equal(text.split(css).length,2,'One exact spherometer stylesheet');return text.replace(css,'');
 }
-test('Spherometer preserves all published 082b458 bytes including new scientific tools',()=>{
+// Integration baseline: immutable visual-tools commit 5719a0c5dd59c8b31780fed392feb40f378b44c3.
+// Its Git index.html blob is LF-normalized. Stripping only the independently
+// released spherometer slots must recover every premerge visual-tool byte.
+test('Spherometer preserves every premerge visual-tools byte (5719a0c)',()=>{
   const text=removeSpherometer(normalize(fs.readFileSync(path.join(root,'index.html'),'utf8')));
-  assert.equal(createHash('sha256').update(text).digest('hex'),'4dd115741d776998aa3881ad741a1aef66918e28fd71d254f3a7990f7746e3dc');
+  assert.equal(createHash('sha256').update(text).digest('hex'),'89edbb270dd7ff79948a442016e0a4fee0a08c6f6b47737b76405bd3d64c2d27');
 });
 function removeScientificAdditions(text){
   text=removeSpherometer(text);

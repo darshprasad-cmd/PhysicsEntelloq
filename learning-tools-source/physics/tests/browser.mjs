@@ -10,7 +10,7 @@ const mime={'.html':'text/html','.mjs':'application/javascript','.js':'applicati
 const server=createServer(async(req,res)=>{try{const rel=decodeURIComponent(new URL(req.url,'http://localhost').pathname);const path=resolve(root,'.'+(rel==='/'?'/index.html':rel));if(path!==root&&!path.startsWith(root+sep)){res.writeHead(403).end();return;}await stat(path);res.setHeader('Content-Type',mime[extname(path)]||'text/plain');res.end(await readFile(path));}catch{res.writeHead(404).end('Not found');}}).listen(0,'127.0.0.1');
 await new Promise(r=>server.once('listening',r));const url='http://127.0.0.1:'+server.address().port;
 await mkdir(resolve(root,'qa'),{recursive:true});
-const browser=await chromium.launch({headless:true});const context=await browser.newContext({viewport:{width:1366,height:1000}});const page=await context.newPage();
+const browser=await chromium.launch({channel:process.env.CHECK_BROWSER||undefined,headless:true});const context=await browser.newContext({viewport:{width:1366,height:1000}});const page=await context.newPage();
 const errors=[],requests=[],checks=[];page.on('pageerror',e=>errors.push(e.message));page.on('request',r=>requests.push(r.url()));
 try{
  await page.goto(url+'/?panel=equations');await page.locator('math-field').waitFor();await page.waitForFunction(()=>document.querySelector('math-field')?.getValue);

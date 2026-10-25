@@ -77,7 +77,9 @@ var ScientificLabs=(function(){
     var deep=initial&&hashId(location.hash);initial=false;if(deep){v='scientific';id=deep;}
     if(v==='scientific'){
       if(!get(id))return;
-      if(!returnTo)returnTo={view:get(id).section,mode:'labs',hash:'',tool:id};
+      // A different bookmarked tool belongs to its own section. A reload of
+      // the same tool keeps the original card's section and Lab mode.
+      if(!returnTo||returnTo.tool!==id)returnTo={view:get(id).section,mode:'labs',hash:'',tool:id};
       clear();active=id;
       if(!popping&&location.hash!=='#scientific:'+id){try{history.pushState(null,'','#scientific:'+id);}catch(e){}}
     }else{

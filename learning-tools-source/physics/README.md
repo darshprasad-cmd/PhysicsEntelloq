@@ -49,7 +49,7 @@ This is local persistence, not live collaborative editing: if two tabs edit the 
 
 ## Model boundaries
 
-Motion is a point projectile from y=0, constant downward g, no air resistance. Controls clamp vₓ to −20…20 m/s, vᵧ to 0.1…20 m/s and g to 0.1…25 m/s². The trajectory uses the full positive flight interval, including leftward and vertical launches. It is a prediction, not measured evidence. Keyboard inputs provide equivalent access to the draggable vector.
+Motion is a point projectile from y=0, constant downward g, no air resistance. The supported ranges are vₓ −20…20 m/s, vᵧ 0.1…20 m/s and g 0.1…25 m/s². Numeric drafts outside the shown ranges receive an immediate field error and leave the last valid prediction intact; export and circuit launch stay unavailable until corrected. Stored values and vector dragging retain their bounded normalization. The trajectory uses the full positive flight interval, including leftward and vertical launches. It is a prediction, not measured evidence. Keyboard inputs provide equivalent access to the draggable vector.
 
 DC uses I=V/R. RC uses an initially uncharged ideal capacitor, τ=RC, and Vc(τ)=V(1−e⁻¹). The generated circuit is loaded into the separate actual CircuitJS numerical engine. Component tolerances, leakage, heating and current limits are not represented. Presets use 0.1…24 V, 10…1,000,000 Ω and 1 nF…10 mF. CircuitJS runs on falstad.com and requires a connection; its live deployment version is controlled upstream.
 
@@ -66,8 +66,11 @@ npm ci --ignore-scripts
 npm run vendor
 npm test
 npm run qa
+node tests/quality.mjs
 ```
 
 Browser QA uses Playwright from `CODEX_NODE_MODULES` or the installed Codex bundled runtime. Set `CHECK_HOSTED=1` to also open the real hosted CircuitJS and require its actual canvas. Browser tests create their own ephemeral local server. Evidence is under `qa/`. Unit tests cover flight endpoints, parameter constraints, circuit serialization and denied storage. Browser checks cover real dependency loading, editing/export event, persistence, linked graph controls, mobile/light theme, explicit remote launch, offline state and cleanup.
 
 Hosted availability is a separate evidence boundary from local-module checks. Neither these checks nor exported examples constitute scientific validation of every possible CircuitJS component.
+
+For an installed Chrome browser, set `CHECK_BROWSER=chrome`. The focused quality checks cover invalid drafts before blur, recovery, persistent error feedback across other edits, launch/export gating, keyboard focus, responsive themes and reduced motion. Findings and screenshots are in `qa/quality-report.md` and `qa/quality/`.

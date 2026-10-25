@@ -75,3 +75,4 @@ jobs:
           "$RUNNER_TEMP/learning-browser/node_modules/.bin/playwright" install --with-deps chromium
           node scripts/check-learning-tools-browser.cjs
           node scripts/check-visual-tools-browser.cjs
+          node qa/learning-host-quality.cjs

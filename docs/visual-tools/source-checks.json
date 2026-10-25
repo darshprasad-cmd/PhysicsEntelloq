@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-10-25T19:53:06.771Z",
+  "checkedAt": "2026-10-25T20:03:22.528Z",
   "live": null,
   "checks": [
     "A fresh Physics bookmark opens genuine Excalidraw; pointer drawing changes the exported editable force diagram",
@@ -7,6 +7,7 @@
     "Host light theme and actual application colour tokens reach the visual notebook",
     "The embedded drawing workspace fits tablet and mobile widths",
     "Visual notebook is reachable from Solve, Lab and Research; Back restores its section and keyboard focus",
+    "The overview poster and all four authored stills decode at full resolution before any video request",
     "An authored Manim video stays unloaded until Play, decodes real frames and exposes captions and a transcript",
     "Chapter navigation seeks the actual rendered video and still frames provide a reduced-motion alternative",
     "Animation workspace and embedded lesson fit tablet and mobile widths with reduced motion",

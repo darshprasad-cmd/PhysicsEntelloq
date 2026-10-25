@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-10-25T19:58:26.460Z",
+  "checkedAt": "2026-10-25T20:03:27.995Z",
   "baseline": false,
   "measurements": [
     {
@@ -171,7 +171,7 @@
   ],
   "checks": [
     "Both visual tools fit 320/390/768/1440px in dark/light themes; the ready announcement takes no visual space and the opening title receives focus",
-    "Measured floating app/assistant controls clear each iframe by at least8px, including focused drawing at390px; desktop retains at least720px tool height",
+    "Measured floating app/assistant controls clear each iframe by at least 8px, including focused drawing at 390px; desktop retains at least 720px tool height",
     "About is a keyboard-operable disclosure with scientific, storage and source details",
     "Same-document sketch→animation returns to Learn, reverse returns to Research, and pending real pointer edits survive teardown",
     "Plain Escape remains in the tool, Alt+Escape restores the entry focus, and opening from Solve retains Solve as parent",

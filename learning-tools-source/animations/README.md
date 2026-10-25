@@ -15,6 +15,8 @@ No autoplay or remote request is needed. Only a poster loads initially. On Play 
 
 Native video controls, keyboard-operable custom controls, four chapter buttons, complete transcripts and four static stills per subject are included. Reduced-motion users start with the transcript open and playback stopped. Stills load lazily. No external JavaScript, fonts, analytics or AI model. The host should call `iframe.contentWindow.EntelloqAnimations.destroy()` before removing a same-origin iframe; this synchronously pauses, aborts and revokes media. A `pagehide` fallback is also installed. When merely hiding a retained iframe, call `EntelloqAnimations.pause()` to stop current playback and invalidate a pending Play request without discarding the loaded film. A later explicit Play resumes normally. Classic entry scripts are at the end of `body`, so converting them to inline scripts in Biology's portable build preserves DOM readiness.
 
+The overview poster has no active chapter until the film is loaded. A direct **Read without playback** link opens and focuses the transcript without fetching video. Playback status, chapter caption and progress reflect native controls as well as the wrapper. Each subject includes one optional, keyboard-operable comprehension question with explanatory retry feedback. It writes no storage and does not infer mastery or modify the review queue. All primary controls have at least 44px target heights; the player is checked at 320px, 768px and desktop widths in both themes.
+
 ## Rebuild
 
 Use Python 3.12 and Node.js. Install into an isolated virtual environment:

@@ -30,6 +30,32 @@
   $('lesson-title').textContent = lesson.title;
   $('lesson-summary').textContent = lesson.summary;
   $('lesson-scope').textContent = lesson.scope;
+  $('read-link').addEventListener('click', event => {
+    event.preventDefault();
+    pause();
+    $('transcript').open = true;
+    $('transcript').querySelector('summary').focus({ preventScroll: true });
+    $('transcript').scrollIntoView({ block: 'start', behavior: 'instant' });
+  });
+  $('checkpoint-question').textContent = lesson.checkpoint.question;
+  lesson.checkpoint.answers.forEach((answer, index) => {
+    const label = document.createElement('label'), input = document.createElement('input'), text = document.createElement('span');
+    input.type = 'radio'; input.name = 'answer'; input.value = String(index);
+    text.textContent = answer; label.append(input, text); $('checkpoint-options').append(label);
+    input.addEventListener('change', () => {
+      $('check-answer').disabled = false;
+      $('check-feedback').textContent = '';
+      $('check-feedback').removeAttribute('data-result');
+    });
+  });
+  $('checkpoint-form').addEventListener('submit', event => {
+    event.preventDefault();
+    const selected = document.querySelector('#checkpoint-options input:checked');
+    if (!selected) return;
+    const correct = Number(selected.value) === lesson.checkpoint.correct;
+    $('check-feedback').dataset.result = correct ? 'correct' : 'retry';
+    $('check-feedback').textContent = correct ? `That’s right. ${lesson.checkpoint.explanation}` : `Try again. ${lesson.checkpoint.hint}`;
+  });
   $('lesson-poster').src = `media/${subject}-poster.png`;
   $('lesson-poster').alt = lesson.steps[3].alt;
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
@@ -55,10 +81,14 @@
   function update() {
     const time = video.currentTime || 0;
     const index = lesson.steps.reduce((found, step, i) => time >= step.time ? i : found, 0);
-    $('caption-text').textContent = lesson.steps[index].caption;
+    const hasMovie = Boolean(video.getAttribute('src'));
+    $('caption-text').textContent = hasMovie ? lesson.steps[index].caption : lesson.prompt;
+    $('chapter-label').textContent = hasMovie ? `Step ${index + 1} of 4 · ${lesson.steps[index].title}` : 'Overview · Choose Play or a step below';
     $('time-display').textContent = `${fmt(time)} / 0:22`;
-    for (const [i, button] of [...$('chapters').children].entries()) button.setAttribute('aria-current', String(i === index));
-    play.textContent = video.paused ? 'Play explanation' : 'Pause explanation';
+    $('film-progress').value = time;
+    $('film-progress').setAttribute('aria-valuetext', `${fmt(time)} of 0:22`);
+    for (const [i, button] of [...$('chapters').children].entries()) button.setAttribute('aria-current', String(hasMovie && i === index));
+    play.textContent = video.ended ? 'Replay explanation' : video.paused ? 'Play explanation' : 'Pause explanation';
   }
   function requireActive(signal) {
     if (disposed || signal.aborted) throw new DOMException('Cancelled', 'AbortError');
@@ -103,6 +133,7 @@
       });
       requireActive(signal);
       status.textContent = 'Film ready. Captions below follow the current chapter.';
+      update();
     })();
     try { await loading; }
     catch (error) { if (!disposed && error.name !== 'AbortError') { status.textContent = `${error.message} You can still read the transcript and four stills.`; resetMedia(); } throw error; }
@@ -131,9 +162,15 @@
     pause();
     if (video.src) video.currentTime = 0;
     pendingTime = 0; update();
+    status.textContent = 'Back at the beginning. Press Play when ready.';
   });
   $('playback-speed').addEventListener('change', event => { video.playbackRate = Number(event.target.value); });
   for (const name of ['timeupdate', 'play', 'pause', 'seeked', 'ended']) video.addEventListener(name, update);
+  video.addEventListener('play', () => { if (!disposed) status.textContent = 'Playing. Pause at any time, or choose a chapter.'; });
+  video.addEventListener('pause', () => {
+    if (!disposed && !loading && video.src) status.textContent = video.ended ? 'Explanation complete. Try the question below or replay a step.' : 'Paused. Take your time, or choose a chapter.';
+  });
+  video.addEventListener('ended', () => { if (!disposed) status.textContent = 'Explanation complete. Try the question below or replay a step.'; });
   function pause() {
     // Hosts may hide an iframe without a document visibilitychange/pagehide.
     // Invalidate a pending Play as well as pausing an already-loaded film.

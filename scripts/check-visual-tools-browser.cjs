@@ -106,6 +106,15 @@ const server = http.createServer((req, res) => {
 
     const mediaStart = requests.length;
     let animation = await open('animations');
+    await animation.waitForFunction(() => {const image=document.querySelector('#lesson-poster');return image.complete&&image.naturalWidth===1280&&image.naturalHeight===720;});
+    await animation.locator('#still-alternative summary').click();
+    for (const image of await animation.locator('#still-grid img').all()) {
+      await image.scrollIntoViewIfNeeded();
+      await animation.waitForFunction(id => {const image=document.querySelectorAll('#still-grid img')[id];return image.complete&&image.naturalWidth===1280&&image.naturalHeight===720;},await image.evaluate(el => [...el.closest('#still-grid').querySelectorAll('img')].indexOf(el)));
+    }
+    await animation.locator('#still-alternative summary').click();
+    await animation.locator('#lesson-title').scrollIntoViewIfNeeded();
+    checks.push('The overview poster and all four authored stills decode at full resolution before any video request');
     assert.equal(await animation.locator('#lesson-video').evaluate(video => video.paused), true);
     assert.equal(requests.slice(mediaStart).some(url => /\.mp4(?:$|\?)/.test(url)), false);
     assert.match(await page.locator('.lt-workspace header').innerText(), /does not run a live simulation/);

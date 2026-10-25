@@ -1,0 +1,14 @@
+{
+  "checks": [
+    "Sequential decimal typing and mid-number caret edits retain the raw draft",
+    "Out-of-range motion input explains the bounds and preserves the last valid model",
+    "Valid correction clears the field error and updates the model",
+    "390px mobile, 820px tablet and 1280px desktop fit in both palettes",
+    "Circuit settings reject invalid resistance without silently launching a different circuit",
+    "Sequential capacitance entry retains decimal precision and updates the circuit model",
+    "Keyboard panel activation moves focus to the new workspace",
+    "Reduced motion removes button transitions"
+  ],
+  "errors": [],
+  "baseline": false
+}

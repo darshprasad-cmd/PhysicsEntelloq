@@ -13,30 +13,37 @@ Alt+Shift+Left return to the section; plain Escape is left to the editor.
 
 ## Evidence
 
-Run `node qa/learning-host-quality.cjs` for the six new behavior groups. It checks
+Run `node qa/learning-host-quality.cjs` for the seven new behavior groups. It checks
 320, 390, 768 and 1440px widths in both themes, title/return focus, keyboard About,
 actual pointer drawing followed immediately by a bookmark switch, parent routes,
-delayed loading, and keyboard retry after a missing module. Screenshots and exact
+delayed loading, keyboard retry after a missing module, and measured clearance
+above the existing floating app switcher/tutor (including focused drawing).
+Animation screenshots wait for a decoded poster, not just an image element.
+Screenshots and exact
 measurements are in `after/`; `before/` records the published host baseline.
 
 At 390×844, the tool starts at y155 (previously y338 for sketches and y365 for
-animations) and has a 604px viewport. At 1440×1000 it starts at y176 and has an
-812px viewport. A minimum 360px height keeps tools usable on shorter screens,
+animations) and has a 545px viewport. Its bottom is y700, leaving 12px before the
+tutor and 22px before the app switcher. At 1440×1000 it starts at y176 and has a
+740px viewport, with 12.5px clear of the tutor. Height is reserved only for visible
+floating controls that horizontally overlap the iframe; shell behavior stays
+unchanged. A minimum 360px height keeps tools usable on shorter screens,
 where the surrounding page can scroll.
 
 Validation at this host handoff: 182 static tests, 13 established learning host
-checks, 10 established visual host checks and all six new quality groups passed.
+checks, 10 established visual host checks and all six original quality groups
+passed. The final float-clearance followup reran all seven quality groups against
+the final sketch runtime and passed, with generated/source and preservation checks.
 No page errors were reported. Current source-to-inline parity and inline script
 parsing passed. Screenshots were inspected for narrow-screen and light-theme
 readability. The old host suite also covers practical notes and spherometer
 destinations.
 
-The final sketch module handoff arrived after these browser runs. Its source and
-runtime are owned by the coordinating integration; these results describe the
-host against the earlier sketch runtime and the newly synchronized Physics,
-learning and animation runtimes. The coordinator will rebuild and repeat affected
-checks against all final module bytes before release. This is local evidence,
-not deployment verification.
+Module sources and runtime are owned by the coordinating integration. The earlier
+established browser suites preceded the final sketch copy; the new host quality
+suite was repeated after that copy. The coordinator will rebuild and repeat
+affected checks for the pending animation image-loading followup before release.
+This is local evidence, not deployment verification.
 
 The exact previous host source fixtures in
 `.github/fixtures/host-baseline-9d027d5/` let preservation checks reconstruct the

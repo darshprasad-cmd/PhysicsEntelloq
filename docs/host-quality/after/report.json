@@ -1,12 +1,20 @@
 {
-  "checkedAt": "2026-10-25T19:52:55.778Z",
+  "checkedAt": "2026-10-25T19:58:26.460Z",
   "baseline": false,
   "measurements": [
     {
       "width": 1440,
       "tool": "sketches",
       "iframeTop": 175.5,
-      "iframeHeight": 812,
+      "iframeHeight": 740,
+      "iframeBottom": 915.5,
+      "floating": [
+        {
+          "id": "tutor-fab",
+          "top": 928,
+          "clearance": 12.5
+        }
+      ],
       "statusHeight": 1,
       "hostWidth": 1440,
       "viewport": 1440
@@ -15,7 +23,15 @@
       "width": 1440,
       "tool": "animations",
       "iframeTop": 175.5,
-      "iframeHeight": 812,
+      "iframeHeight": 740,
+      "iframeBottom": 915.5,
+      "floating": [
+        {
+          "id": "tutor-fab",
+          "top": 928,
+          "clearance": 12.5
+        }
+      ],
       "statusHeight": 1,
       "hostWidth": 1440,
       "viewport": 1440
@@ -24,7 +40,20 @@
       "width": 768,
       "tool": "sketches",
       "iframeTop": 165.5,
-      "iframeHeight": 593,
+      "iframeHeight": 534,
+      "iframeBottom": 699.5,
+      "floating": [
+        {
+          "id": "tutor-fab",
+          "top": 712,
+          "clearance": 12.5
+        },
+        {
+          "id": "eqx-fab",
+          "top": 722,
+          "clearance": 22.5
+        }
+      ],
       "statusHeight": 1,
       "hostWidth": 768,
       "viewport": 768
@@ -33,7 +62,20 @@
       "width": 768,
       "tool": "animations",
       "iframeTop": 165.5,
-      "iframeHeight": 593,
+      "iframeHeight": 534,
+      "iframeBottom": 699.5,
+      "floating": [
+        {
+          "id": "tutor-fab",
+          "top": 712,
+          "clearance": 12.5
+        },
+        {
+          "id": "eqx-fab",
+          "top": 722,
+          "clearance": 22.5
+        }
+      ],
       "statusHeight": 1,
       "hostWidth": 768,
       "viewport": 768
@@ -42,7 +84,20 @@
       "width": 390,
       "tool": "sketches",
       "iframeTop": 155,
-      "iframeHeight": 604,
+      "iframeHeight": 545,
+      "iframeBottom": 700,
+      "floating": [
+        {
+          "id": "tutor-fab",
+          "top": 712,
+          "clearance": 12
+        },
+        {
+          "id": "eqx-fab",
+          "top": 722,
+          "clearance": 22
+        }
+      ],
       "statusHeight": 1,
       "hostWidth": 390,
       "viewport": 390
@@ -51,7 +106,20 @@
       "width": 390,
       "tool": "animations",
       "iframeTop": 155,
-      "iframeHeight": 604,
+      "iframeHeight": 545,
+      "iframeBottom": 700,
+      "floating": [
+        {
+          "id": "tutor-fab",
+          "top": 712,
+          "clearance": 12
+        },
+        {
+          "id": "eqx-fab",
+          "top": 722,
+          "clearance": 22
+        }
+      ],
       "statusHeight": 1,
       "hostWidth": 390,
       "viewport": 390
@@ -60,7 +128,20 @@
       "width": 320,
       "tool": "sketches",
       "iframeTop": 161,
-      "iframeHeight": 598,
+      "iframeHeight": 539,
+      "iframeBottom": 700,
+      "floating": [
+        {
+          "id": "tutor-fab",
+          "top": 712,
+          "clearance": 12
+        },
+        {
+          "id": "eqx-fab",
+          "top": 722,
+          "clearance": 22
+        }
+      ],
       "statusHeight": 1,
       "hostWidth": 320,
       "viewport": 320
@@ -69,7 +150,20 @@
       "width": 320,
       "tool": "animations",
       "iframeTop": 179,
-      "iframeHeight": 580,
+      "iframeHeight": 521,
+      "iframeBottom": 700,
+      "floating": [
+        {
+          "id": "tutor-fab",
+          "top": 712,
+          "clearance": 12
+        },
+        {
+          "id": "eqx-fab",
+          "top": 722,
+          "clearance": 22
+        }
+      ],
       "statusHeight": 1,
       "hostWidth": 320,
       "viewport": 320
@@ -77,6 +171,7 @@
   ],
   "checks": [
     "Both visual tools fit 320/390/768/1440px in dark/light themes; the ready announcement takes no visual space and the opening title receives focus",
+    "Measured floating app/assistant controls clear each iframe by at least8px, including focused drawing at390px; desktop retains at least720px tool height",
     "About is a keyboard-operable disclosure with scientific, storage and source details",
     "Same-document sketch→animation returns to Learn, reverse returns to Research, and pending real pointer edits survive teardown",
     "Plain Escape remains in the tool, Alt+Escape restores the entry focus, and opening from Solve retains Solve as parent",

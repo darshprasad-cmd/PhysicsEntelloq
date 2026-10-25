@@ -9,6 +9,8 @@
   const play = $('play-button');
   let loading = null, controller = null, pendingTime = null, disposed = false, playbackIntent = 0;
   const blobURLs = new Set();
+  const imageURLs = new Set();
+  let imageController = new AbortController(), imageLoads = new Map();
   const fmt = sec => `0:${String(Math.floor(Math.max(0, sec))).padStart(2, '0')}`;
   function setTheme(theme, tokens = {}) {
     document.documentElement.dataset.theme = theme === 'dark' ? 'dark' : 'light';
@@ -56,7 +58,7 @@
     $('check-feedback').dataset.result = correct ? 'correct' : 'retry';
     $('check-feedback').textContent = correct ? `That’s right. ${lesson.checkpoint.explanation}` : `Try again. ${lesson.checkpoint.hint}`;
   });
-  $('lesson-poster').src = `media/${subject}-poster.png`;
+  $('lesson-poster').dataset.asset = `media/${subject}-poster.png`;
   $('lesson-poster').alt = lesson.steps[3].alt;
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
     $('transcript').open = true;
@@ -73,8 +75,8 @@
     title.textContent = `${fmt(step.time)} — ${step.title}`;
     li.append(title, document.createTextNode(step.text)); $('transcript-list').append(li);
     const figure = document.createElement('figure'), image = document.createElement('img'), caption = document.createElement('figcaption');
-    image.loading = 'lazy'; image.width = 1280; image.height = 720;
-    image.src = `media/${subject}-step-${index + 1}.png`; image.alt = step.alt;
+    image.decoding = 'async'; image.width = 1280; image.height = 720;
+    image.dataset.asset = `media/${subject}-step-${index + 1}.png`; image.alt = step.alt;
     caption.textContent = `${index + 1}. ${step.title}. ${step.text}`;
     figure.append(image, caption); $('still-grid').append(figure);
   });
@@ -93,7 +95,7 @@
   function requireActive(signal) {
     if (disposed || signal.aborted) throw new DOMException('Cancelled', 'AbortError');
   }
-  async function assetBlob(path, type, signal) {
+  async function assetBlob(path, type, signal, owner = blobURLs) {
     // Relative fetch is understood by Biology's portable virtual-file bridge.
     requireActive(signal);
     const response = await fetch(path, { signal });
@@ -104,8 +106,40 @@
     // Guard immediately before URL creation; no await separates guard and owner.
     requireActive(signal);
     const url = URL.createObjectURL(new Blob([bytes], { type }));
-    blobURLs.add(url); return url;
+    owner.add(url); return url;
   }
+  function loadImage(image) {
+    if (imageLoads.has(image)) return imageLoads.get(image);
+    const signal = imageController.signal;
+    image.setAttribute('aria-busy', 'true');
+    const task = (async () => {
+      let url;
+      try {
+        // The portable host resolves relative fetches from its embedded package.
+        // Direct img.src paths cannot access its deferred assets.
+        url = await assetBlob(image.dataset.asset, 'image/png', signal, imageURLs);
+        requireActive(signal); image.src = url;
+        await image.decode(); requireActive(signal);
+        image.dataset.ready = 'true';
+      } catch (error) {
+        if (url && imageURLs.delete(url)) URL.revokeObjectURL(url);
+        if (!disposed && !signal.aborted) {
+          image.removeAttribute('src'); imageLoads.delete(image);
+          $('image-feedback').hidden = false;
+          $('image-status').textContent = 'An explanation image could not load. Reload images, or use the transcript below.';
+        }
+      } finally {
+        if (!signal.aborted) image.removeAttribute('aria-busy');
+      }
+    })();
+    imageLoads.set(image, task); return task;
+  }
+  function loadVisibleImages() {
+    loadImage($('lesson-poster'));
+    if ($('still-alternative').open) $('still-grid').querySelectorAll('img').forEach(loadImage);
+  }
+  $('still-alternative').addEventListener('toggle', () => { if (!disposed && $('still-alternative').open) loadVisibleImages(); });
+  $('retry-images').addEventListener('click', () => { $('image-feedback').hidden = true; loadVisibleImages(); });
   async function load() {
     if (loading) return loading;
     if (video.src) return;
@@ -185,7 +219,10 @@
   const pauseHidden = () => { if (document.hidden) pause(); };
   document.addEventListener('visibilitychange', pauseHidden);
   function destroy() {
-    disposed = true; controller?.abort(); resetMedia();
+    disposed = true; controller?.abort(); imageController.abort(); resetMedia();
+    for (const url of imageURLs) URL.revokeObjectURL(url);
+    imageURLs.clear(); imageLoads.clear();
+    document.querySelectorAll('img[data-asset]').forEach(image => { image.removeAttribute('src'); image.removeAttribute('aria-busy'); delete image.dataset.ready; });
     window.removeEventListener('message', onTheme);
     document.removeEventListener('visibilitychange', pauseHidden);
   }
@@ -193,9 +230,10 @@
   window.addEventListener('pagehide', destroy);
   window.addEventListener('pageshow', () => {
     disposed = false;
+    if (imageController.signal.aborted) { imageController = new AbortController(); $('image-feedback').hidden = true; }
     window.addEventListener('message', onTheme);
     document.addEventListener('visibilitychange', pauseHidden);
-    update();
+    update(); loadVisibleImages();
   });
-  update();
+  update(); loadVisibleImages();
 })();

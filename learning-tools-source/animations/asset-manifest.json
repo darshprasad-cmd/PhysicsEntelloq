@@ -5,14 +5,14 @@
   "assets": [
     {
       "path": "index.html",
-      "bytes": 3007,
-      "sha256": "fe4f75c65b45cc195dd8d0ae00e0792f278e0c1698587f2ec12741b8e856c5f3",
+      "bytes": 3151,
+      "sha256": "f31649fef4c09761aa5a7c99de2c7fbc8b1d6ed180bee5e47bd47749ec391f69",
       "mime": "text/html"
     },
     {
       "path": "main.js",
-      "bytes": 11290,
-      "sha256": "9d1ae94296eb3e68e9125646c90a914b7eca8b87ed1b2845060b114e82299e87",
+      "bytes": 13443,
+      "sha256": "27218d848aa004a4a3851da2f66c674dcf924a1df9b075ec21d25eadee684b0a",
       "mime": "text/javascript"
     },
     {
@@ -23,8 +23,8 @@
     },
     {
       "path": "styles.css",
-      "bytes": 7694,
-      "sha256": "bc5f15959aa2893de956f5055a8192b9999e95f95278b050b96b95490c66ef12",
+      "bytes": 7869,
+      "sha256": "19aa50f9f295839b278732e11d33fd8ddec74c93b5339b05b0cfd035b2b00d0f",
       "mime": "text/css"
     },
     {

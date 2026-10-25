@@ -39,6 +39,7 @@ function passed(name, detail) { checks.push({ name, status: 'passed', ...(detail
     const movies = [];
     page.on('request', req => { if (req.url().endsWith('.mp4')) movies.push(req.url()); });
     await page.goto(`${base}/index.html?subject=${subject}`);
+    await page.waitForFunction(() => document.querySelector('#lesson-poster').naturalWidth === 1280);
     await page.locator('#lesson-poster').evaluate(img => img.decode());
     assert.equal(movies.length, 0);
     assert.equal(await page.locator('#lesson-video').getAttribute('src'), null);
@@ -115,6 +116,63 @@ function passed(name, detail) { checks.push({ name, status: 'passed', ...(detail
       await page.screenshot({ path: path.join(root, `qa/quality-${theme}-${width}.png`), fullPage: width === 768 });
     }
     passed(`${theme}: 320px phone, 768px tablet and desktop fit with 44px controls and reduced motion`);
+    await ctx.close();
+  }
+  {
+    const ctx = await context(); const page = await ctx.newPage();
+    const directImages = [], pngFetches = [], movies = [];
+    await page.route('**/media/*.png', route => {
+      if (route.request().resourceType() === 'image') { directImages.push(route.request().url()); return route.abort(); }
+      pngFetches.push(route.request().url()); return route.continue();
+    });
+    page.on('request', request => { if (request.url().endsWith('.mp4')) movies.push(request.url()); });
+    await page.goto(`${base}/index.html?subject=biology`);
+    await page.waitForFunction(() => document.querySelector('#lesson-poster').naturalWidth === 1280);
+    assert.equal(pngFetches.length, 1, 'only the poster is fetched before opening the stills');
+    assert.match(await page.locator('#lesson-poster').getAttribute('src'), /^blob:/);
+    await page.locator('#still-alternative summary').click();
+    await page.waitForFunction(() => [...document.querySelectorAll('#still-grid img')].every(img => img.naturalWidth === 1280));
+    assert.equal(pngFetches.length, 5); assert.deepEqual(directImages, []); assert.deepEqual(movies, []);
+    const cleanup = await page.evaluate(() => { window.EntelloqAnimations.destroy(); return { ...window.__blobs, imageSources: [...document.images].filter(i => i.getAttribute('src')).length }; });
+    assert.deepEqual(cleanup.made.sort(), cleanup.revoked.sort()); assert.equal(cleanup.imageSources, 0);
+    await page.evaluate(() => dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true })));
+    await page.waitForFunction(() => document.querySelector('#lesson-poster').naturalWidth === 1280);
+    assert.deepEqual(movies, []);
+    passed('poster and all four stills decode via fetch and Blob URLs when direct image paths are blocked; disclosure gates stills, lifecycle revokes and restores images without video');
+    await ctx.close();
+  }
+  {
+    const ctx = await context(); const page = await ctx.newPage(); let attempts = 0;
+    await page.route('**/media/physics-poster.png', route => ++attempts === 1 ? route.fulfill({ status: 503, body: 'Unavailable' }) : route.continue());
+    await page.goto(`${base}/index.html?subject=physics`);
+    await page.locator('#image-feedback').waitFor({ state: 'visible' });
+    assert.equal(await page.locator('video').getAttribute('src'), null);
+    await page.locator('#retry-images').click();
+    await page.waitForFunction(() => document.querySelector('#lesson-poster').naturalWidth === 1280);
+    assert.equal(attempts, 2); assert.equal(await page.locator('#image-feedback').isVisible(), false);
+    passed('failed image fetch offers a real retry and preserves the video opt-in boundary');
+    await ctx.close();
+  }
+  {
+    const ctx = await context();
+    await ctx.addInitScript(() => {
+      const fetchOriginal = fetch.bind(window);
+      window.fetch = async (...args) => {
+        const response = await fetchOriginal(...args);
+        if (String(args[0]).endsWith('-poster.png')) {
+          const read = response.arrayBuffer.bind(response);
+          response.arrayBuffer = async () => { const bytes = await read(); window.__pendingImage = true; await new Promise(resolve => { window.__releaseImage = resolve; }); return bytes; };
+        }
+        return response;
+      };
+    });
+    const page = await ctx.newPage(); page.on('pageerror', error => errors.push(error.message));
+    await page.goto(`${base}/index.html?subject=biology`);
+    await page.waitForFunction(() => window.__pendingImage === true);
+    await page.evaluate(async () => { window.EntelloqAnimations.destroy(); window.__releaseImage(); await new Promise(resolve => setTimeout(resolve, 0)); });
+    const ended = await page.evaluate(() => ({ ...window.__blobs, src: document.querySelector('#lesson-poster').getAttribute('src') }));
+    assert.deepEqual(ended.made, []); assert.deepEqual(ended.revoked, []); assert.equal(ended.src, null);
+    passed('destroy during buffered poster fetch prevents late image Blob creation and attachment');
     await ctx.close();
   }
   {

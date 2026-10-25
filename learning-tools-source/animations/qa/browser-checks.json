@@ -65,6 +65,18 @@
       "status": "passed"
     },
     {
+      "name": "poster and all four stills decode via fetch and Blob URLs when direct image paths are blocked; disclosure gates stills, lifecycle revokes and restores images without video",
+      "status": "passed"
+    },
+    {
+      "name": "failed image fetch offers a real retry and preserves the video opt-in boundary",
+      "status": "passed"
+    },
+    {
+      "name": "destroy during buffered poster fetch prevents late image Blob creation and attachment",
+      "status": "passed"
+    },
+    {
       "name": "reduced motion opens transcript and never autoplays; initial dark theme works",
       "status": "passed"
     },

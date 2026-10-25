@@ -41,6 +41,9 @@ button:focus-visible, select:focus-visible, summary:focus-visible, a:focus-visib
 .speed { margin-left: auto; display: flex; align-items: center; gap: 8px; }
 .speed select { padding: 4px 8px; }
 #player-status { font-size: 12px; color: var(--muted); margin: 6px 18px 16px; }
+#image-feedback { padding: 12px 18px; border-bottom: 1px solid var(--border); font-size: 13px; }
+#image-feedback[hidden] { display: none; }
+#image-status { margin: 0 0 8px; }
 .caption { padding: 16px 18px; margin: 0; border-top: 1px solid var(--border); font-size: 15px; }
 .caption .eyebrow { margin: 0 0 6px; letter-spacing: .04em; }
 #caption-text { margin: 0; }

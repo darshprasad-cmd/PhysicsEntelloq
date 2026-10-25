@@ -4,6 +4,28 @@ const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const fs=require('node:fs'),path=require('node:path'),{createHash}=require('node:crypto');
 const root=path.resolve(__dirname,'..'),normalize=text=>text.replace(/\r\n/g,'\n');
+// The quality pass owns these adapter slots only. Restore their exact immutable
+// published sources before comparing the historical whole-artifact digests.
+// Each current source must still occur exactly once in the generated artifact.
+function restoreHostBaseline(text){
+  for(const [file,marker,hash] of [
+    ['learning-tools.js','LEARNING-TOOLS','5aec58b1d8d6723e80d4c68a572d2f00be35972d149bb0c3aa95fc8da1b8f615'],
+    ['learning-tools.css',null,'46c104c861497c8c87d84d5e48626b6bb97322bfcdeaa015b83f9b67f09e23c3'],
+    ['scientific-labs.js','SCIENTIFIC-LABS','461fbc5451b45099fff0c456da2a7d52e1e88e1d90abd3609c9e4884f90c78eb']
+  ]){
+    const frozen=normalize(fs.readFileSync(path.join(__dirname,'fixtures/host-baseline-9d027d5',file),'utf8'));
+    assert.equal(createHash('sha256').update(frozen).digest('hex'),hash,'Immutable '+file+' fixture');
+    const current=normalize(fs.readFileSync(path.join(root,'experience',file),'utf8'));
+    const slot=source=>marker?'/* EXPERIENCE:'+marker+':START */\n'+source+'\n/* EXPERIENCE:'+marker+':END */\n':'\n'+source;
+    assert.equal(text.split(slot(current)).length,2,'One exact current '+file+' source slot');
+    text=text.replace(slot(current),slot(frozen));
+  }
+  return text;
+}
+test('Host quality changes preserve every surrounding published byte (9d027d5)',()=>{
+  const text=restoreHostBaseline(normalize(fs.readFileSync(path.join(root,'index.html'),'utf8')));
+  assert.equal(createHash('sha256').update(text).digest('hex'),'a47854f495c56b6cb5a889b8d374eba46a284b610e06f70ce68a619f94c3a979');
+});
 function removeSpherometer(text){
   for(const [name,file] of [['SPHEROMETER-MODEL','spherometer-model.js'],['SPHEROMETER-LAB','spherometer-lab.js']]){
     const slot='/* EXPERIENCE:'+name+':START */\n'+normalize(fs.readFileSync(path.join(root,'experience',file),'utf8'))+'\n/* EXPERIENCE:'+name+':END */\n';
@@ -16,7 +38,7 @@ function removeSpherometer(text){
 // Its Git index.html blob is LF-normalized. Stripping only the independently
 // released spherometer slots must recover every premerge visual-tool byte.
 test('Spherometer preserves every premerge visual-tools byte (5719a0c)',()=>{
-  const text=removeSpherometer(normalize(fs.readFileSync(path.join(root,'index.html'),'utf8')));
+  const text=removeSpherometer(restoreHostBaseline(normalize(fs.readFileSync(path.join(root,'index.html'),'utf8'))));
   assert.equal(createHash('sha256').update(text).digest('hex'),'89edbb270dd7ff79948a442016e0a4fee0a08c6f6b47737b76405bd3d64c2d27');
 });
 function removeScientificAdditions(text){

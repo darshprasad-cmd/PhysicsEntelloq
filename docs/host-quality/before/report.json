@@ -1,0 +1,43 @@
+{
+  "checkedAt": "2026-10-24T05:48:54.334Z",
+  "baseline": true,
+  "measurements": [
+    {
+      "width": 1440,
+      "tool": "sketches",
+      "iframeTop": 348.796875,
+      "iframeHeight": 780,
+      "statusHeight": 45.4375,
+      "hostWidth": 1440,
+      "viewport": 1440
+    },
+    {
+      "width": 1440,
+      "tool": "animations",
+      "iframeTop": 348.796875,
+      "iframeHeight": 780,
+      "statusHeight": 45.4375,
+      "hostWidth": 1440,
+      "viewport": 1440
+    },
+    {
+      "width": 390,
+      "tool": "sketches",
+      "iframeTop": 337.578125,
+      "iframeHeight": 700.515625,
+      "statusHeight": 45.4375,
+      "hostWidth": 390,
+      "viewport": 390
+    },
+    {
+      "width": 390,
+      "tool": "animations",
+      "iframeTop": 364.765625,
+      "iframeHeight": 700.515625,
+      "statusHeight": 45.4375,
+      "hostWidth": 390,
+      "viewport": 390
+    }
+  ],
+  "errors": []
+}

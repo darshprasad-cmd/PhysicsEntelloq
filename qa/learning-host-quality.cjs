@@ -1,0 +1,50 @@
+const fs=require('node:fs'),path=require('node:path'),http=require('node:http'),assert=require('node:assert/strict');
+const root=path.resolve(__dirname,'..');
+const packages=process.env.CODEX_NODE_MODULES||'C:/Users/darsh/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules';
+const {chromium}=require(path.join(packages,'playwright'));
+const baseline=process.argv.includes('--baseline');
+const output=path.join(root,'docs/host-quality',baseline?'before':'after');fs.mkdirSync(output,{recursive:true});
+const mime={'.html':'text/html','.js':'text/javascript','.mjs':'text/javascript','.css':'text/css','.json':'application/json','.woff2':'font/woff2','.png':'image/png','.mp4':'video/mp4','.vtt':'text/vtt','.wasm':'application/wasm'};
+const server=http.createServer((req,res)=>{const url=new URL(req.url,'http://localhost'),file=path.resolve(root,'.'+decodeURIComponent(url.pathname==='/'?'/index.html':url.pathname));if(!file.startsWith(root+path.sep)){res.writeHead(403).end();return;}res.setHeader('Content-Type',mime[path.extname(file)]||'application/octet-stream');fs.createReadStream(file).on('error',()=>res.writeHead(404).end()).pipe(res);});
+(async()=>{
+ await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));const base='http://127.0.0.1:'+server.address().port;
+ const browser=await chromium.launch({headless:true}),context=await browser.newContext({viewport:{width:1440,height:1000},reducedMotion:'reduce'}),page=await context.newPage();
+ const errors=[],measurements=[],checks=[];page.on('pageerror',e=>errors.push(e.message));page.setDefaultTimeout(30000);
+ async function ready(tool){await page.locator('.lt-frame').waitFor();const child=await(await page.locator('.lt-frame').elementHandle()).contentFrame();await child.locator(tool==='sketches'?'.excalidraw':'#lesson-poster').waitFor();await page.waitForFunction(()=>document.querySelector('#learning-status')?.dataset.error==='false');return child;}
+ async function scene(child){const pending=page.waitForEvent('download');await child.getByRole('button',{name:'Export scene',exact:true}).click();return JSON.parse(fs.readFileSync(await(await pending).path(),'utf8'));}
+ try{
+  for(const width of baseline?[1440,390]:[1440,768,390,320]){
+   await page.setViewportSize({width,height:width<1000?844:1000});
+   for(const tool of ['sketches','animations']){
+    await page.goto(base+'/#learning:'+tool);const child=await ready(tool);
+    await page.locator('.main').evaluate(el=>el.scrollTop=0);await child.evaluate(()=>window.scrollTo(0,0));
+    const metrics=await page.evaluate(()=>{const f=document.querySelector('.lt-frame').getBoundingClientRect(),s=document.querySelector('.lt-feedback')?.getBoundingClientRect()||document.querySelector('#learning-status').getBoundingClientRect();return {iframeTop:f.top,iframeHeight:f.height,statusHeight:s.height,hostWidth:document.documentElement.scrollWidth,viewport:innerWidth};});
+    measurements.push({width,tool,...metrics});
+    if(!baseline){assert.ok(metrics.iframeTop<225,'Tool starts above 225px');assert.ok(metrics.iframeHeight>=480,'Useful tool viewport');assert.ok(metrics.statusHeight<=1,'Ready message does not consume workspace');assert.ok(metrics.hostWidth<=width+1);assert.equal(await page.locator('#learning-title').evaluate(el=>el===document.activeElement),true);}
+    for(const theme of baseline?['dark']:['dark','light']){
+     await page.evaluate(theme=>document.documentElement.dataset.theme=theme,theme);await child.waitForFunction(theme=>document.documentElement.dataset.theme===theme,theme);
+     await page.screenshot({path:path.join(output,`${tool}-${width}${baseline?'':'-'+theme}.png`),fullPage:true});
+    }
+   }
+  }
+  if(!baseline){
+   checks.push('Both visual tools fit 320/390/768/1440px in dark/light themes; the ready announcement takes no visual space and the opening title receives focus');
+   await page.setViewportSize({width:1440,height:1000});await page.goto(base+'/#learning:sketches');let sketch=await ready('sketches');
+   await page.locator('#learning-about').focus();await page.keyboard.press('Enter');assert.equal(await page.locator('#learning-about').getAttribute('aria-expanded'),'true');assert.match(await page.locator('#learning-details').innerText(),/not computed forces|not a validated/);assert.equal(await page.locator('#learning-details').isVisible(),true);await page.keyboard.press('Space');assert.equal(await page.locator('#learning-details').isVisible(),false);
+   checks.push('About is a keyboard-operable disclosure with scientific, storage and source details');
+   const before=await scene(sketch);await sketch.locator('label').filter({has:sketch.locator('[data-testid="toolbar-rectangle"]')}).click();const board=await sketch.locator('canvas.interactive').boundingBox();const x=board.x+board.width*.75,y=board.y+board.height*.35;await page.mouse.move(x,y);await page.mouse.down();await page.mouse.move(x+55,y+45,{steps:5});await page.mouse.up();
+   // Switch immediately: no export or reload may flush the pending drawing first.
+   await page.goto(base+'/#learning:animations');const animation=await ready('animations');assert.ok(sketch.isDetached());assert.equal(await page.locator('#learning-back').getAttribute('aria-label'),'Back to Learn');await page.locator('#learning-back').click();assert.equal(await page.evaluate(()=>document.activeElement?.dataset.learningOpen),'animations');
+   await page.goto(base+'/#learning:animations');await ready('animations');await page.goto(base+'/#learning:sketches');sketch=await ready('sketches');assert.equal(await page.locator('#learning-back').getAttribute('aria-label'),'Back to Research');const after=await scene(sketch);assert.ok(after.elements.length>before.elements.length,'Unexported drawing survives iframe teardown');assert.ok(before.elements.every(element=>after.elements.some(saved=>saved.id===element.id)));
+   checks.push('Same-document sketch→animation returns to Learn, reverse returns to Research, and pending real pointer edits survive teardown');
+   const restoredBoard=await sketch.locator('canvas.interactive').boundingBox();await page.mouse.click(restoredBoard.x+restoredBoard.width*.6,restoredBoard.y+restoredBoard.height*.7);await page.keyboard.press('Escape');assert.equal(await page.locator('.lt-frame').count(),1);await page.keyboard.press('Alt+Escape');await page.locator('[data-learning-open="sketches"]').waitFor();assert.equal(await page.locator('.lt-frame').count(),0);assert.equal(await page.evaluate(()=>document.activeElement?.dataset.learningOpen),'sketches');
+   await page.locator('.nav-i[data-go="solve"]').click();await page.locator('[data-learning-open="sketches"]').click();await ready('sketches');assert.equal(await page.locator('#learning-back').getAttribute('aria-label'),'Back to Solve');await page.locator('#learning-back').click();assert.equal(await page.locator('.nav-i[data-go="solve"]').getAttribute('aria-current'),'page');
+   checks.push('Plain Escape remains in the tool, Alt+Escape restores the entry focus, and opening from Solve retains Solve as parent');
+   let release;const gate=new Promise(resolve=>release=resolve);const delay=async route=>{await gate;await route.continue();};await page.route('**/assets/learning-tools/animations/index.html*',delay);await page.goto(base+'/#learning:animations',{waitUntil:'domcontentloaded'});await page.locator('#learning-status').waitFor();assert.match(await page.locator('#learning-status').innerText(),/Opening/);assert.equal(await page.locator('#learning-frame-host').getAttribute('aria-busy'),'true');release();await ready('animations');await page.unroute('**/assets/learning-tools/animations/index.html*',delay);
+   checks.push('A pending module has a visible loading announcement and busy region until the actual tool mounts');
+   const missing=route=>route.fulfill({status:404,contentType:'text/html',body:'<title>Missing tool</title>'});await page.route('**/assets/learning-tools/animations/index.html*',missing);await page.reload({waitUntil:'domcontentloaded'});await page.waitForFunction(()=>document.querySelector('#learning-status')?.dataset.error==='true');assert.equal(await page.locator('.lt-frame').isVisible(),false);assert.equal(await page.locator('#learning-reload').isVisible(),true);await page.screenshot({path:path.join(output,'load-error.png'),fullPage:true});await page.unroute('**/assets/learning-tools/animations/index.html*',missing);await page.locator('#learning-reload').focus();await page.keyboard.press('Enter');await ready('animations');assert.equal(await page.locator('#learning-title').evaluate(el=>el===document.activeElement),true);
+   checks.push('Missing module hides the unusable frame, exposes keyboard retry, and successful retry restores the title focus');
+  }
+  assert.deepEqual(errors,[]);fs.writeFileSync(path.join(output,'report.json'),JSON.stringify({checkedAt:new Date().toISOString(),baseline,measurements,checks,errors},null,2));console.log(JSON.stringify({baseline,measurements,checks,errors},null,2));
+ }finally{await context.close();await browser.close();await new Promise(resolve=>server.close(resolve));}
+})().catch(e=>{console.error(e);process.exitCode=1;});

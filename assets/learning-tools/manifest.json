@@ -10,18 +10,53 @@
       },
       {
         "path": "assets/learning-tools/physics/style.css",
-        "bytes": 6507,
-        "sha256": "bf69f70c4b8f5272db867f223d7173c01a2045a8880c71278b976978f9455f43"
+        "bytes": 6801,
+        "sha256": "1c8a5d92089e575a80fcf9330e36c99afc15c0be14f7484cfb6ae61b3da3c059"
       },
       {
         "path": "assets/learning-tools/physics/tools.mjs",
-        "bytes": 23353,
-        "sha256": "4d62960e51185300b41030303107da67a47e6cd06cb0bb2b07f6c2f44c1a8b27"
+        "bytes": 10300,
+        "sha256": "959978cff4efbeb72f2d602187159a7ee0bd34825023e3476ed6b14355b0cc3d"
       },
       {
         "path": "assets/learning-tools/physics/core.mjs",
-        "bytes": 2868,
-        "sha256": "04a07188cce58b85b86d565d8fc3ed6943ca312ceb0a832844ebcf1658f5c701"
+        "bytes": 3412,
+        "sha256": "0e5e446de89b2cc3b9e2692e005c233e3d7467c1b90a67da630909d9728f7d2d"
+      },
+      {
+        "path": "assets/learning-tools/physics/visualization-core.mjs",
+        "bytes": 8017,
+        "sha256": "7439209b264597978062e97c2c9d9c53787b76ae8c3cacbc439e9920233ac7fd"
+      },
+      {
+        "path": "assets/learning-tools/physics/visualization-studio.mjs",
+        "bytes": 19525,
+        "sha256": "47ada5892af3c1b2b48204f1f75ac669cf031e133de7f78c9a46f1484f372612"
+      },
+      {
+        "path": "assets/learning-tools/physics/visualization-studio.css",
+        "bytes": 5135,
+        "sha256": "94573e9dd332ef5da7f3520a8b16c99a33d0e1fe48aafe6f0b26e2bcd29fa82f"
+      },
+      {
+        "path": "assets/learning-tools/physics/projectile-studio.mjs",
+        "bytes": 12451,
+        "sha256": "9c170122e5528881860222d27b2f9e5687f41b9aa5759db2040458dd045d626d"
+      },
+      {
+        "path": "assets/learning-tools/physics/circuit-model.mjs",
+        "bytes": 7031,
+        "sha256": "27de5c51c41a46468dc0f2bff791023cbba781abc1d3d091009c985cde232d2f"
+      },
+      {
+        "path": "assets/learning-tools/physics/circuit-bench.mjs",
+        "bytes": 27169,
+        "sha256": "27095a24b292022b688eac4208baa0fc5332c42f21e3722508e024450b4161e8"
+      },
+      {
+        "path": "assets/learning-tools/physics/circuit-bench.css",
+        "bytes": 9050,
+        "sha256": "2048b27d1791e5f3db75f6b4f5ba6e267c8118cb0cdf8e492385dc3a6b73811d"
       },
       {
         "path": "assets/learning-tools/physics/THIRD-PARTY-NOTICES.md",

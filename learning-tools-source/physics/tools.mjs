@@ -1,4 +1,4 @@
-import {DEFAULT_STATE,STORAGE_KEY,normalizeState,trajectory,circuitText,circuitUrl,readState,writeState} from './core.mjs';
+import {normalizeState,readState,writeState} from './core.mjs';
 let sequence=0;
 const templates={newton:'F=ma',energy:'E_k=\\frac{1}{2}mv^2',trajectory:'y=v_y t-\\frac{1}{2}gt^2',oscillation:'x=A\\cos(\\omega t+\\phi)'};
 function download(name,text,type='text/plain') {const a=document.createElement('a');const url=URL.createObjectURL(new Blob([text],{type}));a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
@@ -10,32 +10,14 @@ export async function mount(container,options={}) {
   const unsavedFields=new Set();
   if(['equations','trajectory','circuits'].includes(options.initialTab))state.tab=options.initialTab;
   container.classList.add('physics-tools');
-  container.innerHTML='<header class="pt-intro"><span class="pt-eyebrow">PHYSICS ENTELLOQ / LEARNING TOOLS</span><h1>Write it. Move it. Test it.</h1><p>Work with a mathematical expression, connect motion to its graph, or investigate a real circuit model.</p><nav class="pt-tabs" aria-label="Physics tools"><button data-tab="equations" type="button">Equation editor</button><button data-tab="trajectory" type="button">Motion & vectors</button><button data-tab="circuits" type="button">Circuit bench</button></nav></header><section class="pt-workspace"></section>';
+  if(parent!==window)container.classList.add('pt-embedded');
+  container.innerHTML='<header class="pt-intro"><span class="pt-eyebrow">PHYSICS ENTELLOQ / LEARNING TOOLS</span><h1>Explore. Measure. Replay.</h1><p>Connect motion and circuits to their equations, measurements and recorded states.</p><nav class="pt-tabs" aria-label="Physics tools"><button data-tab="equations" type="button">Equation editor</button><button data-tab="trajectory" type="button">Motion & vectors</button><button data-tab="circuits" type="button">Circuit bench</button></nav></header><section class="pt-workspace"></section>';
   const workspace=container.querySelector('.pt-workspace');
   function latestState(){const latest=readState(storage);for(const key of unsavedFields)latest[key]=state[key];return latest;}
   function persist(fields){storageOK=writeState(storage,state,fields);for(const key of fields)if(storageOK)unsavedFields.delete(key);else unsavedFields.add(key);return storageOK;}
   function status(text,error=false){const el=workspace.querySelector('.pt-status');if(el){el.textContent=text;el.classList.toggle('pt-error',error);}}
   function storageStatus(message='Edits are saved on this device.'){const saved=storageOK&&!unsavedFields.size;if(workspace.querySelector('[aria-invalid="true"]')){status('Correct the highlighted setting before exporting or opening a simulation. The prediction uses your last valid values.'+(saved?'':' Some edits are not saved because device storage is unavailable.'),true);return;}status(saved?message:'Some edits are not saved because device storage is unavailable. Export your work to keep it.',!saved);}
   function announceSave(fields){persist(fields);storageStatus('Saved on this device.');}
-  function numberControls(definitions,onChange){
-    const format=n=>Number(n).toLocaleString('en-US',{maximumFractionDigits:3});
-    function readiness(){const invalid=!!workspace.querySelector('[aria-invalid="true"]');workspace.querySelectorAll('[data-download],[data-launch],[data-export-circuit]').forEach(button=>button.disabled=invalid);const external=workspace.querySelector('[data-external]');if(external){external.setAttribute('aria-disabled',String(invalid));if(invalid)external.removeAttribute('href');else external.href=circuitUrl(state,isLight());}}
-    for(const [selector,name,unit,key,scale=1] of definitions){
-      const input=workspace.querySelector(selector),help=document.createElement('span'),error=document.createElement('span');
-      help.className='pt-field-help';help.id=`pt-range-${id}-${key}`;help.textContent=`${format(input.min)} to ${format(input.max)} ${unit}`;
-      error.className='pt-field-error';error.id=`pt-error-${id}-${key}`;error.dataset.error=key;error.hidden=true;
-      input.after(help,error);input.setAttribute('aria-label',`${name} (${unit})`);input.setAttribute('aria-describedby',`${help.id} ${error.id}`);input.setAttribute('aria-invalid','false');
-      input.addEventListener('input',()=>{
-        const value=input.valueAsNumber,valid=Number.isFinite(value)&&value>=Number(input.min)&&value<=Number(input.max);
-        input.setAttribute('aria-invalid',String(!valid));error.hidden=valid;error.textContent=valid?'':`Enter ${format(input.min)} to ${format(input.max)} ${unit}.`;
-        readiness();
-        if(!valid){status(`${name} needs a number from ${format(input.min)} to ${format(input.max)} ${unit}. The prediction still uses your last valid settings.`,true);return;}
-        state[key]=value/scale;onChange(key);
-      });
-    }
-    workspace.querySelector('[data-external]')?.addEventListener('click',event=>{if(event.currentTarget.getAttribute('aria-disabled')==='true')event.preventDefault();});
-    return fields=>{for(const key of fields){const error=workspace.querySelector(`[data-error="${key}"]`);if(!error)continue;error.hidden=true;error.textContent='';workspace.querySelector(`[aria-describedby~="${error.id}"]`)?.setAttribute('aria-invalid','false');}readiness();};
-  }
   function emitEquation(detail){container.dispatchEvent(new CustomEvent('entelloq:equation',{bubbles:true,detail}));options.onEquation?.(detail);if(parent!==window)parent.postMessage({type:'entelloq:equation',...detail},location.origin);status(parent===window&&!options.onEquation?'Expression prepared below. Copy it or export it for your symbolic workbench.':'Expression sent to the host Symbolic Workbench.');}
   async function render(tab,focus=false) {
     cleanup();cleanup=()=>{};const token=++generation;state=latestState();state.tab=tab;persist(['tab']);
@@ -44,7 +26,7 @@ export async function mount(container,options={}) {
     try {
       if(tab==='equations')await equations(token);
       if(tab==='trajectory')await graphs(token);
-      if(tab==='circuits')circuits(token);
+      if(tab==='circuits')await circuits(token);
     }catch(error){if(token!==generation||disposed)return;workspace.innerHTML='<h2 tabindex="-1">Tool could not load</h2><p class="pt-status pt-error" role="alert"></p><button type="button" data-retry>Retry loading</button>';status('The local engine could not load. Check that the complete physics tools folder was copied, then retry.',true);workspace.querySelector('[data-retry]').onclick=()=>render(tab);console.error('Physics tool load failed',error);}
     if(token!==generation||disposed)return;workspace.removeAttribute('aria-busy');if(focus)workspace.querySelector('h2')?.focus({preventScroll:true});
   }
@@ -66,55 +48,23 @@ export async function mount(container,options={}) {
     workspace.querySelector('[data-copy]').onclick=async()=>{try{await navigator.clipboard.writeText(field.getValue('ascii-math'));status('Symbolic text copied.');}catch{status('Clipboard unavailable. Select and copy the symbolic text above.',true);}};
     ascii.textContent=field.getValue('ascii-math');storageStatus();cleanup=()=>{try{window.mathVirtualKeyboard?.hide();}catch{}field.removeEventListener('input',sync);};
   }
+  function savePatch(patch){
+    const fields=Object.keys(patch);state=normalizeState({...state,...patch});return persist(fields);
+  }
   async function graphs(token) {
-    const imported=await import('./vendor/jsxgraph/jsxgraphcore.mjs');
+    const {mountProjectileStudio}=await import('./projectile-studio.mjs');
     if(token!==generation||disposed)return;
-    const JXG=imported.default||imported.JXG||window.JXG;
-    workspace.innerHTML='<div class="pt-grid"><section class="pt-panel"><h2 tabindex="-1">Launch a vector. Read the motion.</h2><p class="pt-muted">Drag the blue velocity tip, or use the numerical controls. The trajectory and predictions update together.</p><div id="pt-trajectory-'+id+'" class="pt-board" role="img" aria-label="Projectile trajectory, horizontal distance and height in metres"></div><p class="pt-axis-caption">Horizontal distance x (m) · Height y (m)</p><div class="pt-metrics"><div><span>Flight time</span><strong data-flight></strong></div><div><span>Landing x</span><strong data-range></strong></div><div><span>Peak height</span><strong data-peak></strong></div></div><p class="pt-formula">x = vₓt &nbsp; · &nbsp; y = vᵧt − ½gt²</p><p class="pt-note">Ideal point projectile, launched from y = 0 with constant downward gravity; no air resistance. Negative vₓ launches to the left. Landing is the return to y = 0.</p></section><aside class="pt-panel"><h3>Initial velocity (m/s)</h3><div id="pt-vector-'+id+'" class="pt-board pt-vector" role="img" aria-label="Draggable initial velocity vector in metres per second"></div><div class="pt-controls"><label>Horizontal vₓ (m/s)<input data-key="vx" type="number" min="-20" max="20" step="0.1"></label><label>Upward vᵧ (m/s)<input data-key="vy" type="number" min="0.1" max="20" step="0.1"></label><label>Gravity g (m/s²)<input data-key="g" type="number" min="0.1" max="25" step="0.01"></label></div><div class="pt-actions"><button type="button" data-earth>Earth · 9.81</button><button type="button" data-moon>Moon · 1.62</button><button type="button" data-download>Export samples</button></div><p class="pt-status" role="status"></p><p class="pt-muted">Use the numerical controls for keyboard access. Values persist on this device. Graphs show model predictions, not measured data.</p></aside></div>'+sources('JSXGraph 1.14.1','https://github.com/jsxgraph/jsxgraph','MIT option');
-    const textColor=()=>getComputedStyle(container).getPropertyValue('--pt-text').trim()||'#e8edf6';
-    const boardOptions={axis:true,showCopyright:false,showNavigation:false,pan:{enabled:false},zoom:{enabled:false},keepaspectratio:false,defaultAxes:{x:{strokeColor:'#71829d',ticks:{label:{strokeColor:textColor()}}},y:{strokeColor:'#71829d',ticks:{label:{strokeColor:textColor()}}}}};
-    const vb=JXG.JSXGraph.initBoard('pt-vector-'+id,{...boardOptions,boundingbox:[-23,24,23,-4]});
-    const origin=vb.create('point',[0,0],{name:'',fixed:true,visible:false});
-    const tip=vb.create('point',[state.vx,state.vy],{name:'v₀',size:6,fillColor:'#6c9bff',strokeColor:'#9dbbff',label:{strokeColor:textColor()},snapToGrid:true,snapSizeX:0.1,snapSizeY:0.1});
-    vb.create('arrow',[origin,tip],{strokeColor:'#6c9bff',strokeWidth:3});
-    const tb=JXG.JSXGraph.initBoard('pt-trajectory-'+id,{...boardOptions,boundingbox:[-2,8,20,-1]});
-    let model=trajectory(state);
-    tb.create('curve',[t=>state.vx*t,t=>state.vy*t-0.5*state.g*t*t,()=>0,()=>model.flight],{strokeColor:'#82aaff',strokeWidth:3});
-    const landing=tb.create('point',[()=>model.range,0],{name:'landing',fixed:true,size:4,fillColor:'#86d1b4',strokeColor:'#86d1b4',label:{strokeColor:textColor()}});
-    function update(fromDrag=false,fields=[]){state=normalizeState(state);model=trajectory(state);landing.label.setAttribute({anchorX:model.range<0?'left':'right',offset:[model.range<0?8:-8,14]});if(!fromDrag)tip.moveTo([state.vx,state.vy]);workspace.querySelectorAll('[data-key]').forEach(input=>{if(input.getAttribute('aria-invalid')!=='true'&&document.activeElement!==input)input.value=state[input.dataset.key];});workspace.querySelector('[data-flight]').textContent=model.flight.toFixed(2)+' s';workspace.querySelector('[data-range]').textContent=model.range.toFixed(2)+' m';workspace.querySelector('[data-peak]').textContent=model.peak.toFixed(2)+' m';const span=Math.max(4,Math.abs(model.range));tb.setBoundingBox([Math.min(0,model.range)-span*.12,Math.max(2,model.peak*1.3),Math.max(0,model.range)+span*.12,-Math.max(1,model.peak*.15)],false);tb.update();if(fields.length)announceSave(fields);else storageStatus();}
-    tip.on('drag',()=>{state.vx=Math.round(tip.X()*10)/10;state.vy=Math.round(tip.Y()*10)/10;const normal=normalizeState(state);if(normal.vx!==state.vx||normal.vy!==state.vy)tip.moveTo([normal.vx,normal.vy]);state=normal;clearErrors(['vx','vy']);update(true,['vx','vy']);});
-    const clearErrors=numberControls([['[data-key="vx"]','Horizontal velocity','m/s','vx'],['[data-key="vy"]','Upward velocity','m/s','vy'],['[data-key="g"]','Gravity','m/s²','g']],key=>update(false,[key]));
-    workspace.querySelector('[data-earth]').onclick=()=>{state.g=9.81;clearErrors(['g']);update(false,['g']);};workspace.querySelector('[data-moon]').onclick=()=>{state.g=1.62;clearErrors(['g']);update(false,['g']);};
-    workspace.querySelector('[data-download]').onclick=()=>{const rows=['time_s,x_m,y_m'];for(let i=0;i<=100;i++){const t=model.flight*i/100,p=model.at(t);rows.push([t,p.x,p.y].map(n=>n.toPrecision(9)).join(','));}download('entelloq-projectile-model.csv',rows.join('\n'),'text/csv');status('101 model samples exported, including launch and landing.');};
-    const observer=new ResizeObserver(()=>{for(const b of [vb,tb]){const box=b.containerObj.getBoundingClientRect();if(box.width>0)b.resizeContainer(box.width,box.height);}});observer.observe(workspace.querySelector('.pt-grid'));
-    update();cleanup=()=>{observer.disconnect();JXG.JSXGraph.freeBoard(vb);JXG.JSXGraph.freeBoard(tb);};
+    const instance=await mountProjectileStudio(workspace,{state:{...state},onChange:savePatch,storageAvailable:storageOK&&!unsavedFields.size,isCurrent:()=>token===generation&&!disposed});
+    if(token!==generation||disposed){instance.destroy();return;}
+    cleanup=()=>instance.destroy();
   }
-  function circuits(token) {
+  async function circuits(token) {
+    const [{mountCircuitBench},{mountExperimentStudio}]=await Promise.all([import('./circuit-bench.mjs'),import('./visualization-studio.mjs')]);
     if(token!==generation||disposed)return;
-    workspace.innerHTML='<section class="pt-panel"><h2 tabindex="-1">Build intuition with a working circuit</h2><p>Predict the current or charging time, then test it in CircuitJS. The simulator opens inside this bench.</p><div class="pt-controls"><label>Experiment<select data-key="circuit"><option value="ohm">Ohm’s law · DC resistor</option><option value="rc">RC charging · series resistor and capacitor</option></select></label><label>Supply (V)<input data-key="voltage" type="number" min="0.1" max="24" step="0.1"></label><label>Resistance (Ω)<input data-key="resistance" type="number" min="10" max="1000000" step="10"></label><label data-cap-label>Capacitance (µF)<input data-cap type="number" min="0.001" max="10000" step="0.1"></label></div><p class="pt-formula" data-prediction></p><div class="pt-actions"><button type="button" class="pt-primary" data-launch>Open circuit simulation</button><button type="button" data-export-circuit>Export circuit source</button><a class="pt-link" data-external target="_blank" rel="noopener noreferrer">Open simulator in a new tab ↗</a></div><p class="pt-note">CircuitJS loads from falstad.com and needs an internet connection. This sends the circuit settings shown here to that service. Your equation drafts stay on this device.</p><p class="pt-status" role="status">Ready to open. No simulator connection has been made.</p><div data-frame-host><div class="pt-placeholder">Predict first. Then open the circuit and inspect its voltage, current and components.</div></div><p class="pt-muted">These are ideal component models for learning. Circuit edits stay in the open simulator; use its File → Export as Text command to keep changes. Our settings are saved on this device. Opening again resets the simulator to these settings.</p><details><summary>What the predictions assume</summary><p class="pt-muted">DC resistor: I = V/R with an ideal voltage source. RC: an initially uncharged ideal capacitor charges through R; time constant τ = RC, and Vc(τ) ≈ 0.632V. Real tolerances, heating, leakage and supply limits are omitted. The simulator is a separate numerical engine.</p></details></section>'+sources('CircuitJS1 · official hosted engine','https://github.com/sharpie7/circuitjs1','GPL-2.0-or-later');
-    let frame=null,timer=null;
-    const host=workspace.querySelector('[data-frame-host]');
-    function update(fields=[]){state=normalizeState(state);workspace.querySelectorAll('[data-key]').forEach(input=>{if(input.getAttribute('aria-invalid')!=='true'&&document.activeElement!==input)input.value=state[input.dataset.key];});if(workspace.querySelector('[data-cap]').getAttribute('aria-invalid')!=='true'&&document.activeElement!==workspace.querySelector('[data-cap]'))workspace.querySelector('[data-cap]').value=state.capacitance*1e6;workspace.querySelector('[data-cap-label]').hidden=state.circuit!=='rc';workspace.querySelector('[data-prediction]').textContent=state.circuit==='rc'?`Predict: τ = RC = ${(state.resistance*state.capacitance*1000).toPrecision(4)} ms; Vc(τ) ≈ ${(state.voltage*(1-Math.exp(-1))).toPrecision(4)} V`:`Predict: I = V/R = ${(state.voltage/state.resistance*1000).toPrecision(4)} mA`;if(!workspace.querySelector('[aria-invalid="true"]'))workspace.querySelector('[data-external]').href=circuitUrl(state,isLight());if(fields.length)persist(fields);}
-    const clearErrors=numberControls([['[data-key="voltage"]','Supply voltage','V','voltage'],['[data-key="resistance"]','Resistance','Ω','resistance'],['[data-cap]','Capacitance','µF','capacitance',1e6]],key=>{update([key]);storageStatus(frame?'Settings saved. Open circuit simulation again to apply them.':'Settings saved. Ready to open.');});
-    workspace.querySelector('[data-key="circuit"]').addEventListener('change',event=>{state.circuit=event.target.value;clearErrors(['capacitance']);update(['circuit']);storageStatus('Settings saved. Ready to open.');});
-    function offline(){if(!navigator.onLine)status('You are offline. Connect to the internet, then open the circuit simulation again. The other tools still work.',true);}
-    workspace.querySelector('[data-launch]').onclick=()=>{
-      clearTimeout(timer);frame?.remove();frame=null;
-      if(!navigator.onLine){offline();return;}
-      frame=document.createElement('iframe');frame.className='pt-circuit-frame';frame.title='CircuitJS circuit simulator';frame.referrerPolicy='no-referrer';frame.setAttribute('sandbox','allow-scripts allow-same-origin allow-downloads');frame.setAttribute('allow',"camera 'none'; microphone 'none'; geolocation 'none'");
-      frame.src=circuitUrl(state,isLight());host.replaceChildren(frame);status('Connecting to the official CircuitJS simulator…');
-      const currentFrame=frame;
-      // Cross-origin browsers cannot inspect the engine. A navigation load is not proof that its simulation is ready.
-      frame.addEventListener('load',()=>{if(frame!==currentFrame)return;clearTimeout(timer);status('Simulator frame loaded. Wait for its circuit canvas. If it stays blank, retry or use Open simulator in a new tab.');});
-      frame.addEventListener('error',()=>{if(frame!==currentFrame)return;clearTimeout(timer);status('The simulator could not connect. Check the connection, retry, or open it in a new tab.',true);});
-      timer=setTimeout(()=>status('The simulator is taking longer to respond. Check the connection, retry, or open it in a new tab.',true),20000);
-    };
-    workspace.querySelector('[data-export-circuit]').onclick=()=>download('entelloq-'+state.circuit+'.txt',circuitText(state));
-    window.addEventListener('offline',offline);update();if(!storageOK||unsavedFields.size)storageStatus();cleanup=()=>{clearTimeout(timer);frame?.remove();window.removeEventListener('offline',offline);};
+    cleanup=mountCircuitBench(workspace,{state:{...state},onChange:savePatch,storageAvailable:storageOK&&!unsavedFields.size,studioFactory:mountExperimentStudio});
   }
-  function isLight(){return document.documentElement.dataset.physicsTheme==='light'||document.documentElement.dataset.theme==='light';}
   const click=e=>{const button=e.target.closest('[data-tab]');if(button&&container.contains(button)&&button.dataset.tab!==state.tab)render(button.dataset.tab,true);};container.addEventListener('click',click);
   await render(state.tab);
-  return {setPanel:panel=>render(panel==='graphs'?'trajectory':['equations','trajectory','circuits'].includes(panel)?panel:'equations',true),getState:()=>({...state}),unmount(){disposed=true;generation++;cleanup();container.removeEventListener('click',click);container.replaceChildren();container.classList.remove('physics-tools');}};
+  return {setPanel:panel=>render(panel==='graphs'?'trajectory':['equations','trajectory','circuits'].includes(panel)?panel:'equations',true),getState:()=>({...state}),unmount(){disposed=true;generation++;cleanup();container.removeEventListener('click',click);container.replaceChildren();container.classList.remove('physics-tools','pt-embedded');}};
 }
 function sources(name,url,licence){return '<footer class="pt-source"><a href="'+url+'" target="_blank" rel="noopener">'+name+' ↗</a><span>'+licence+'</span><a href="THIRD-PARTY-NOTICES.md" target="_blank">Sources & licences</a><span>Educational models · inspect assumptions</span></footer>';}

@@ -1,6 +1,7 @@
+import {circuitSource,circuitHostedUrl} from './circuit-model.mjs';
 export const STORAGE_KEY = 'entelloq.physics.tools.v1';
 export const FIELD_STORAGE_PREFIX = 'entelloq.physics.tools.v2.';
-export const DEFAULT_STATE = Object.freeze({tab:'equations', latex:'F=ma', vx:8, vy:10, g:9.81, circuit:'ohm', voltage:5, resistance:1000, capacitance:0.000001});
+export const DEFAULT_STATE = Object.freeze({tab:'equations', latex:'F=ma', vx:8, vy:10, g:9.81, circuit:'ohm', voltage:5, resistance:1000, resistance2:1000, capacitance:0.000001, rcMode:'charge'});
 export const clamp = (value,min,max,fallback=min) => Number.isFinite(Number(value)) ? Math.min(max,Math.max(min,Number(value))) : fallback;
 export function normalizeState(input={}) {
   if (!input || typeof input !== 'object') input={};
@@ -8,27 +9,30 @@ export function normalizeState(input={}) {
     tab:['equations','trajectory','circuits'].includes(input.tab)?input.tab:'equations',
     latex:typeof input.latex==='string'?input.latex.slice(0,10000):DEFAULT_STATE.latex,
     vx:clamp(input.vx??8,-20,20,8), vy:clamp(input.vy??10,0.1,20,10), g:clamp(input.g??9.81,0.1,25,9.81),
-    circuit:input.circuit==='rc'?'rc':'ohm', voltage:clamp(input.voltage??5,0.1,24,5),
+    circuit:['ohm','series','parallel','divider','rc'].includes(input.circuit)?input.circuit:'ohm', voltage:clamp(input.voltage??5,0.1,24,5),
     resistance:clamp(input.resistance??1000,10,1000000,1000), capacitance:clamp(input.capacitance??0.000001,1e-9,0.01,0.000001),
+    resistance2:clamp(input.resistance2??1000,10,1000000,1000), rcMode:input.rcMode==='discharge'?'discharge':'charge',
   };
 }
 export function trajectory({vx,vy,g}) {
+  if(!Number.isFinite(vx)||!Number.isFinite(vy)||!Number.isFinite(g)||vy<=0||g<=0)throw new RangeError('Projectile requires finite vx, positive vy and positive g in SI units.');
   const flight=2*vy/g;
-  return {flight, range:vx*flight, peak:vy*vy/(2*g), speed:Math.hypot(vx,vy), at:t=>({x:vx*t,y:vy*t-0.5*g*t*t})};
+  const at=t=>({x:vx*t,y:vy*t-0.5*g*t*t});
+  return {flight, range:vx*flight, peak:vy*vy/(2*g), speed:Math.hypot(vx,vy), at,
+    stateAt(t){
+      if(!Number.isFinite(t))throw new RangeError('A finite time is required.');
+      const time=Math.min(flight,Math.max(0,t)),position=at(time),vertical=vy-g*time;
+      // The terminal sample is the airborne state immediately before impact.
+      const kineticSpecific=.5*(vx*vx+vertical*vertical),potentialSpecific=g*Math.max(0,position.y);
+      return {time,x:position.x,y:Math.max(0,position.y),vx,vy:vertical,ax:0,ay:-g,speed:Math.hypot(vx,vertical),kineticSpecific,potentialSpecific,totalSpecific:kineticSpecific+potentialSpecific};
+    }
+  };
 }
 export function circuitText(state) {
-  const s=normalizeState(state);
-  const lines=['$ 1 0.000005 10.20027730826997 50 5 43',`v 96 224 96 96 0 0 40 ${s.voltage} 0 0 0.5`,`r 96 96 256 96 0 ${s.resistance}`,
-    s.circuit==='rc'?`c 256 96 256 224 0 ${s.capacitance} 0`:'w 256 96 256 224 0','w 256 224 96 224 0'];
-  return lines.join('\n')+'\n';
+  return circuitSource(normalizeState(state));
 }
 export function circuitUrl(state, light=false) {
-  const url=new URL('https://www.falstad.com/circuit/circuitjs.html');
-  url.searchParams.set('cct',circuitText(state));
-  url.searchParams.set('whiteBackground',String(light));
-  url.searchParams.set('conventionalCurrent','true');
-  url.searchParams.set('running','true');
-  return url.href;
+  return circuitHostedUrl(normalizeState(state),light);
 }
 export function readState(storage) {
   let saved={};

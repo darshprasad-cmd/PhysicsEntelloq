@@ -1,0 +1,65 @@
+/* Exercise the actual published host, embedded modules, and native input paths. */
+const fs=require('node:fs'),path=require('node:path'),http=require('node:http'),assert=require('node:assert/strict');
+const {chromium}=require(path.join(process.env.CODEX_NODE_MODULES||'C:/Users/darsh/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules','playwright'));
+const root=path.resolve(__dirname,'..'),evidence=path.join(root,'qa/results/visualization-v2');fs.mkdirSync(evidence,{recursive:true});
+const mime={'.html':'text/html','.js':'text/javascript','.mjs':'text/javascript','.css':'text/css','.json':'application/json','.woff2':'font/woff2','.png':'image/png','.svg':'image/svg+xml'};
+const server=http.createServer((req,res)=>{try{const pathname=new URL(req.url,'http://localhost').pathname;const file=path.resolve(root,'.'+decodeURIComponent(pathname==='/'?'/index.html':pathname));if(!file.startsWith(root+path.sep)){res.writeHead(403).end();return;}res.setHeader('Content-Type',mime[path.extname(file)]||'application/octet-stream');fs.createReadStream(file).on('error',()=>res.writeHead(404).end()).pipe(res);}catch{res.writeHead(400).end();}});
+const close=(a,b,epsilon=1e-3)=>assert.ok(Math.abs(a-b)<=epsilon,`${a} ≈ ${b}`);
+(async()=>{
+ await new Promise(r=>server.listen(0,'127.0.0.1',r));const base='http://127.0.0.1:'+server.address().port;
+ const browser=await chromium.launch({headless:true});const context=await browser.newContext({viewport:{width:1440,height:1050},reducedMotion:'reduce'});const page=await context.newPage();page.setDefaultTimeout(20000);
+ const errors=[],requests=[],checks=[],measurements=[],accessibility=[];page.on('pageerror',e=>errors.push(e.message));page.on('request',r=>requests.push(r.url()));
+ async function scan(frame,label){await frame.addScriptTag({path:require.resolve('axe-core/axe.min.js')});const result=await frame.evaluate(async()=>{const r=await axe.run(document.querySelector('#physics-tools'),{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa','wcag22aa']}});return {violations:r.violations.map(v=>({id:v.id,impact:v.impact,nodes:v.nodes.map(n=>({target:n.target,summary:n.failureSummary}))})),passes:r.passes.length};});accessibility.push({label,...result});assert.deepEqual(result.violations,[],label+' accessibility');}
+ async function open(panel){await page.goto(base+'/#learning:'+panel,{waitUntil:'domcontentloaded'});await page.locator('.lt-frame').waitFor();const frame=await(await page.locator('.lt-frame').elementHandle()).contentFrame();await frame.locator('[data-timeline]').waitFor();return frame;}
+ async function seek(frame,time){await frame.locator('[data-timeline]').evaluate((el,t)=>{el.value=String(t);el.dispatchEvent(new Event('input',{bubbles:true}));},time);}
+ async function val(frame,key){return Number(await frame.locator(`[data-value="${key}"]`).textContent());}
+ try{
+  let frame=await open('graphs');
+  assert.equal(await frame.locator('[data-timeline]').inputValue(),'0');
+  await frame.locator('[data-key="vx"]').fill('-8');await frame.locator('[data-key="vy"]').fill('10');await frame.locator('[data-earth]').click();
+  const flight=20/9.81;await seek(frame,flight/2);close(await val(frame,'x'),-8*flight/2,.002);close(await val(frame,'y'),100/(2*9.81),.001);
+  close(Number(await frame.locator('[data-timeline]').inputValue()),flight/2,1e-10);
+  const labels=await frame.locator('.vs-plot').getAttribute('aria-label');assert.match(labels,/against time \(s\)/);
+  await frame.locator('.vs-plot').focus();await page.keyboard.press('ArrowRight');close(Number(await frame.locator('[data-timeline]').inputValue()),flight/2+flight/120,1e-10);
+  await frame.locator('[data-probe="x"]').click();assert.equal(await frame.locator('[data-unit]').inputValue(),'m');
+  await frame.locator('[data-zoom]').selectOption('4');assert.equal(await frame.locator('[data-zoom]').inputValue(),'4');await frame.locator('[data-pan-right]').click();
+  await frame.locator('[data-zoom]').selectOption('1');const plot=await frame.locator('.vs-plot').boundingBox();await page.mouse.click(plot.x+plot.width*.54,plot.y+plot.height*.5);
+  assert.ok(Number(await frame.locator('[data-timeline]').inputValue())>flight*.3);
+  await frame.locator('.vs-compare summary').click();await seek(frame,0);await frame.locator('[data-bookmark="A"]').click();await seek(frame,flight);await frame.locator('[data-bookmark="B"]').click();assert.match(await frame.locator('[data-comparison]').textContent(),/Δ/);
+  await frame.locator('[data-jump="A"]').click();assert.equal(await frame.locator('[data-timeline]').inputValue(),'0');
+  await frame.locator('[data-key="g"]').fill('1.62');assert.equal(await frame.locator('[data-jump="A"]').isDisabled(),true);
+  checks.push('Projectile SI position, keyboard stepping, graph seeking, zoom/pan, probes, bookmark comparison and parameter-reset synchronization');
+  await frame.locator('[data-key="vy"]').fill('100');assert.equal(await frame.locator('[data-download]').isDisabled(),true);await frame.locator('[data-key="vy"]').fill('10');
+  const downloading=page.waitForEvent('download');await frame.locator('[data-studio-export]').click();const download=await downloading;const csv=fs.readFileSync(await download.path(),'utf8');const rows=csv.trim().split('\n').filter(line=>!line.startsWith('#'));assert.equal(rows.length,242);assert.match(csv,/# parameters:/);assert.match(rows[0],/\[m\]/);const end=rows.at(-1).split(',').map(Number);close(end[0],20/1.62,1e-10);assert.ok(end.every(Number.isFinite));
+  fs.writeFileSync(path.join(evidence,'projectile-samples.csv'),csv);checks.push('CSV contains units, initial conditions, 241 finite model samples and exact endpoints');
+  await frame.locator('[data-earth]').click();await frame.locator('[data-canvas-play]').click();await frame.waitForFunction(()=>Number(document.querySelector('[data-timeline]').value)>.1);assert.equal(await frame.locator('[data-play]').textContent(),'Pause');await frame.locator('[data-play]').click();const paused=await frame.locator('[data-timeline]').inputValue();await frame.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));assert.equal(await frame.locator('[data-timeline]').inputValue(),paused);await frame.locator('[data-canvas-reset]').click();assert.equal(await frame.locator('[data-timeline]').inputValue(),'0');checks.push('Canvas and shared controls drive one clock under reduced motion; pause freezes time and canvas reset rewinds');
+  await scan(frame,'projectile desktop dark');await page.screenshot({path:path.join(evidence,'projectile-desktop.png')});
+  frame=await open('circuits');await frame.locator('[data-key="circuit"]').selectOption('rc');await frame.locator('[data-key="resistance"]').fill('2000');await frame.locator('[data-cap]').fill('1');
+  assert.match(await frame.locator('[data-prediction]').textContent(),/2.000 ms/);await seek(frame,.002);close(await val(frame,'outputVoltage'),5*(1-Math.exp(-1)),.001);
+  await frame.locator('[data-circuit-play]').click();await frame.waitForFunction(()=>Number(document.querySelector('[data-timeline]').value)>.0021);assert.equal(await frame.locator('[data-play]').textContent(),'Pause');await frame.locator('[data-play]').click();assert.match(await frame.locator('[data-circuit-play]').textContent(),/Play/);await frame.locator('[data-circuit-reset]').click();assert.equal(await frame.locator('[data-timeline]').inputValue(),'0');
+  assert.equal(await frame.locator('.pt-circuit-frame').count(),0);assert.equal(requests.some(url=>/falstad\.com/.test(url)),false);
+  await frame.locator('[data-key="resistance"]').fill('1');assert.equal(await frame.locator('[data-launch]').isDisabled(),true);await frame.locator('[data-key="resistance"]').fill('2000');
+  checks.push('RC charge at one time constant agrees with analytical voltage; local bench makes no hosted-simulator request and rejects invalid resistance');
+  for(const circuit of ['ohm','series','parallel','divider','rc']){await frame.locator('[data-key="circuit"]').selectOption(circuit);assert.equal(await frame.locator('[data-timeline]').inputValue(),'0');assert.ok((await frame.locator('[data-prediction]').textContent()).length>8);}
+  await context.setOffline(true);await frame.locator('[data-key="voltage"]').fill('12');await seek(frame,.002);close(await val(frame,'outputVoltage'),12*(1-Math.exp(-1)),.001);await frame.locator('[data-launch]').click();assert.equal(await frame.locator('.pt-circuit-frame').count(),0);assert.match(await frame.locator('.pt-status').textContent(),/offline/i);await context.setOffline(false);checks.push('All five native topologies open and the RC bench remains functional offline');
+  await frame.locator('[data-component="capacitor"]').focus();await page.keyboard.press('Enter');assert.equal(await frame.locator('[data-component="capacitor"]').getAttribute('aria-pressed'),'true');assert.equal(await frame.locator('.cb-probe [data-probe]').inputValue(),'capacitor');assert.match(await frame.locator('[data-probe-value="energy"]').textContent(),/J/);
+  await frame.locator('[data-mode="discharge"]').click();assert.equal(await frame.locator('[data-timeline]').inputValue(),'0');close(await val(frame,'outputVoltage'),12);await seek(frame,.002);close(await val(frame,'outputVoltage'),12*Math.exp(-1),.001);assert.ok(await val(frame,'loopCurrent')<0);assert.equal(await val(frame,'sourceCurrent'),0);
+  await frame.locator('[data-component="ground"]').focus();await page.keyboard.press('Enter');assert.equal(await frame.locator('[data-probe-value="current"]').textContent(),'—');
+  await frame.locator('[data-mode="charge"]').click();await seek(frame,.002);await frame.locator('.cb-probe [data-probe]').selectOption('capacitor');checks.push('Schematic controls share the timeline; keyboard probes select real components; RC discharge reverses current and disconnects the source; ground has no fabricated branch current');
+  for(const width of [1440,820,390,320]){
+   await page.setViewportSize({width,height:width<1000?900:1050});
+   for(const theme of ['dark','light']){await page.evaluate(t=>document.documentElement.dataset.theme=t,theme);await frame.waitForFunction(t=>document.documentElement.dataset.physicsTheme===t,theme);assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));assert.ok(await frame.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));if(width===1440||width===390){await scan(frame,`circuit ${width} ${theme}`);await page.screenshot({path:path.join(evidence,`circuit-${width}-${theme}.png`)});}}
+  }
+  checks.push('Actual host and circuit workspace fit 320/390/820/1440px with live dark/light theme synchronization');
+  await page.setViewportSize({width:1440,height:1050});frame=await open('graphs');
+  const cdp=await context.newCDPSession(page);await cdp.send('Emulation.setCPUThrottlingRate',{rate:4});await frame.locator('[data-moon]').click();await frame.locator('[data-play]').click();
+  const timing=await frame.evaluate(()=>new Promise(resolve=>{const gaps=[];let prev=null;function tick(t){if(prev!==null)gaps.push(t-prev);prev=t;if(gaps.length<120)requestAnimationFrame(tick);else{gaps.sort((a,b)=>a-b);resolve({frames:gaps.length,medianMs:gaps[60],p95Ms:gaps[114],maxMs:gaps.at(-1),svgElements:document.querySelectorAll('svg').length});}}requestAnimationFrame(tick);}));
+  measurements.push({scenario:'Projectile playback in headless Chromium with 4x CPU throttling, 1440px viewport',...timing});await cdp.send('Emulation.setCPUThrottlingRate',{rate:1});await cdp.detach();
+  // Switching while playing removes the owning iframe and all of its work.
+  const oldFrame=frame;await page.locator('#learning-back').click();assert.equal(oldFrame.isDetached(),true);assert.equal(await page.locator('.lt-frame').count(),0);
+  for(let i=0;i<4;i++){frame=await open(i%2?'graphs':'circuits');assert.equal(await frame.locator('.vs-studio').count(),1);}
+  checks.push('Playing workspace is disposed on return; repeated real host navigation mounts exactly one studio');
+  await frame.locator('[data-projectile-studio]').scrollIntoViewIfNeeded();await page.screenshot({path:path.join(evidence,'projectile-measurements.png')});
+  assert.deepEqual(errors,[]);const report={checkedAt:new Date().toISOString(),base:'local preview',browser:browser.version(),checks,measurements,accessibility,errors,limits:['Chromium desktop/emulated viewports; not real phone hardware or Safari/Firefox.','4x throttling is a lab observation, not a low-end-device guarantee.','Hosted CircuitJS simulation and hardware camera/AR not tested by this suite.']};fs.writeFileSync(path.join(evidence,'report.json'),JSON.stringify(report,null,2));console.log(JSON.stringify(report,null,2));
+ }catch(e){await page.screenshot({path:path.join(evidence,'failure.png'),fullPage:true}).catch(()=>{});console.error(JSON.stringify({errors,url:page.url()},null,2));throw e;}finally{await context.close();await browser.close();await new Promise(r=>server.close(r));}
+})().catch(e=>{console.error(e);process.exitCode=1;});

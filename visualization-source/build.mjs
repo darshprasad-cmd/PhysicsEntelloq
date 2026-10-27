@@ -16,7 +16,7 @@ const result = await build({
 });
 const files = {
   "engine.mjs": result.outputFiles[0].contents,
-  "engine.css": fs.readFileSync(path.join(here, "workspace.css")),
+  "engine.css": Buffer.from(fs.readFileSync(path.join(here, "workspace.css"),'utf8').replace(/\r\n/g,'\n')),
   "THREE-LICENSE.txt": fs.readFileSync(
     path.join(here, "node_modules/three/LICENSE"),
   ),

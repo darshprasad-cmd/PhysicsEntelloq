@@ -4,8 +4,22 @@ const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const fs=require('node:fs'),path=require('node:path'),{createHash}=require('node:crypto');
 const root=path.resolve(__dirname,'..'),normalize=text=>text.replace(/\r\n/g,'\n');
-function existingArtifact(){return require('./visualization-preservation.cjs')(normalize(fs.readFileSync(path.join(root,'index.html'),'utf8')));}
-test('Visualization hooks preserve the exact published baseline (aca2bb6)',()=>{
+// Strip only the three new, exact source-owned lamina slots. All original
+// fixtures and historical digests below remain immutable and exercised.
+function withoutLamina(text){
+  for(const [name,file] of [['LAMINA-MODEL','lamina-model.js'],['LAMINA-LAB','lamina-lab.js']]){
+    const slot='/* EXPERIENCE:'+name+':START */\n'+normalize(fs.readFileSync(path.join(root,'experience',file),'utf8'))+'\n/* EXPERIENCE:'+name+':END */\n';
+    assert.equal(text.split(slot).length,2,'One exact '+name+' source slot');text=text.replace(slot,'');
+  }
+  const css='\n'+normalize(fs.readFileSync(path.join(root,'experience/lamina-lab.css'),'utf8'));
+  assert.equal(text.split(css).length,2,'One exact lamina stylesheet');return text.replace(css,'');
+}
+function existingArtifact(){return withoutLamina(require('./visualization-preservation.cjs')(normalize(fs.readFileSync(path.join(root,'index.html'),'utf8'))));}
+test('Visualization preserves the complete released lamina application (4e8a9b1)',()=>{
+  const text=require('./visualization-preservation.cjs')(normalize(fs.readFileSync(path.join(root,'index.html'),'utf8')));
+  assert.equal(createHash('sha256').update(text).digest('hex'),'c9de19cd5f6830612f30d9c5f6c6e19262e51e06dd90cd5016bb9ae0dfaa7366');
+});
+test('Lamina and visualization preserve every published application byte (aca2bb6)',()=>{
   assert.equal(createHash('sha256').update(existingArtifact()).digest('hex'),'4a99484100c46513d025fed30c1242a8b585420e9ae00642388b273b0774d6f4');
 });
 // The quality pass owns these adapter slots only. Restore their exact immutable

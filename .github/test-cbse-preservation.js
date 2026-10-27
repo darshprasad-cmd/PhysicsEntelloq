@@ -15,8 +15,22 @@ function withoutLamina(text){
   assert.equal(text.split(css).length,2,'One exact lamina stylesheet');return text.replace(css,'');
 }
 function existingArtifact(){return withoutLamina(normalize(fs.readFileSync(path.join(root,'index.html'),'utf8')));}
+// V2 changes the learning-tool adapter's descriptive copy in the host artifact.
+// Restore its immutable source while retaining every historical artifact hash.
+function restoreVisualizationAdapter(text){
+  const frozen=normalize(fs.readFileSync(path.join(__dirname,'fixtures/visualization-baseline-4e8a9b1/learning-tools.js'),'utf8'));
+  assert.equal(createHash('sha256').update(frozen).digest('hex'),'e0c6467536ca14535a3594f4914ca513ac944d35905d41e5b8ba2c8d2c3fb215','Immutable pre-V2 adapter');
+  const current=normalize(fs.readFileSync(path.join(root,'experience/learning-tools.js'),'utf8'));
+  const slot=source=>'/* EXPERIENCE:LEARNING-TOOLS:START */\n'+source+'\n/* EXPERIENCE:LEARNING-TOOLS:END */\n';
+  assert.equal(text.split(slot(current)).length,2,'One exact current adapter slot');
+  return text.replace(slot(current),slot(frozen));
+}
+test('Visualization V2 preserves every surrounding lamina-release byte (4e8a9b1)',()=>{
+  const text=restoreVisualizationAdapter(normalize(fs.readFileSync(path.join(root,'index.html'),'utf8')));
+  assert.equal(createHash('sha256').update(text).digest('hex'),'c9de19cd5f6830612f30d9c5f6c6e19262e51e06dd90cd5016bb9ae0dfaa7366');
+});
 test('Lamina preserves every published application byte (aca2bb6)',()=>{
-  assert.equal(createHash('sha256').update(existingArtifact()).digest('hex'),'4a99484100c46513d025fed30c1242a8b585420e9ae00642388b273b0774d6f4');
+  assert.equal(createHash('sha256').update(restoreVisualizationAdapter(existingArtifact())).digest('hex'),'4a99484100c46513d025fed30c1242a8b585420e9ae00642388b273b0774d6f4');
 });
 // The quality pass owns these adapter slots only. Restore their exact immutable
 // published sources before comparing the historical whole-artifact digests.

@@ -41,3 +41,22 @@ test('partial or denied writes return failure without discarding the untouched f
   const storage=memory({[FIELD_STORAGE_PREFIX+'latex']:JSON.stringify('F=123m')});const original=storage.setItem;storage.setItem=(key,value)=>{if(key===FIELD_STORAGE_PREFIX+'vy')throw Error('quota');original(key,value);};
   assert.equal(writeState(storage,{vx:9,vy:12},['vx','vy']),false);assert.equal(readState(storage).latex,'F=123m');assert.equal(readState(storage).vx,9);assert.equal(readState(storage).vy,10);
 });
+
+test('SI projectile state is bounded at launch and pre-impact with conserved specific energy',()=>{
+  const m=trajectory({vx:-8,vy:10,g:9.81});
+  for(const time of [-5,0,m.flight/2,m.flight,m.flight+10]){
+    const s=m.stateAt(time);assert.ok(s.y>=0);assert.ok(s.time>=0&&s.time<=m.flight);
+    assert.equal(s.ax,0);assert.equal(s.ay,-9.81);assert.ok(Math.abs(s.totalSpecific-82)<1e-10);
+  }
+  assert.equal(m.stateAt(m.flight).vy,-10);assert.throws(()=>m.stateAt(NaN));
+  for(const params of [{vx:0,vy:0,g:9.81},{vx:Infinity,vy:1,g:9.81},{vx:1,vy:2,g:0}])assert.throws(()=>trajectory(params));
+});
+
+test('extended circuit settings preserve independent saved fields and old RC records',()=>{
+  const storage=memory({[STORAGE_KEY]:JSON.stringify({circuit:'rc',resistance:2000,capacitance:2e-6,latex:'E=mc^2'})});
+  const old=readState(storage);assert.equal(old.circuit,'rc');assert.equal(old.resistance2,1000);assert.equal(old.rcMode,'charge');
+  for(const circuit of ['ohm','series','parallel','divider','rc'])assert.equal(normalizeState({circuit}).circuit,circuit);
+  writeState(storage,{...old,circuit:'divider',resistance2:3000,rcMode:'discharge'},['circuit','resistance2','rcMode']);
+  const next=readState(storage);assert.equal(next.resistance,2000);assert.equal(next.resistance2,3000);assert.equal(next.latex,'E=mc^2');assert.equal(next.rcMode,'discharge');
+  assert.equal(normalizeState({resistance2:'1\nw bad',rcMode:'invalid'}).resistance2,1000);
+});

@@ -4,13 +4,13 @@
   "assets": [
     {
       "path": "engine.mjs",
-      "bytes": 603738,
-      "sha256": "ac8dee72ddf37c4487c56243672e70750f38ae338de75b66a3088bfe10186716"
+      "bytes": 603948,
+      "sha256": "77e53ad06fa463738f3c43dedd52ac0294da277d95e523cbda78388258d3f41f"
     },
     {
       "path": "engine.css",
-      "bytes": 9651,
-      "sha256": "090a0f4be2380d73a0c488ca57b298cc21eacec6409dbf8ce4d9519d3611d342"
+      "bytes": 10461,
+      "sha256": "b73f21f29bd14360747a68fd9ec898eed927b84dea20155a010aa1f4bf94005c"
     },
     {
       "path": "THREE-LICENSE.txt",

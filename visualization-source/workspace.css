@@ -18,6 +18,7 @@
     system-ui,
     sans-serif;
   isolation: isolate;
+  container-type: inline-size;
   color-scheme: dark;
 }
 .pv-workspace[data-theme="light"] {
@@ -29,6 +30,11 @@
   --pv-accent: #185f88;
   color-scheme: light;
 }
+/* Embedded lab chrome has !important instrument text colors. Scope this repair
+   to the new graph; never recolor the original scientific apparatus. */
+html[data-physics-engine] .pv-workspace[data-theme] :is(p,small,label,span,h3,h4){color:var(--pv-ink)!important}
+html[data-physics-engine] .pv-workspace[data-theme] :is(.pv-subtitle,.pv-select>span,.pv-axis-tick,.pv-parameter>span,.pv-status,.pv-reading>small){color:var(--pv-muted)!important}
+html[data-physics-engine] .pv-workspace[data-theme] .pv-eyebrow{color:var(--pv-accent)!important}
 .pv-workspace [hidden] {
   display: none !important;
 }
@@ -432,6 +438,12 @@
 }
 .pv-entry small {
   color: var(--ink-dim, #9db4c3);
+}
+@container (max-width: 800px) {
+  .pv-body{display:flex;flex-direction:column}
+  .pv-settings{order:2;border-left:0;border-top:1px solid var(--pv-line);width:100%}
+  .pv-header{padding:18px;gap:12px}
+  .pv-header h3{font-size:22px}
 }
 @media (hover: hover) and (pointer: fine) {
   .pv-button:hover {

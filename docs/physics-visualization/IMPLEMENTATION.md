@@ -106,11 +106,11 @@ Quality/release: `.github/test-cbse-preservation.js`, `.github/workflows/static-
 
 ## Verification and limits
 
-Local core/app run: 197 passing checks before incorporating the parallel lamina release. This includes 13 new numerical tests plus the existing application regressions. Reality Lab: 23 passing tests and TypeScript/Vite production build. Existing Reason and Proof build/tests also passed (4 and 3 tests).
+Final combined local run: 248 passing core, application, learning-physics and sketch-model checks after incorporating the parallel lamina release. This includes 13 new numerical tests and the unchanged historical preservation digests, plus a complete released-lamina artifact comparison. The learning review/notebook suite passed 14 tests; Python scientific/robotics suites passed 23 tests. Reality Lab: 23 passing tests and TypeScript/Vite production build. Existing Reason and Proof build/tests also passed (4 and 3 tests). All three existing learning/visual/host browser suites passed with no page errors.
 
 `qa/physics-visualization.cjs` serves the actual app and covers: all listed integrations; analytical projectile, wave, potential-symmetry and Bloch checks; actual Yee staggered buffers; delegated inputs; pause; 2D switching; 320/390/768/1440 px in both themes; repeated mount/unmount; simulated context loss/restoration; WebGL-disabled fallback; opt-in camera denial and no leftover camera element; no uncaught page errors. Results/screenshots are written under ignored `qa/results/physics-visualization/`.
 
-A bounded local timing sample of 30 Lorenz updates under headless Chromium/SwiftShader measured 0.4 ms median and 0.8 ms p95 CPU submission/update time. This is not GPU completion time, end-to-end FPS, a mobile GPU benchmark or a real-webcam accuracy test. Hardware touch gestures, Safari/WebKit, prolonged real-camera tracking and low-end physical devices still require human/device testing. Synthetic denial/lifecycle tests must not be reported as actual webcam accuracy.
+A bounded local timing sample of 30 Lorenz updates under headless Chromium/SwiftShader measured 0.5 ms median and 1.1 ms p95 CPU submission/update time. This is not GPU completion time, end-to-end FPS, a mobile GPU benchmark or a real-webcam accuracy test. Hardware touch gestures, Safari/WebKit, prolonged real-camera tracking and low-end physical devices still require human/device testing. Synthetic denial/lifecycle tests must not be reported as actual webcam accuracy.
 
 The engine is integrated into the appropriate labs listed above, not every existing graph. Ordinary 2D signal/error/conservation plots intentionally remain 2D. Three-dimensional inspection does not upgrade the scientific assumptions of a legacy model.
 

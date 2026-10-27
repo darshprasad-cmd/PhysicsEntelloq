@@ -97,7 +97,7 @@ export function mount(host, adapter, options = {}) {
   const body = el("div", "pv-body"),
     main = el("div", "pv-main"),
     aside = el("details", "pv-settings");
-  aside.open = innerWidth > 720;
+  aside.open = host.getBoundingClientRect().width > 820;
   aside.append(el("summary", null, "Parameters & display"));
   body.append(main, aside);
   root.append(body);
@@ -240,8 +240,9 @@ export function mount(host, adapter, options = {}) {
   for (const p of adapter.parameters || []) {
     const label = el("label", "pv-parameter"),
       name = el("span", null, p.label + (p.unit ? " / " + p.unit : "")),
-      input = document.createElement("input");
-    input.type = p.options ? "text" : "number";
+      input = document.createElement(p.options?'select':'input');
+    if(p.options){for(const [value,title] of p.options){const option=document.createElement('option');option.value=value;option.textContent=title;input.append(option);}}
+    else input.type = "number";
     input.value = p.get();
     input.setAttribute(
       "aria-label",
@@ -254,13 +255,13 @@ export function mount(host, adapter, options = {}) {
     parameterBox.append(label);
     parameterInputs.push({ p, input });
     input.oninput = () => {
-      const value = input.valueAsNumber;
+      const value = p.options ? input.value : input.valueAsNumber;
       if (
-        input.value.trim() === "" ||
+        p.options ? !p.options.some(option=>option[0]===value) : (input.value.trim() === "" ||
         !Number.isFinite(value) ||
         value < (p.min ?? -Infinity) ||
         value > (p.max ?? Infinity) ||
-        (p.step === 1 && !Number.isInteger(value))
+        (p.step === 1 && !Number.isInteger(value)))
       ) {
         input.setAttribute("aria-invalid", "true");
         message(

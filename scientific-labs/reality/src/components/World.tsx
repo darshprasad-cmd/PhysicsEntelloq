@@ -1,5 +1,11 @@
 import type { ModelConfig, Sample } from "../types";
-export default function World({
+import {useState} from "react";
+import ModelGraph from "./ModelGraph";
+export default function World(props: Parameters<typeof WorldDiagram>[0]) {
+  const [spatial,setSpatial]=useState(false);
+  return <div><button type="button" className="secondary-btn" style={{margin:12,color:'inherit',minHeight:40}} aria-pressed={spatial} onClick={()=>setSpatial(!spatial)}>{spatial?'Return to apparatus':'Inspect model in 3D'}</button>{spatial?<ModelGraph samples={props.samples} time={props.time}/>:<WorldDiagram {...props}/>}</div>;
+}
+function WorldDiagram({
   config,
   samples,
   time,

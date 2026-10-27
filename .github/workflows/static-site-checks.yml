@@ -25,6 +25,12 @@ jobs:
           node-version: 22
       - name: Parse inline scripts
         run: node .github/validate-inline-scripts.js
+      - name: Check shared physics visualization mathematics and asset parity
+        run: |
+          npm ci --prefix visualization-source --no-audit --no-fund
+          npm test --prefix visualization-source
+          node visualization-source/build.mjs --check
+          node --test .github/test-cbse-preservation.js
       - name: Verify generated experience is current
         run: node .github/build-experience.js --check
       - name: Verify scientific module sources and published assets
@@ -76,3 +82,4 @@ jobs:
           node scripts/check-learning-tools-browser.cjs
           node scripts/check-visual-tools-browser.cjs
           node qa/learning-host-quality.cjs
+          node qa/physics-visualization.cjs

@@ -14,8 +14,12 @@ function withoutLamina(text){
   const css='\n'+normalize(fs.readFileSync(path.join(root,'experience/lamina-lab.css'),'utf8'));
   assert.equal(text.split(css).length,2,'One exact lamina stylesheet');return text.replace(css,'');
 }
-function existingArtifact(){return withoutLamina(normalize(fs.readFileSync(path.join(root,'index.html'),'utf8')));}
-test('Lamina preserves every published application byte (aca2bb6)',()=>{
+function existingArtifact(){return withoutLamina(require('./visualization-preservation.cjs')(normalize(fs.readFileSync(path.join(root,'index.html'),'utf8'))));}
+test('Visualization preserves the complete released lamina application (4e8a9b1)',()=>{
+  const text=require('./visualization-preservation.cjs')(normalize(fs.readFileSync(path.join(root,'index.html'),'utf8')));
+  assert.equal(createHash('sha256').update(text).digest('hex'),'c9de19cd5f6830612f30d9c5f6c6e19262e51e06dd90cd5016bb9ae0dfaa7366');
+});
+test('Lamina and visualization preserve every published application byte (aca2bb6)',()=>{
   assert.equal(createHash('sha256').update(existingArtifact()).digest('hex'),'4a99484100c46513d025fed30c1242a8b585420e9ae00642388b273b0774d6f4');
 });
 // The quality pass owns these adapter slots only. Restore their exact immutable

@@ -27,6 +27,8 @@ jobs:
         run: node .github/validate-inline-scripts.js
       - name: Verify generated experience is current
         run: node .github/build-experience.js --check
+      - name: Check guided practical coverage and physical models
+        run: node --test .github/test-guided-practicals.js
       - name: Verify scientific module sources and published assets
         run: |
           node .github/build-scientific-lab-assets.mjs --check

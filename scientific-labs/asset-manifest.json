@@ -14,9 +14,10 @@
         "public/fixtures/README.md": "4419b8b8a0e3a76b83ce32f83159706b578b089b20140825b52786ee375f304b",
         "public/fixtures/tracking.webm": "efb2ece726de009ad60407deeb3a3f656f2b92f5503113d35b049709736ec1fb",
         "src/App.tsx": "f8bb6e35b44a648509566be547e88e442e68c613c7a5f8a836312c49bd7a1e74",
+        "src/components/ModelGraph.tsx": "ead4e5b6798ff75942039a1a32ec367cc5361511cdecdb7cef89c2408bfdc5b0",
         "src/components/MotionChart.tsx": "b3622a12fb5b4d8c1ec28e62d1ee301d5c2f4cce9efb314737ab801d504f9bd8",
         "src/components/VideoLab.tsx": "6a01c04832407a71f4d5ed143f54187aa16a40c86725fcf4945e0755849e0a70",
-        "src/components/World.tsx": "d524a8017d7a29a01cac32f799a736de8845e826ddf16f299b84b6b4a80a80be",
+        "src/components/World.tsx": "5e09f3b6c071c765b046bb749ae0c68ea6a6370378855e25bdc3717baf7aa1f8",
         "src/components/video-lab.css": "54fa31764d90377a3039ed0dfc178b26b1198837f1fac8bf2ef9bed705547423",
         "src/lib/physics.ts": "9cdfca662a030101d29cfa4530f113ccde72bc917a53b309115e8b6044c5568d",
         "src/lib/storage.ts": "fca4aa0715718ddf24cf6324e703ed7ca474724007f78f7dc1631282fd283185",
@@ -35,13 +36,14 @@
       },
       "assets": {
         "assets/index-2O9GJU4G.js": "98f8a51f9c83e03956fcc06fc1381a0653617eaeb363afe999a3ba3809d7f63c",
+        "assets/index-C2vWelHu.js": "affde741fe389e5822d288d6a9c2531bfa62f5e2e29b0e5259ce6133545db0b0",
         "assets/index-xt16h0-Z.css": "10b750dd6da68bee0ef7f1ffb440dc17f634b1814b7c65f9cacb382e93d91c92",
         "assets/rapier-BfJwCY8K.js": "05595550f5d73c8ec70062515d315483a08be236b75a396a45b34f422b702380",
         "assets/tracking.worker-wKthIYSz.js": "5434afb5cd8badce32ba1848f2423805e13a772095e6633acf52c7fbcd07ab79",
         "favicon.svg": "a08ccb24a38bf2d3fa5bdb0dc616af8eb8660f5de2faf8263660ef13157f6a3a",
         "fixtures/README.md": "4419b8b8a0e3a76b83ce32f83159706b578b089b20140825b52786ee375f304b",
         "fixtures/tracking.webm": "efb2ece726de009ad60407deeb3a3f656f2b92f5503113d35b049709736ec1fb",
-        "index.html": "3bcbbdb833e132a5cd28ffd428c43d9a112a7c85913123f15b036be3b6792293"
+        "index.html": "04d1abe785470bdb97655d67cc93cbcd368a2d3dcc8ebfe6ce10008f6d2cec5b"
       }
     },
     "reason": {

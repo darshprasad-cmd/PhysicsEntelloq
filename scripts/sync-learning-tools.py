@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def runtime_files(source, module):
     if module == "physics":
-        return [source / name for name in ("index.html", "style.css", "tools.mjs", "core.mjs", "THIRD-PARTY-NOTICES.md")] + sorted((source / "vendor").rglob("*"), key=lambda path: path.as_posix())
+        return [source / name for name in ("index.html", "style.css", "tools.mjs", "core.mjs", "visualization.mjs", "THIRD-PARTY-NOTICES.md")] + sorted((source / "vendor").rglob("*"), key=lambda path: path.as_posix())
     if module in ("learning", "sketches", "animations"):
         manifest = json.loads((source / "asset-manifest.json").read_text(encoding="utf-8"))
         return [source / entry["path"] for entry in manifest["assets"]] + [source / "asset-manifest.json"]

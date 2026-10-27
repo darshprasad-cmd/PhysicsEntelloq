@@ -1,4 +1,5 @@
 import {DEFAULT_STATE,STORAGE_KEY,normalizeState,trajectory,circuitText,circuitUrl,readState,writeState} from './core.mjs';
+import {connectVisualization} from './visualization.mjs';
 let sequence=0;
 const templates={newton:'F=ma',energy:'E_k=\\frac{1}{2}mv^2',trajectory:'y=v_y t-\\frac{1}{2}gt^2',oscillation:'x=A\\cos(\\omega t+\\phi)'};
 function download(name,text,type='text/plain') {const a=document.createElement('a');const url=URL.createObjectURL(new Blob([text],{type}));a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
@@ -87,7 +88,10 @@ export async function mount(container,options={}) {
     workspace.querySelector('[data-earth]').onclick=()=>{state.g=9.81;clearErrors(['g']);update(false,['g']);};workspace.querySelector('[data-moon]').onclick=()=>{state.g=1.62;clearErrors(['g']);update(false,['g']);};
     workspace.querySelector('[data-download]').onclick=()=>{const rows=['time_s,x_m,y_m'];for(let i=0;i<=100;i++){const t=model.flight*i/100,p=model.at(t);rows.push([t,p.x,p.y].map(n=>n.toPrecision(9)).join(','));}download('entelloq-projectile-model.csv',rows.join('\n'),'text/csv');status('101 model samples exported, including launch and landing.');};
     const observer=new ResizeObserver(()=>{for(const b of [vb,tb]){const box=b.containerObj.getBoundingClientRect();if(box.width>0)b.resizeContainer(box.width,box.height);}});observer.observe(workspace.querySelector('.pt-grid'));
-    update();cleanup=()=>{observer.disconnect();JXG.JSXGraph.freeBoard(vb);JXG.JSXGraph.freeBoard(tb);};
+    update();
+    const visualization=connectVisualization(workspace,()=>({...state}),(key,value)=>{const input=workspace.querySelector('[data-key="'+key+'"]');input.value=value;input.dispatchEvent(new Event('input',{bubbles:true}));});
+    tip.on('drag',()=>visualization.notify());
+    cleanup=()=>{visualization.dispose();observer.disconnect();JXG.JSXGraph.freeBoard(vb);JXG.JSXGraph.freeBoard(tb);};
   }
   function circuits(token) {
     if(token!==generation||disposed)return;

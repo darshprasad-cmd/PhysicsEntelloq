@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "three": "0.186.1",
+  "assets": [
+    {
+      "path": "engine.mjs",
+      "bytes": 603738,
+      "sha256": "ac8dee72ddf37c4487c56243672e70750f38ae338de75b66a3088bfe10186716"
+    },
+    {
+      "path": "engine.css",
+      "bytes": 9651,
+      "sha256": "090a0f4be2380d73a0c488ca57b298cc21eacec6409dbf8ce4d9519d3611d342"
+    },
+    {
+      "path": "THREE-LICENSE.txt",
+      "bytes": 1081,
+      "sha256": "8b378ebe60e2fe500158cb0ac71cb5e8b7d92953c2abcc63a0eb90499653b5bc"
+    }
+  ]
+}

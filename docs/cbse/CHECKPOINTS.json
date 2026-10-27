@@ -33,6 +33,7 @@
       "sourcePage": 7,
       "source": "https://cbseacademic.nic.in/web_material/CurriculumMain27/SecPart2/Physics_SecP2_2026-27.pdf",
       "releaseEvidence": "LAMINA-RELEASE.md",
+      "productionEvidence": "https://github.com/darshprasad-cmd/PhysicsEntelloq/pull/40",
       "releaseStatusAuthority": "The linked release PR conversation records the subsequent required checks, merge, deployment and live verification; source-checkpoint status alone is not production evidence.",
       "schoolPracticalCompleted": false,
       "educatorReviewed": false,

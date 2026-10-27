@@ -2,6 +2,8 @@
 
 Source checkpoint, 27 October 2026. This document records the implementation and local gates. The release PR conversation is the append-only authority for subsequent required checks, merge, Pages deployment and live parity; do not infer release from a source checkpoint alone.
 
+Release conversation: [Physics PR #40](https://github.com/darshprasad-cmd/PhysicsEntelloq/pull/40). Check its production-verification comment for the actual merge/deployment result; this source document intentionally does not predeclare it.
+
 ## Bounded gap
 
 `p11-a-e03` already had a practical preparation guide but no combined apparatus workflow. The existing screw gauge measures sheet thickness; it does not trace an irregular area or combine five readings with that area. This release adds one isolated bench at `#practical:lamina`, with discovery from the Class 11 catalogue, its existing guide and the measurement/Lab entry. The 72 standard, 18 accessible and 8 project preparation guides remain separately counted; this is not exhaustive interactive coverage or a school-completion record.

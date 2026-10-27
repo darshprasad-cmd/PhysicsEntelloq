@@ -763,7 +763,7 @@ export function mountExplorer(host, { compileExpression = compile } = {}) {
         current = {
           revision: ++rev,
           coordinateCompatible: true,
-          axes: ["x", "y", "z"].map((label) => ({ label, unit: "model" })),
+          axes: ["x", "y", "z"].map((label) => ({ label, unit: "model", dimension:'length' })),
           bounds: [0, 1, 2].map((i) =>
             extent(segments.flat().map((p) => p[i])),
           ),

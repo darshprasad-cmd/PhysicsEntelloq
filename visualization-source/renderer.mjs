@@ -81,7 +81,8 @@ export class GraphRenderer {
       this.fallback.hidden = true;
       this.canvas.hidden = false;
       this.onStatus?.("3D graphics restored. Press Play when ready.");
-      this.draw();
+      // Three's own restoration listener must rebuild GL state before drawing.
+      this.restoreFrame=requestAnimationFrame(()=>{if(!this.disposed)this.draw();});
     };
     this.canvas.addEventListener("webglcontextlost", this.onLost);
     this.canvas.addEventListener("webglcontextrestored", this.onRestored);
@@ -865,6 +866,7 @@ export class GraphRenderer {
   dispose() {
     if (this.disposed) return;
     this.disposed = true;
+    cancelAnimationFrame(this.restoreFrame);
     this.observer.disconnect();
     this.controls?.dispose();
     for (const obj of this.items.values()) this.remove(obj);

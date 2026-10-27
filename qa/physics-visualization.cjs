@@ -417,6 +417,7 @@ const server = http.createServer((req, res) => {
         el.__physicsVisualization.renderer.renderer.forceContextRestore(),
       );
     await page.waitForFunction(() => !window.testGraph.renderer.lost);
+    await page.waitForFunction(() => window.testGraph.renderer.renderer.info.memory.geometries>0);
     await page.getByRole("button", { name: /Back to experiment/ }).click();
     assert.ok(
       await page.evaluate(

@@ -73,8 +73,9 @@ jobs:
         env:
           CODEX_NODE_MODULES: ${{ runner.temp }}/learning-browser/node_modules
         run: |
-          npm install --prefix "$RUNNER_TEMP/learning-browser" --no-save playwright@1.62.1
+          npm install --prefix "$RUNNER_TEMP/learning-browser" --no-save playwright@1.62.1 axe-core@4.10.3
           "$RUNNER_TEMP/learning-browser/node_modules/.bin/playwright" install --with-deps chromium
           node scripts/check-learning-tools-browser.cjs
           node scripts/check-visual-tools-browser.cjs
           node qa/learning-host-quality.cjs
+          NODE_PATH="$CODEX_NODE_MODULES" node qa/questionnaire.cjs

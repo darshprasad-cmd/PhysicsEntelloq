@@ -4,6 +4,33 @@ const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const fs=require('node:fs'),path=require('node:path'),{createHash}=require('node:crypto');
 const root=path.resolve(__dirname,'..'),normalize=text=>text.replace(/\r\n/g,'\n');
+// The onboarding redesign owns precisely these three sources. Restore their
+// exact Git-blob fixtures before applying every historical assertion below.
+// Never update the older expected artifact hashes to accommodate a new design.
+const questionnaireHashes={
+  'cbse-entry.html':'022cab62ebbe4e166b9914f69a8f983def8402d1919897717b03342602e14c7b',
+  'cbse-study.js':'11f49a11bba3502c60c202b8ed2bf32a5474684828f3c53b56b70c126cd0626c',
+  'cbse-study.css':'deb9c8682efa0790918600b929d81943dccc40ed6afd0168894b16b926a382b2'
+};
+function originalQuestionnaire(file){
+  const text=normalize(fs.readFileSync(path.join(__dirname,'fixtures/questionnaire-baseline-2ab0b38',file),'utf8'));
+  assert.equal(createHash('sha256').update(text).digest('hex'),questionnaireHashes[file],'Immutable questionnaire '+file+' fixture');
+  return text;
+}
+function restoreQuestionnaire(text){
+  for(const file of Object.keys(questionnaireHashes)){
+    const current=normalize(fs.readFileSync(path.join(root,'experience',file),'utf8'));
+    const slot=source=>file==='cbse-entry.html'?'<!-- CBSE-ENTRY:START -->\n'+source+'\n<!-- CBSE-ENTRY:END -->':
+      file==='cbse-study.js'?'/* EXPERIENCE:CBSE-STUDY:START */\n'+source+'\n/* EXPERIENCE:CBSE-STUDY:END */\n':'\n'+source;
+    assert.equal(text.split(slot(current)).length,2,'One exact current questionnaire '+file+' source slot');
+    text=text.replace(slot(current),slot(originalQuestionnaire(file)));
+  }
+  return text;
+}
+test('Questionnaire redesign preserves every other published byte (2ab0b38)',()=>{
+  const text=restoreQuestionnaire(normalize(fs.readFileSync(path.join(root,'index.html'),'utf8')));
+  assert.equal(createHash('sha256').update(text).digest('hex'),'dc885f4109bb60277887b7340d0dd23c84b5c6aaf471dd3c5d24902905f1dcf0');
+});
 // Strip only the new procedure slots and restore the exact, hash-pinned library
 // adapter before applying the historical byte-preservation assertions.
 function originalLibrary(){
@@ -30,7 +57,7 @@ function withoutLamina(text){
   const css='\n'+normalize(fs.readFileSync(path.join(root,'experience/lamina-lab.css'),'utf8'));
   assert.equal(text.split(css).length,2,'One exact lamina stylesheet');return text.replace(css,'');
 }
-function publishedBeforeGuided(){return withoutLamina(removeGuided(normalize(fs.readFileSync(path.join(root,'index.html'),'utf8'))));}
+function publishedBeforeGuided(){return withoutLamina(removeGuided(restoreQuestionnaire(normalize(fs.readFileSync(path.join(root,'index.html'),'utf8')))));}
 test('Guided practicals preserve all bytes outside their new slots and library adapter (aca2bb6)',()=>{
   assert.equal(createHash('sha256').update(publishedBeforeGuided()).digest('hex'),'4a99484100c46513d025fed30c1242a8b585420e9ae00642388b273b0774d6f4');
 });
@@ -107,10 +134,10 @@ test('CBSE additions preserve every pre-existing published application byte',()=
     assert.equal([...text.matchAll(pattern)].length,1,'One unambiguous approved addition');
     text=text.replace(pattern,'');
   }
-  const style='\n'+normalize(fs.readFileSync(path.join(root,'experience/cbse-study.css'),'utf8'));
+  const style='\n'+originalQuestionnaire('cbse-study.css');
   assert.equal(text.split(style).length,2,'Only one source-identical stylesheet addition');
   text=text.replace(style,'');
   assert.equal(createHash('sha256').update(text).digest('hex'),'b9f22b7b69fe000691ff070e77f71f9de7d57b95cd3250682d40c3d04efeece5');
 });
 
-test('Guided procedures preserve the independently released lamina bench (4e8a9b1)',()=>{assert.equal(createHash('sha256').update(removeGuided(normalize(fs.readFileSync(path.join(root,'index.html'),'utf8')))).digest('hex'),'c9de19cd5f6830612f30d9c5f6c6e19262e51e06dd90cd5016bb9ae0dfaa7366');});
+test('Guided procedures preserve the independently released lamina bench (4e8a9b1)',()=>{assert.equal(createHash('sha256').update(removeGuided(restoreQuestionnaire(normalize(fs.readFileSync(path.join(root,'index.html'),'utf8'))))).digest('hex'),'c9de19cd5f6830612f30d9c5f6c6e19262e51e06dd90cd5016bb9ae0dfaa7366');});

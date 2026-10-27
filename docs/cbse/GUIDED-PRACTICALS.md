@@ -14,6 +14,14 @@ The independently audited CBSE 2026–27 inventory contains 34 XI rows and 28 XI
 - `experience/practical-library.js`: adds a Conduct practical action to standard senior catalogue cards while retaining guide links, search, class navigation and existing notes.
 - `.github/build-experience.js`: embeds authored modules and CSS in the existing portable HTML. No runtime dependency, provider, hosting or camera change.
 
+## Starting-point questionnaire
+
+The initial questionnaire now has a two-panel desktop layout with an original pendulum illustration, class cards, approach icons, session cards and a compact topic picker. Phones use a single panel with the close action in the brand row; the first question and Continue action fit the current 460 × 651 preview. All four steps use native radio inputs and semantic progress. Choices remain selected when going back, including a choice made before pressing Continue. The cold, streamed first question matches the hydrated interface.
+
+The `peq_cbse_study_v1` schema, skip/cancel behavior, saved profiles, class-specific topic validation, first-visit deep links, and existing notes remain intact. Preferences are local and optional. Keyboard controls keep visible focus; programmatically focused question headings avoid an inappropriate input-style border. Reduced-motion settings are respected. Immutable fixtures for the three owned questionnaire files recover the exact preceding artifact, including all practical modules.
+
+Run `node qa/questionnaire.cjs` with Playwright and axe available in `NODE_PATH`. It checks all classes and steps, initial streamed loading, mobile/tablet/desktop geometry, accessibility, keyboard controls, required choices, back/edit cancellation, saved and unavailable storage, and practical deep links. The existing CI Chromium job also runs this suite.
+
 ## Scientific boundaries
 
 The diagrams are original schematic illustrations, not photographs or recorded laboratory footage. Numerical observations are deterministic model outputs. They are labelled simulated in the interface and every CSV row; they do not constitute measured school observations, an uncertainty experiment or practical certification. Settings, equations and limits accompany each bench. School apparatus may have different scales, signs or calibration conventions.
@@ -32,9 +40,9 @@ Run `node --test .github/test-guided-practicals.js` for exact inventory coverage
 
 Verified on 27 October 2026 after integrating main commit 4e8a9b1:
 
-- All 237 repository Node test cases passed, including exact upstream-byte preservation, 17 new coverage/model checks and the independently released lamina tests.
+- All 239 repository Node test cases passed, including exact upstream-byte preservation, 17 new coverage/model checks and the independently released lamina tests.
 - All 62 guided workflows passed in Chromium, along with 320/390/768/1440 layouts, keyboard/reduced-motion operation, light-theme accessibility, storage denial/corruption, CSV export, scientific readiness gates, demonstration cleanup and legacy routes. Zero runtime errors or camera calls.
-- The final browser report matches packaged HTML SHA-256 `8c09d71fc5dffbf54e742fe9f3d7895e3d6bc929d30481ff9bda05316ccc2298` (3,877,112 bytes).
+- The final packaged HTML SHA-256 is `a52e7d09ac5f5d88c2f71d720da191f4dca7c312c7dd6108c4fb659f8d7153c9` (3,894,279 bytes). Browser reports record their tested artifact hash.
 - The existing learning-integration, visual-tools and host-quality browser suites passed. Existing learning-model tests (29) and Python companion tests (23) passed. Generated experience parity, scientific asset parity, learning-tool parity, inline parsing and whitespace checks passed.
 - The immutable preservation checks recover both pre-guided main and all historical baseline digests; no existing fixture hashes were loosened or replaced.
 

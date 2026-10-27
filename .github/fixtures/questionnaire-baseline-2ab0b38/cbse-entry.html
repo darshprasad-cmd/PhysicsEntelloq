@@ -1,0 +1,32 @@
+<!-- First question precedes the large app bundle, including on a streamed cold load. -->
+<dialog id="cbse-entry" class="cbse-questionnaire" aria-labelledby="cbse-entry-title" aria-describedby="cbse-entry-help">
+  <div class="cbse-q-top"><span>ENTELLOQ / YOUR STARTING POINT</span><button type="button" data-cbse-entry-skip aria-label="Skip questionnaire and explore">×</button></div>
+  <div class="cbse-q-progress" role="img" aria-label="Question 1 of 4"><i class="on"></i><i></i><i></i><i></i></div>
+  <p class="cbse-kicker">QUESTION 1 OF 4 · CBSE 2026–27</p>
+  <h2 id="cbse-entry-title" tabindex="-1">Which class are you studying?</h2>
+  <p id="cbse-entry-help">A separate CBSE path for your class. You can still explore everything.</p>
+  <form id="cbse-entry-form"><fieldset class="cbse-choices"><legend class="cbse-sr">Which class are you studying?</legend>
+    <label class="cbse-choice"><input type="radio" name="entry-class" value="9" required><span><strong>Class 9</strong><small>Integrated Science · Physics strand</small></span></label>
+    <label class="cbse-choice"><input type="radio" name="entry-class" value="10" required><span><strong>Class 10</strong><small>Integrated Science · Physics strand</small></span></label>
+    <label class="cbse-choice"><input type="radio" name="entry-class" value="11" required><span><strong>Class 11</strong><small>Physics · Subject 042</small></span></label>
+    <label class="cbse-choice"><input type="radio" name="entry-class" value="12" required><span><strong>Class 12</strong><small>Physics · Subject 042</small></span></label>
+  </fieldset><footer class="cbse-q-actions"><button type="button" data-cbse-entry-skip>Skip for now</button><button class="cbse-primary" type="submit">Continue →</button></footer></form>
+  <p id="cbse-entry-status" role="status"></p>
+  <p class="cbse-privacy">Only study preferences are saved in this browser. No name, age, school or account needed. Change them any time.</p>
+</dialog>
+<script>
+(function(){
+  var key='peq_cbse_study_v1',gate=document.getElementById('cbse-entry'),saved=null;
+  var focus={9:['motion','forces','energy','sound','earth'],10:['light','eye','electricity','magnetism'],11:['measurements','kinematics','laws','work','rotation','gravitation','matter','thermodynamics','kinetic','waves'],12:['electrostatics','current','magnetic','induction','emwaves','optics','dual','nuclei','electronics']};
+  try{saved=JSON.parse(localStorage.getItem(key)||'null');}catch(e){}
+  var valid=saved&&saved.v===1&&(saved.status==='skipped'||saved.status==='ready'&&typeof saved.class==='string'&&Object.prototype.hasOwnProperty.call(focus,saved.class)&&focus[saved.class].indexOf(saved.focus)>=0&&['foundations','revision','practice'].indexOf(saved.goal)>=0&&['10','20','30'].indexOf(saved.minutes)>=0);
+  if(valid){gate.remove();return;}
+  window.__peqCbseEntry={};
+  gate.showModal();document.getElementById('cbse-entry-title').focus({preventScroll:true});
+  function skip(){window.__peqCbseEntry={skipped:true};try{localStorage.setItem(key,JSON.stringify({v:1,status:'skipped'}));}catch(e){}gate.close();gate.remove();}
+  gate.addEventListener('cancel',function(e){e.preventDefault();skip();});
+  gate.querySelectorAll('[data-cbse-entry-skip]').forEach(function(b){b.addEventListener('click',skip);});
+  gate.querySelector('form').addEventListener('change',function(){var selected=gate.querySelector('input:checked');if(selected)window.__peqCbseEntry.class=selected.value;});
+  gate.querySelector('form').addEventListener('submit',function(e){e.preventDefault();window.__peqCbseEntry.next=true;gate.querySelector('[type=submit]').disabled=true;document.getElementById('cbse-entry-status').textContent='Opening your next question…';});
+})();
+</script>

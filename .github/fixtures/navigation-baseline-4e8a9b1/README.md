@@ -1,0 +1,1 @@
+Immutable app-design.js from main 4e8a9b18f776824bd72fb3d64645232fccd53c54. Reconstructs historical artifacts around the scoped late-dialog-close focus fix; do not update this fixture or historical hashes.

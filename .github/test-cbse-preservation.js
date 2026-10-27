@@ -14,7 +14,23 @@ function withoutLamina(text){
   const css='\n'+normalize(fs.readFileSync(path.join(root,'experience/lamina-lab.css'),'utf8'));
   assert.equal(text.split(css).length,2,'One exact lamina stylesheet');return text.replace(css,'');
 }
-function existingArtifact(){return withoutLamina(normalize(fs.readFileSync(path.join(root,'index.html'),'utf8')));}
+function restoreNavigationBaseline(text){
+  const frozen=normalize(fs.readFileSync(path.join(__dirname,'fixtures/navigation-baseline-4e8a9b1/app-design.js'),'utf8'));
+  assert.equal(createHash('sha256').update(frozen).digest('hex'),'ff4e81fb66ca07938144dd991c08ed7b8bcf0740d9d334239f1f52d8a26bc91e','Immutable navigation fixture');
+  const current=normalize(fs.readFileSync(path.join(root,'experience/app-design.js'),'utf8'));
+  const repaired="    sheet.addEventListener('close',function(){\n      // The queued close event must not steal focus from a newly opened workspace.\n      var active=document.activeElement;\n      if(!sheet.open&&lastTrigger&&lastTrigger.isConnected&&(active===document.body||active===lastTrigger||sheet.contains(active)))lastTrigger.focus({preventScroll:true});\n    });";
+  const original="    sheet.addEventListener('close',function(){if(lastTrigger&&lastTrigger.isConnected)lastTrigger.focus({preventScroll:true});});";
+  assert.equal(current.split(repaired).length,2,'One scoped focus handler repair');
+  assert.equal(current.replace(repaired,original),frozen,'No other app-design source change');
+  const slot=source=>'/* EXPERIENCE:APPDESIGN:START */\n'+source+'\n/* EXPERIENCE:APPDESIGN:END */\n';
+  assert.equal(text.split(slot(current)).length,2,'One exact current navigation source slot');
+  return text.replace(slot(current),()=>slot(frozen));
+}
+test('Navigation focus repair preserves every surrounding lamina-release byte (4e8a9b1)',()=>{
+  const text=restoreNavigationBaseline(normalize(fs.readFileSync(path.join(root,'index.html'),'utf8')));
+  assert.equal(createHash('sha256').update(text).digest('hex'),'c9de19cd5f6830612f30d9c5f6c6e19262e51e06dd90cd5016bb9ae0dfaa7366');
+});
+function existingArtifact(){return withoutLamina(restoreNavigationBaseline(normalize(fs.readFileSync(path.join(root,'index.html'),'utf8'))));}
 test('Lamina preserves every published application byte (aca2bb6)',()=>{
   assert.equal(createHash('sha256').update(existingArtifact()).digest('hex'),'4a99484100c46513d025fed30c1242a8b585420e9ae00642388b273b0774d6f4');
 });

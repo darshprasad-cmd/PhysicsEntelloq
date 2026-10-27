@@ -1,3 +1,4 @@
+const {skipStudyQuestionnaire}=require('./study-entry.cjs');
 /* Synthetic landmarks travel through the production smoothing, recognizer and
  * builder. This does NOT validate a real webcam/model or human gesture accuracy. */
 const{chromium}=require('playwright'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
@@ -6,7 +7,7 @@ const live=process.argv.includes('--live'),root=path.join(__dirname,'..');
  const c=await browser.newContext({viewport:{width,height:850},reducedMotion:'reduce'});
  if(!live)await c.route('https://physics.entelloq.com/**',r=>r.request().resourceType()==='document'?r.fulfill({contentType:'text/html',body:fs.readFileSync(path.join(root,'index.html'),'utf8')}):r.continue());
  await c.addInitScript(theme=>{localStorage.setItem('peq_entered','1');localStorage.setItem('peq_onboarded','1');localStorage.setItem('peq_theme',theme);window.cameraCalls=0;navigator.mediaDevices.getUserMedia=()=>{window.cameraCalls++;return Promise.reject(new DOMException('Camera denied for test','NotAllowedError'));};},theme);
- const p=await c.newPage(),errors=[];p.on('pageerror',e=>errors.push(e.message));await p.goto('https://physics.entelloq.com/?still&handBuilderQA='+Date.now());await p.locator('#pe-explore').click();await p.locator('[data-explore-go="sandbox"]').click();await p.locator('#studio-scene-select').selectOption('clear');
+ const p=await c.newPage(),errors=[];p.on('pageerror',e=>errors.push(e.message));await p.goto('https://physics.entelloq.com/?still&handBuilderQA='+Date.now());await skipStudyQuestionnaire(p);await p.locator('#pe-explore').click();await p.locator('[data-explore-go="sandbox"]').click();await p.locator('#studio-scene-select').selectOption('clear');
  const add=p.locator('[data-hand-mode="add"]');assert.ok(await add.isVisible());await add.focus();await p.keyboard.press('Enter');assert.equal(await add.getAttribute('aria-pressed'),'true');assert.equal(await p.evaluate(()=>window.__peqSbx.pie.cfg.buildMode),true);assert.equal(await p.locator('#sbx-pie-buildMode').isChecked(),true);assert.equal(await p.evaluate(()=>window.cameraCalls),0);
  const results=await p.evaluate(()=>{
   const api=window.__peqSbx,test=window.__peqPie,rect=document.querySelector('#sbx-c').getBoundingClientRect();let clock=performance.now()+1000;const original=performance.now.bind(performance);performance.now=()=>clock;

@@ -8,6 +8,20 @@ require('./test-practical-library.js');
 require('./test-spherometer-model.js');
 require('./test-lamina-model.js');
 require('./test-lamina-ui.js');
+
+test('A queued Explore close event preserves focus in a newer workspace',()=>{
+ const source=fs.readFileSync(path.join(root,'experience/app-design.js'),'utf8');
+ const start=source.indexOf("    sheet.addEventListener('close'");
+ const registration=source.slice(start,source.indexOf("    $('#pe-apps')",start));
+ let handler;
+ let calls=0;const body={},title={},inside={},trigger={isConnected:true,focus(){calls++;}};
+ const context={document:{body,activeElement:title},lastTrigger:trigger,sheet:{open:false,contains:node=>node===inside,addEventListener(event,callback){assert.equal(event,'close');handler=callback;}}};
+ vm.runInNewContext(registration,context);handler();assert.equal(calls,0,'A later workspace focus wins over the queued close event');
+ for(const active of [body,trigger,inside]){context.document.activeElement=active;handler();}
+ assert.equal(calls,3,'Normal dismissal still restores the launcher');
+ context.sheet.open=true;handler();assert.equal(calls,3,'A reopened dialog keeps its focus');
+ context.sheet.open=false;trigger.isConnected=false;handler();assert.equal(calls,3,'Removed launchers are not focused');
+});
 test('Mobile navigation has five primary destinations; expanded routes remain in Explore',()=>{
  const nav=html.match(/<nav class="mtab">([\s\S]*?)<\/nav>/)[1];
  assert.deepEqual([...nav.matchAll(/data-go="([^"]+)"/g)].map(m=>m[1]),['home','universe','learn','lab','progress']);

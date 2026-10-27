@@ -1,3 +1,4 @@
+const {skipStudyQuestionnaire}=require('./study-entry.cjs');
 /* Exercise the actual scene controls, not just the presence of preset names.
  * This is a UI/finite-state smoke test, not validation of every physical model. */
 const {chromium}=require('playwright'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
@@ -10,7 +11,7 @@ fs.mkdirSync(path.join(__dirname,'results'),{recursive:true});
   if(!live)await context.route('https://physics.entelloq.com/**',r=>r.request().resourceType()==='document'?r.fulfill({contentType:'text/html',body:fs.readFileSync(path.join(root,'index.html'),'utf8')}):r.continue());
   await context.addInitScript(theme=>{localStorage.setItem('peq_entered','1');localStorage.setItem('peq_onboarded','1');localStorage.setItem('peq_theme',theme);localStorage.setItem('peq_sbx_view',JSON.stringify({rail:false}));window.cameraCalls=0;navigator.mediaDevices.getUserMedia=()=>{window.cameraCalls++;return Promise.reject(Error('No camera permission in this test'));};},theme);
   const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
-  await page.goto('https://physics.entelloq.com/?still&libraryQA='+Date.now());
+  await page.goto('https://physics.entelloq.com/?still&libraryQA='+Date.now());await skipStudyQuestionnaire(page);
   await page.locator('#pe-explore').click();await page.locator('[data-explore-go="sandbox"]').click();
   const picker=page.locator('#studio-scene-select');await picker.waitFor();
   assert.equal(await page.locator('#sbx-host').getAttribute('data-workspace'),'hands');

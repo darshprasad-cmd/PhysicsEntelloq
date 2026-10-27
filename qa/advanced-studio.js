@@ -1,3 +1,4 @@
+const {skipStudyQuestionnaire}=require('./study-entry.cjs');
 /* Exercise staged HTML at its real HTTPS origin, or the published app with --live.
    Isolated profiles; no real identity, camera access or AI requests. */
 const {chromium}=require('playwright'),fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
@@ -8,7 +9,7 @@ const ids=['lagrangian','lorentz','maxwell-waves','schrodinger-1d','partition-fu
  const c=await b.newContext({viewport:{width,height},reducedMotion:'reduce'});await c.route(/clarity\.ms/,r=>r.abort());
  if(!live)await c.route('https://physics.entelloq.com/**',r=>r.request().resourceType()==='document'?r.fulfill({status:200,contentType:'text/html',body:fs.readFileSync(path.join(__dirname,'../index.html'),'utf8')}):r.continue());
  await c.addInitScript(()=>{localStorage.setItem('peq_entered','1');localStorage.setItem('peq_onboarded','1');});
- const p=await c.newPage(),errors=[];p.on('pageerror',e=>errors.push(e.message));await p.goto('https://physics.entelloq.com/?studioQA='+Date.now(),{waitUntil:'load'});await p.addScriptTag({path:require.resolve('axe-core/axe.min.js')});
+ const p=await c.newPage(),errors=[];p.on('pageerror',e=>errors.push(e.message));await p.goto('https://physics.entelloq.com/?studioQA='+Date.now(),{waitUntil:'load'});await skipStudyQuestionnaire(p);await p.addScriptTag({path:require.resolve('axe-core/axe.min.js')});
  async function scan(name,selector='#main'){
   const data=await p.evaluate(async sel=>{const root=document.querySelector(sel),a=await axe.run(root,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa','wcag22aa']}});return {violations:a.violations.map(v=>({id:v.id,nodes:v.nodes.map(n=>({target:n.target,html:n.html,summary:n.failureSummary}))})),overflow:root.scrollWidth>root.clientWidth+1,wide:[...root.querySelectorAll('*')].filter(n=>{const r=n.getBoundingClientRect();return r.width&&r.right>innerWidth+1&&!n.closest('.av-eq,.av-jump')}).slice(0,8).map(n=>({tag:n.tagName,cls:n.className,text:n.textContent.slice(0,60)}))};},selector);
   report.push({device,name,...data});console.log(device,name,JSON.stringify({violations:data.violations,overflow:data.overflow}));

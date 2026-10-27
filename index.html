@@ -14135,7 +14135,11 @@ var AppDesign=(function(){
     sheet.innerHTML='<header><div><div class="eyebrow">YOUR PHYSICS WORKSPACE</div><h2 id="pe-explore-title">Follow your curiosity.</h2></div><button id="pe-explore-close" aria-label="Close Explore">'+icon('close')+'</button></header><div class="pe-explore-grid">'+routes.map(function(r){return '<button data-explore-go="'+r[0]+'">'+icon(r[0])+'<span><b>'+r[1]+'</b><small>'+r[2]+'</small></span>'+icon('arrow')+'</button>';}).join('')+'</div><footer><span>One subject. Many ways of thinking.</span><button id="pe-apps">Other Entelloq apps ↗</button></footer>';
     document.body.appendChild(sheet);$('#pe-explore-close').addEventListener('click',closeExplore);
     sheet.addEventListener('click',function(e){if(e.target===sheet){var r=sheet.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)closeExplore();}var b=e.target.closest('[data-explore-go]');if(b){closeExplore();go(b.dataset.exploreGo);}});
-    sheet.addEventListener('close',function(){if(lastTrigger&&lastTrigger.isConnected)lastTrigger.focus({preventScroll:true});});
+    sheet.addEventListener('close',function(){
+      // The queued close event must not steal focus from a newly opened workspace.
+      var active=document.activeElement;
+      if(!sheet.open&&lastTrigger&&lastTrigger.isConnected&&(active===document.body||active===lastTrigger||sheet.contains(active)))lastTrigger.focus({preventScroll:true});
+    });
     $('#pe-apps').addEventListener('click',function(){closeExplore();var b=$('#eqx-fab');if(b)b.click();});
   }
   function enhance(scope){

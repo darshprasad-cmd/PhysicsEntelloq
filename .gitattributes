@@ -4,3 +4,6 @@ assets/scientific-labs/** -text whitespace=cr-at-eol linguist-generated=true
 # Keep pinned learning-engine bytes and their SHA manifests identical on every OS.
 learning-tools-source/** -text whitespace=cr-at-eol
 assets/learning-tools/** -text -whitespace linguist-generated=true
+# Reproducible shared graph bundles across Windows and Linux builds.
+visualization-source/** text eol=lf
+assets/physics-visualization/** -text linguist-generated=true

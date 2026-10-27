@@ -43,8 +43,10 @@ embed('SPHEROMETER-MODEL','spherometer-model.js','/* ===== INIT ===== */');
 embed('SPHEROMETER-LAB','spherometer-lab.js','/* ===== INIT ===== */');
 embed('LAMINA-MODEL','lamina-model.js','/* ===== INIT ===== */');
 embed('LAMINA-LAB','lamina-lab.js','/* ===== INIT ===== */');
+embed('VISUALIZATION','visualization-labs.js','/* ===== INIT ===== */');
+html=require('./visualization-hooks.cjs').apply(html.replace(/\r\n/g,'\n'));
 const cssStart='<!-- EXPERIENCE:CSS:START -->',cssEnd='<!-- EXPERIENCE:CSS:END -->';
-const css=cssStart+'\n<style id="experience-css">\n'+['experience.css','app-design.css','welcome.css','advanced-studio.css','observatory.css','observatory-theme.css','light-mode.css','sandbox-studio.css','answer-format.css','observatory-realism.css','reality-workspace.css','cbse-study.css','measurement-lab.css','practical-library.css','scientific-labs.css','learning-tools.css','spherometer-lab.css','lamina-lab.css'].map(file=>fs.readFileSync(path.join(root,'experience',file),'utf8')).join('\n').replace('__OBSERVATORY_REFERENCE__','data:image/webp;base64,'+fs.readFileSync(path.join(root,'assets','observatory-reference.webp')).toString('base64'))+'\n</style>\n'+cssEnd;
+const css=cssStart+'\n<style id="experience-css">\n'+['experience.css','app-design.css','welcome.css','advanced-studio.css','observatory.css','observatory-theme.css','light-mode.css','sandbox-studio.css','answer-format.css','observatory-realism.css','reality-workspace.css','cbse-study.css','measurement-lab.css','practical-library.css','scientific-labs.css','learning-tools.css','spherometer-lab.css','lamina-lab.css','visualization-labs.css'].map(file=>fs.readFileSync(path.join(root,'experience',file),'utf8')).join('\n').replace('__OBSERVATORY_REFERENCE__','data:image/webp;base64,'+fs.readFileSync(path.join(root,'assets','observatory-reference.webp')).toString('base64'))+'\n</style>\n'+cssEnd;
 if(html.includes(cssStart)){const a=html.indexOf(cssStart),b=html.indexOf(cssEnd,a);html=html.slice(0,a)+css+html.slice(b+cssEnd.length);}
 else html=html.replace('</head>',css+'\n</head>');
 const entryStart='<!-- CBSE-ENTRY:START -->',entryEnd='<!-- CBSE-ENTRY:END -->';

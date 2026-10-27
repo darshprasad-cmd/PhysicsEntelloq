@@ -10,18 +10,23 @@
       },
       {
         "path": "assets/learning-tools/physics/style.css",
-        "bytes": 6507,
-        "sha256": "bf69f70c4b8f5272db867f223d7173c01a2045a8880c71278b976978f9455f43"
+        "bytes": 6791,
+        "sha256": "339296fe54fc3206980101e6a71b168a6cc9978cb4c0b6974183dd92a819fadb"
       },
       {
         "path": "assets/learning-tools/physics/tools.mjs",
-        "bytes": 23353,
-        "sha256": "4d62960e51185300b41030303107da67a47e6cd06cb0bb2b07f6c2f44c1a8b27"
+        "bytes": 23714,
+        "sha256": "0518c851f8409a1091203747ca3ccbdc3ec56c863fb1f40cfdda31fb9886cc14"
       },
       {
         "path": "assets/learning-tools/physics/core.mjs",
         "bytes": 2868,
         "sha256": "04a07188cce58b85b86d565d8fc3ed6943ca312ceb0a832844ebcf1658f5c701"
+      },
+      {
+        "path": "assets/learning-tools/physics/visualization.mjs",
+        "bytes": 5643,
+        "sha256": "bf51b9d414e15754019597f0fa2ff79a0bceefa31ce98afdf40a080899cf2726"
       },
       {
         "path": "assets/learning-tools/physics/THIRD-PARTY-NOTICES.md",

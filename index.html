@@ -2977,6 +2977,64 @@ html.pe-refined[data-theme=light] .lam-workspace{color:#19384b}html.pe-refined[d
 html.pe-refined[data-theme=light] .lam-top span{color:#234659!important}
 @media(max-width:880px){.lam-layout{grid-template-columns:1fr}.lam-top{flex-direction:column}.lam-card{padding:18px}}@media(max-width:420px){.lam-fields{grid-template-columns:1fr}.lam-card{padding:14px}.lam-actions button{flex-basis:100%}}@media(prefers-reduced-motion:reduce){.lam-workspace *{scroll-behavior:auto!important;transition:none!important;animation:none!important}.lam-workspace button:active{transform:none}}
 
+.pv-entry {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 12px 0;
+  padding: 12px 16px;
+  border: 1px solid var(--pe-border, var(--line));
+  border-radius: 9px;
+  color: var(--ink);
+  background: var(--bg-panel);
+  font-size: 13px;
+}
+.pv-entry .mini-b {
+  min-height: 40px;
+}
+.pv-lab-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10040;
+  overflow: auto;
+  background: var(--bg, #080e14);
+  padding: 20px max(20px, calc((100vw - 1500px) / 2));
+  color: var(--ink);
+  overscroll-behavior: contain;
+}
+.pv-back {
+  margin-bottom: 16px;
+  min-height: 40px;
+}
+.pv-lab-slot {
+  width: 100%;
+  min-height: 400px;
+}
+.pv-lab-overlay .pv-stage {
+  height: clamp(400px, 58vh, 740px);
+}
+@media (max-width: 720px) {
+  .pv-lab-overlay {
+    padding: 10px;
+  }
+  .pv-lab-overlay .pv-stage {
+    height: 390px;
+  }
+  .pv-entry {
+    padding: 10px;
+    font-size: 12px;
+  }
+}
+.pv-lab-overlay {
+  padding-bottom: 40px;
+}
+body[data-physics-graph] #eqx-fab,
+body[data-physics-graph] #tutor-fab {
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
 </style>
 <!-- EXPERIENCE:CSS:END -->
 </head>
@@ -4344,14 +4402,18 @@ var SIMS={
   orbit3d:function(host){ var cv=ce('canvas'); host.appendChild(cv); var r=glShaderSim(cv,ORBIT_FRAG,{label:'Orbit speed',id:'o3m',min:1,max:10,val:5}); if(r) return r; try{host.removeChild(cv);}catch(e){} return SIMS.orbit(host); },
   fields3d:function(host){ var cv=ce('canvas'); host.appendChild(cv); var r=glShaderSim(cv,FIELDS_FRAG,{label:'Charge',id:'f3m',min:1,max:10,val:5}); if(r) return r; try{host.removeChild(cv);}catch(e){} return SIMS.fields(host); },
   wave:function(host){
-    var cv=ce('canvas'); host.appendChild(cv); var ctx=cv.getContext('2d'); var f=4,t=0;
-    function draw(){ var s=fitC(cv,ctx),W=s.w,H=s.h; t+=.05; var step=Math.max(6,Math.round(W/70)); ctx.clearRect(0,0,W,H);
+    var cv=ce('canvas'); host.appendChild(cv); var ctx=cv.getContext('2d'); var f=4,t=0,vizWindow=160;
+    function draw(){ var s=fitC(cv,ctx),W=s.w,H=s.h; /* phase advances in the model clock */ var step=Math.max(6,Math.round(W/70)); ctx.clearRect(0,0,W,H);
       var s1={x:W*.34,y:H*.5},s2={x:W*.66,y:H*.5},k=f*.08;
       for(var y=0;y<H;y+=step) for(var x=0;x<W;x+=step){ var d1=Math.hypot(x-s1.x,y-s1.y),d2=Math.hypot(x-s2.x,y-s2.y),v=Math.sin(d1*k-t)+Math.sin(d2*k-t),n=(v+2)/4;
         ctx.fillStyle='rgba('+Math.round(40+n*120)+','+Math.round(120+n*100)+','+Math.round(180+n*70)+','+(.16+n*.5).toFixed(3)+')'; ctx.fillRect(x,y,step,step); }
       [s1,s2].forEach(function(sq){ var gg=ctx.createRadialGradient(sq.x,sq.y,0,sq.x,sq.y,10); gg.addColorStop(0,'rgba(255,255,255,.95)'); gg.addColorStop(1,'rgba(125,211,252,0)'); ctx.fillStyle=gg; ctx.beginPath(); ctx.arc(sq.x,sq.y,10,0,7); ctx.fill(); });
     }
-    var stop=loop(draw);
+    var viz=typeof PhysicsViz!=="undefined"?PhysicsViz.connect(host,{title:'Interference surface',subtitle:'A resolved window into the actual two-source field.',equation:'u = sin(kr₁ − φ) + sin(kr₂ − φ)',description:'A central inspection window in the same two-source scalar field. Change the window span to see more of the original experiment. Horizontal coordinates are canvas pixels; height is normalized amplitude with compressed display scaling. Sources have equal unit amplitude and no geometric attenuation. Phase is not elapsed SI time. Mesh resolution respects the wavelength.',
+      parameters:[{label:'Frequency control',min:1,max:9,step:1,get:function(){return f;},set:function(v){f=v;var input=host.parentElement.querySelector('.sl');if(input)input.value=v;}},{label:'Window span',unit:'px',min:48,max:400,step:1,get:function(){return vizWindow;},set:function(v){vizWindow=v;}}],
+      getSnapshot:function(){var r=cv.getBoundingClientRect(),W=Math.max(1,r.width),H=Math.max(1,r.height),k=f*.08,wx=Math.min(W,vizWindow)/2,wy=Math.min(H,vizWindow)/2,domain=[[W/2-wx,W/2+wx],[H/2-wy,H/2+wy]];return {revision:f+':'+t+':'+W+':'+H+':'+vizWindow,time:t,timeUnit:'rad phase',coordinateCompatible:false,displayScale:[1,1,.25],sourceExtent:[W,H],axes:[{label:'x',unit:'px'},{label:'y',unit:'px'},{label:'amplitude',unit:'normalized'}],bounds:[domain[0],domain[1],[-2,2]],surface:{domain:domain,minResolution:Math.ceil(Math.max(wx,wy)*2*k*4/(2*Math.PI)),range:[-2,2],sample:function(x,y){return Math.sin(Math.hypot(x-W*.34,y-H*.5)*k-t)+Math.sin(Math.hypot(x-W*.66,y-H*.5)*k-t);},label:'Wave amplitude'}};}}):null;
+    var runner=viz?PhysicsViz.run(host,function(){t+=.05;},draw,{reset:function(){t=0;}}):null;
+    var stop=runner?runner.stop:loop(function(){t+=.05;draw();});
     return { stop:stop, controls:function(bar){ var w=ce('div','sl-wrap'); w.innerHTML='Frequency'; var sl=ce('input'); sl.type='range'; sl.className='sl'; sl.min=1; sl.max=9; sl.value=4; sl.setAttribute('aria-label','Frequency');
       sl.oninput=function(){ f=+sl.value; if(STILL) draw(); }; w.appendChild(sl); bar.appendChild(w); } };
   },
@@ -4369,7 +4431,10 @@ var SIMS={
       ctx.setLineDash([]); for(var c=0;c<charges.length;c++){ var ch=charges[c],x=ch.x*W,y=ch.y*H,col=ch.q>0?'#f87171':'#4cb8f5'; var gg=ctx.createRadialGradient(x,y,0,x,y,22); gg.addColorStop(0,col); gg.addColorStop(1,'rgba(0,0,0,0)'); ctx.globalAlpha=.4; ctx.fillStyle=gg; ctx.beginPath(); ctx.arc(x,y,22,0,7); ctx.fill(); ctx.globalAlpha=1; ctx.fillStyle=col; ctx.beginPath(); ctx.arc(x,y,9,0,7); ctx.fill(); ctx.fillStyle='#04060e'; ctx.font='bold 12px Inter'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(ch.q>0?'+':'−',x,y+.5); }
       ctx.textAlign='left'; ctx.textBaseline='alphabetic';
     }
-    var stop=loop(draw);
+    if(typeof PhysicsViz!=="undefined")PhysicsViz.connect(host,{title:'Field & potential',subtitle:'The field is the downhill direction of potential.',equation:'V = Σ 9000q / √(r² + 60) · E = −∇V',description:'The original softened planar charge model. Coordinates are pixels and potential is in model units, not volts. Height is potential, not a spatial coordinate. Arrows show direction only; point inspection reports the unnormalized field.',
+      parameters:[{label:'Charge separation',unit:'fraction of width',min:.05,max:.9,step:.01,get:function(){return charges[1].x-charges[0].x;},set:function(v){charges[0].x=.5-v/2;charges[1].x=.5+v/2;dirty=true;draw();}},{label:'Second charge',unit:'model',min:-1,max:1,step:.1,get:function(){return charges[1].q;},set:function(v){charges[1].q=v;dirty=true;draw();}}],
+      getSnapshot:function(){var vectors=[];for(var i=1;i<10;i++)for(var j=1;j<8;j++){var x=i*W/10,y=j*H/8,e=E(x,y);vectors.push({origin:[x,y,0],value:[e[0],e[1],0]});}return {revision:JSON.stringify(charges)+':'+W+':'+H,coordinateCompatible:false,axes:[{label:'x',unit:'px'},{label:'y',unit:'px'},{label:'V',unit:'model'}],bounds:[[0,W],[0,H],[-1200,1200]],vectors:vectors,surface:{domain:[[0,W],[0,H]],range:[-1200,1200],sample:function(x,y){var v=0;charges.forEach(function(c){v+=9000*c.q/Math.sqrt(Math.pow(x-c.x*W,2)+Math.pow(y-c.y*H,2)+60);});return v;},label:'Softened potential'}};}});
+    var stop=loop(function(){draw();if(typeof PhysicsViz!=="undefined")PhysicsViz.refresh(host);});
     return { stop:stop, controls:function(bar){ var b1=ce('button','mini-b'); b1.textContent='± Dipole'; b1.onclick=function(){ charges=[{x:.32,y:.5,q:1},{x:.68,y:.5,q:-1}]; dirty=true; if(STILL) draw(); };
       var b2=ce('button','mini-b'); b2.textContent='+ + Pair'; b2.onclick=function(){ charges=[{x:.32,y:.5,q:1},{x:.68,y:.5,q:1}]; dirty=true; if(STILL) draw(); }; bar.appendChild(b1); bar.appendChild(b2); } };
   },
@@ -4553,7 +4618,7 @@ var SIMS={
   },
   bloch:function(host){
     var cv=ce('canvas'); host.appendChild(cv); var ctx=cv.getContext('2d'); var th=.7,ph=.4,spin=true;
-    function draw(){ var s=fitC(cv,ctx),W=s.w,H=s.h; ctx.clearRect(0,0,W,H); if(spin) ph+=.022; var cx=W*.5,cy=H*.52,R=Math.min(W,H)*.34;
+    function draw(){ var s=fitC(cv,ctx),W=s.w,H=s.h; ctx.clearRect(0,0,W,H); /* azimuth advances only in the model clock */ var cx=W*.5,cy=H*.52,R=Math.min(W,H)*.34;
       ctx.strokeStyle='rgba(125,211,252,.22)'; ctx.lineWidth=1; ctx.beginPath(); ctx.arc(cx,cy,R,0,7); ctx.stroke();
       ctx.beginPath(); ctx.ellipse(cx,cy,R,R*.3,0,0,7); ctx.stroke(); ctx.beginPath(); ctx.moveTo(cx,cy-R); ctx.lineTo(cx,cy+R); ctx.stroke();
       ctx.fillStyle='rgba(159,177,208,.7)'; ctx.font='11px JetBrains Mono'; ctx.fillText('|0⟩',cx-9,cy-R-7); ctx.fillText('|1⟩',cx-9,cy+R+16);
@@ -4562,7 +4627,11 @@ var SIMS={
       var g=ctx.createRadialGradient(px,py,0,px,py,9); g.addColorStop(0,'#fff'); g.addColorStop(1,'rgba(167,139,250,0)'); ctx.fillStyle=g; ctx.beginPath(); ctx.arc(px,py,9,0,7); ctx.fill();
       ctx.fillStyle='rgba(159,177,208,.85)'; ctx.font='10px JetBrains Mono'; ctx.fillText('|ψ⟩ = cos(θ/2)|0⟩ + e^{iφ}sin(θ/2)|1⟩', 10, H-10);
     }
-    var stop=loop(draw);
+    var viz=typeof PhysicsViz!=="undefined"?PhysicsViz.connect(host,{title:'Bloch sphere',subtitle:'State geometry, not physical position.',description:'The original polar and azimuthal state represented as a unit vector. Coordinates are dimensionless expectation values. This visual precession is not a newly inferred Hamiltonian.',
+      parameters:[{label:'Polar angle θ',unit:'rad',min:0,max:Math.PI,step:.01,get:function(){return th;},set:function(v){th=v;}}],
+      getSnapshot:function(){var lines=[];for(var axis=0;axis<3;axis++){var points=[];for(var i=0;i<=160;i++){var a=2*Math.PI*i/160,p=[0,0,0];p[(axis+1)%3]=Math.cos(a);p[(axis+2)%3]=Math.sin(a);points.push(p);}lines.push({label:'Unit sphere great circle',points:points,color:'#627f91'});}var state=[Math.sin(th)*Math.cos(ph),Math.sin(th)*Math.sin(ph),Math.cos(th)];lines.push({label:'Bloch state',points:[[0,0,0],state]});return {revision:th+':'+ph,time:ph,timeUnit:'rad azimuth',axes:['⟨σx⟩','⟨σy⟩','⟨σz⟩'].map(function(label){return {label:label,unit:'1'};}),bounds:[[-1.1,1.1],[-1.1,1.1],[-1.1,1.1]],lines:lines,particles:[{point:state,label:'Pure state'}]};}}):null;
+    var runner=viz?PhysicsViz.run(host,function(){if(spin)ph+=.022;},draw,{reset:function(){th=.7;ph=.4;}}):null;
+    var stop=runner?runner.stop:loop(function(){if(spin)ph+=.022;draw();});
     return { stop:stop, controls:function(bar){ var w=ce('div','sl-wrap'); w.innerHTML='θ'; var sl=ce('input'); sl.type='range'; sl.className='sl'; sl.min=0; sl.max=180; sl.value=40; sl.oninput=function(){ th=+sl.value*Math.PI/180; if(STILL) draw(); }; w.appendChild(sl);
       var bH=ce('button','mini-b'); bH.textContent='H gate'; bH.onclick=function(){ th=Math.PI/2; sl.value=90; if(STILL) draw(); };
       var bX=ce('button','mini-b'); bX.textContent='X gate'; bX.onclick=function(){ th=Math.PI-th; sl.value=180-(+sl.value); if(STILL) draw(); };
@@ -7029,7 +7098,7 @@ var UniHands=(function(){
     state:function(){ if(!A) return {attached:false}; var cam=A.cam,hv=A.getHover(),sl=A.getSel();
       return {attached:true,on:on,pan:!!pan,zoom:!!zoomG,cam:{x:cam.x,y:cam.y,z:cam.z,tx:cam.tx,ty:cam.ty,tz:cam.tz},hover:(hv&&hv.t)?hv.t.id:null,sel:(sl&&sl.t)?sl.t.id:null}; }
   };
-  return { attach:attach, start:start, stop:off, toggle:function(){ on?off():start(); }, isOn:function(){ return on; }, overlay:overlay, feed:feed, sync:syncBtn };
+  return { bindings:function(){return A;},ready:function(){return !!stream;},attach:attach, start:start, stop:off, toggle:function(){ on?off():start(); }, isOn:function(){ return on; }, overlay:overlay, feed:feed, sync:syncBtn };
 })();
 
 
@@ -7540,6 +7609,7 @@ var Theory=(function(){
     var o=new Array(n); for(i=0;i<n;i++)o[i]=y[i]+(k1[i]+2*k2[i]+2*k3[i]+k4[i])*h/6; return o; }
   function fit(c){ var ctx=c.getContext('2d'),r=c.getBoundingClientRect(),W=Math.max(r.width,40),H=Math.max(r.height,40),pr=Math.min(devicePixelRatio||1,2); if(c.width!==Math.round(W*pr)){ c.width=Math.round(W*pr); c.height=Math.round(H*pr); ctx.setTransform(pr,0,0,pr,0,0);} c._W=W;c._H=H; return ctx; }
   function animate(step,draw,opts){ opts=opts||{}; var sub=opts.sub||1,i; cancelAnimationFrame(raf);
+    if(opts.viz&&typeof PhysicsViz!=="undefined"&&PhysicsViz.drive(step,draw,opts))return;
     function fr(){ for(i=0;i<sub;i++)step(); draw(); if(!STILL&&curView==='lab') raf=requestAnimationFrame(fr); }
     if(STILL){ for(i=0;i<(opts.warm||0);i++)step(); draw(); } else raf=requestAnimationFrame(fr); }
   function stat(l,id,c){ return '<div class="th-stat"><div class="l">'+l+'</div><div class="v" id="'+id+'"'+(c?' style="color:'+c+'"':'')+'>—</div></div>'; }
@@ -8186,7 +8256,12 @@ var Theory=(function(){
         }
         C.addEventListener('click',function(ev){ var r=C.getBoundingClientRect(),m=M(C); probes.push({y:[m.ix(ev.clientX-r.left),m.iy(ev.clientY-r.top)],tr:[]}); sel=probes.length-1; if(STILL)draw(); });
         $('#ph-clr').addEventListener('click',function(){ probes=[]; sel=null; if(STILL)draw(); });
-        animate(step,draw,{sub:1,warm:200});
+        if(typeof PhysicsViz!=="undefined")PhysicsViz.connect(stage,{
+          title:'The Hamiltonian landscape',subtitle:'Energy connects the phase portrait to the motion.',equation:'H(θ, ω) = ½ω² − cos θ',
+          description:'The existing normalized pendulum Hamiltonian. Height is energy, not a spatial coordinate. The curves are the same integrated phase-space trajectories as the original view; no metres are inferred.',
+          getSnapshot:function(){return {revision:probes.length+':'+(sel===null?'none':probes[sel].y.join(',')),time:PhysicsViz.time(),timeUnit:'model time',coordinateCompatible:false,axes:[{label:'θ',unit:'rad'},{label:'ω',unit:'normalized'},{label:'H',unit:'normalized'}],bounds:[[-Math.PI,Math.PI],[-3.4,3.4],[-1,7]],surface:{domain:[[-Math.PI,Math.PI],[-3.4,3.4]],sample:function(th,w){return E([th,w]);},range:[-1,7],label:'Hamiltonian'},lines:Tj.map(function(t){return {label:'Constant-energy orbit',points:t.pts.filter(function(p){return p[0]>=-Math.PI&&p[0]<=Math.PI;}).map(function(p){return [p[0],p[1],E(p)];})};})};}
+        });
+        animate(step,draw,{sub:1,warm:200,viz:true,h:.04});
       } },
 
     /* ============ B · LEAST ACTION ============ */
@@ -8235,10 +8310,10 @@ var Theory=(function(){
           '<div class="th-stats" id="lz-st"></div><div class="th-note" id="lz-reg"></div><button class="mini-b" id="lz-rst">Restart from a point</button>';
         $('#lz-st').innerHTML=stat('separation |Δ|','lz-d','#f472b6')+stat('Lyapunov exponent λ','lz-l','#22d3ee')+stat('σ, β','lz-c2');
         var sig=10,bet=8/3,rho=28,h=0.006; var f=function(y){return [sig*(y[1]-y[0]),y[0]*(rho-y[2])-y[1],y[0]*y[1]-bet*y[2]];};
-        var a,b,d0=1e-4,sumln,cnt,bufA,bufB,CAP=2600;
-        function reset(){ a=[1,1,1]; b=[1+d0,1,1]; sumln=0;cnt=0; bufA=[];bufB=[]; }
+        var a,b,d0=1e-4,sumln,cnt,bufA,bufB,CAP=2600,vizTrail=[];
+        function reset(){ a=[1,1,1]; b=[1+d0,1,1]; sumln=0;cnt=0; bufA=[];bufB=[];vizTrail=[]; }
         reset();
-        function step(){ a=rk4(f,a,h); b=rk4(f,b,h); var dx=b[0]-a[0],dy=b[1]-a[1],dz=b[2]-a[2],d=Math.sqrt(dx*dx+dy*dy+dz*dz); if(d>0){ sumln+=Math.log(d/d0); cnt++; var s=d0/d; b=[a[0]+dx*s,a[1]+dy*s,a[2]+dz*s]; } bufA.push([a[0],a[2]]); bufB.push([b[0],b[2]]); if(bufA.length>CAP){bufA.shift();bufB.shift();} }
+        function step(){ a=rk4(f,a,h); b=rk4(f,b,h); var dx=b[0]-a[0],dy=b[1]-a[1],dz=b[2]-a[2],d=Math.sqrt(dx*dx+dy*dy+dz*dz); if(d>0){ sumln+=Math.log(d/d0); cnt++; var s=d0/d; b=[a[0]+dx*s,a[1]+dy*s,a[2]+dz*s]; } vizTrail.push(a.slice());if(vizTrail.length>CAP)vizTrail.shift();bufA.push([a[0],a[2]]); bufB.push([b[0],b[2]]); if(bufA.length>CAP){bufA.shift();bufB.shift();} }
         function trail(ctx,buf,r,g,bl){ var n=buf.length; ctx.lineWidth=1.1; for(var i=1;i<n;i++){ var al=i/n*0.9; ctx.strokeStyle='rgba('+r+','+g+','+bl+','+al.toFixed(3)+')'; ctx.beginPath(); ctx.moveTo(buf[i-1][0],buf[i-1][1]); ctx.lineTo(buf[i][0],buf[i][1]); ctx.stroke(); } }
         function draw(){ var ctx=fit($('#lz-c')),W=$('#lz-c')._W,H=$('#lz-c')._H; ctx.clearRect(0,0,W,H);
           var sx=W/56,sy=H/55,ox=W/2,oy=H-8; function tx(p){return [ox+p[0]*sx, oy-p[1]*sy];}
@@ -8249,7 +8324,13 @@ var Theory=(function(){
         }
         $('#lz-r').addEventListener('input',function(){ rho=+this.value; $('#lz-rv').textContent=rho.toFixed(1); reset(); if(STILL){for(var i=0;i<3000;i++)step();draw();} });
         $('#lz-rst').addEventListener('click',function(){ reset(); if(STILL){for(var i=0;i<3000;i++)step();draw();} });
-        animate(step,draw,{sub:5,warm:3200});
+        if(typeof PhysicsViz!=="undefined")PhysicsViz.connect(stage,{
+          title:'Lorenz attractor',subtitle:'A three-dimensional trajectory, not a projection.',equation:'dx/dt = σ(y − x) · dy/dt = x(ρ − z) − y · dz/dt = xy − βz',
+          description:'The existing RK4 solver, h = 0.006, σ = 10, β = 8/3. Coordinates and time are normalized. This is the primary trajectory; the renormalized Lyapunov perturbation is not presented as an independently diverging path.',
+          parameters:[PhysicsViz.parameter('Rayleigh parameter ρ','#lz-r')],gestures:PhysicsViz.hands(),reset:reset,
+          getSnapshot:function(){return {revision:rho+':'+cnt,time:cnt*h,timeUnit:'model time',axes:[{label:'x',unit:'normalized'},{label:'y',unit:'normalized'},{label:'z',unit:'normalized'}],bounds:[[-25,25],[-35,35],[0,55]],lines:[{label:'RK4 trajectory',points:vizTrail}],particles:[{point:a.slice(),label:'Current state'}]};}
+        });
+        animate(step,draw,{sub:5,warm:3200,viz:true,h:0.006});
       } },
 
     /* ============ D · BIFURCATION ============ */
@@ -8455,6 +8536,10 @@ var Theory=(function(){
         '<div class="th-stats" id="vc-st"></div>'+
         '<div class="th-note">Gauss\'s law ∇·E = ρ/ε₀: charge is literally the divergence of the electric field. Ampère\'s law ∇×B = μ₀J: current is the curl of the magnetic field. Divergence finds sources, curl finds swirl — together they ARE Maxwell\'s equations.</div>';
       $('#vc-st').innerHTML=stat('field','vc-f','#22d3ee')+stat('∇· at sample','vc-d')+stat('∇× at sample','vc-cu');
+      if(typeof PhysicsViz!=="undefined")PhysicsViz.connect(stage,{title:'Vector field inspector',subtitle:'Direction, structure and local values.',description:'The original planar source, vortex, saddle or softened dipole field, embedded at z = 0. Arrows show direction, not magnitude. Streamlines are integral curves, not moving particles. All quantities are normalized.',
+        parameters:[{label:'Field',options:[['source','Source'],['vortex','Vortex'],['saddle','Saddle'],['dipole','Dipole']],get:function(){return fld;},set:function(v){var b=side.querySelector('[data-fld="'+v+'"]');if(b)b.click();}}],
+        getSnapshot:function(){var vectors=[];for(var i=-4;i<=4;i++)for(var j=-4;j<=4;j++){var x=i*.5,y=j*.5,f=F(x,y);vectors.push({origin:[x,y,0],value:[f[0],f[1],0]});}return {revision:fld,coordinateCompatible:true,axes:[{label:'x',unit:'normalized'},{label:'y',unit:'normalized'},{label:'z',unit:'normalized'}],bounds:[[-2.4,2.4],[-2.4,2.4],[-2.4,2.4]],vectors:vectors,field:function(x,y,z){var f=F(x,y);return [f[0],f[1],0];},seeds:[[-1.6,0,0],[-.8,.5,0],[.6,1,0],[1,-1,0]],lines:[]};}
+      });
       var fld='source',vshow='div';
       function F(x,y){ if(fld==='vortex')return [-y,x]; if(fld==='saddle')return [x,-y];
         if(fld==='dipole'){ var ax=x+0.9,ay=y,ra=Math.pow(ax*ax+ay*ay+0.04,1.5),bx=x-0.9,by=y,rb=Math.pow(bx*bx+by*by+0.04,1.5); return [ax/ra-bx/rb, ay/ra-by/rb]; }
@@ -9371,7 +9456,7 @@ var Sandbox=(function(){
   function fitc(){ var r=canvas.getBoundingClientRect(),Wd=Math.max(r.width,40),Hd=Math.max(r.height,40),pr=Math.min(devicePixelRatio||1,1.5); if(canvas.width!==Math.round(Wd*pr)||canvas.height!==Math.round(Hd*pr)){ canvas.width=Math.round(Wd*pr); canvas.height=Math.round(Hd*pr); ctx.setTransform(pr,0,0,pr,0,0); } canvas._W=Wd; canvas._H=Hd; }
 
   /* ===== render ===== */
-  function draw(){ fitc(); var Wd=W(),Hd=H(); ctx.clearRect(0,0,Wd,Hd);
+  function draw(){ if(typeof PhysicsViz!=="undefined")PhysicsViz.refresh(host);fitc(); var Wd=W(),Hd=H(); ctx.clearRect(0,0,Wd,Hd);
     if(showGrid){ ctx.strokeStyle='rgba(255,255,255,.035)'; ctx.lineWidth=1; var gs=60*cam.s; if(gs>14){ var ox=cam.x%gs,oy=cam.y%gs,x,y; for(x=ox;x<Wd;x+=gs){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,Hd); ctx.stroke(); } for(y=oy;y<Hd;y+=gs){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(Wd,y); ctx.stroke(); } } }
     if(P.walls){ var A=P.arena; ctx.strokeStyle='rgba(125,211,252,.25)'; ctx.lineWidth=1.5; ctx.strokeRect(sx(A.l),sy(A.t),(A.r-A.l)*cam.s,(A.b-A.t)*cam.s); }
     if(showField&&P.Bz) drawBfield();
@@ -10486,7 +10571,9 @@ var PIE=(function(){
     draw(); if((!STILL||(cradleOn&&cradleAnimate))&&curView==='sandbox') raf=requestAnimationFrame(fr); } raf=requestAnimationFrame(fr); }
   function suspendView(){cancelAnimationFrame(raf);try{sonicOff(true);}catch(e){}try{glabStop();}catch(e){}if(typeof Hand!=='undefined'&&Hand.stop)Hand.stop();}
   function stop(){ running=false;suspendView();if(typeof SandboxStudio!=='undefined')SandboxStudio.dispose(); }
-  return { mount:mount, stop:stop, suspendView:suspendView, resumeView:function(){draw();loop();} };
+  return { mount:mount, stop:stop, suspendView:suspendView, resumeView:function(){draw();loop();},stopGraphHandInput:function(){if(typeof Hand!=='undefined'&&Hand.stop)Hand.stop();},
+    graphSnapshot:function(){var unit=cradleOn?'cm':'model',points=B.map(function(b){return {point:[b.x,b.y,0],label:'Body '+b.id};}),lines=B.filter(function(b){return trail[b.id]&&trail[b.id].length>1;}).map(function(b){return {label:'Body '+b.id+' trail',points:trail[b.id].map(function(p){return [p[0],p[1],0];})};});var all=points.map(function(p){return p.point;});lines.forEach(function(l){all=all.concat(l.points);});var maxX=Math.max(100,...all.map(function(p){return Math.abs(p[0]);})),maxY=Math.max(100,...all.map(function(p){return Math.abs(p[1]);}));return {revision:simT+':'+JSON.stringify(points),time:simT,timeUnit:'s',axes:['x','y (down)','z'].map(function(label){return {label:label,unit:unit,dimension:'length'};}),bounds:[[-maxX*1.15,maxX*1.15],[-maxY*1.15,maxY*1.15],[-Math.max(maxX,maxY),Math.max(maxX,maxY)]],lines:lines,particles:points};}
+  };
 })();
 
 var Reason=(function(){
@@ -11868,8 +11955,12 @@ var ADV_SIM=(function(){
       /* the experiment is over when the field has left the domain */
       if(P.src==='ricker'&&P.bc==='mur'&&measured!==null&&enPeak>1e-9&&(en<0.02*enPeak||t>4000)) relaunch();
     }
-    var L=loop(function(){
-      var i,k; for(k=0;k<3;k++) stepFDTD();
+    if(typeof PhysicsViz!=="undefined")PhysicsViz.connect(host,{title:'Electromagnetic field geometry',subtitle:'Electric and magnetic fields from the running Yee solver.',description:'The original one-dimensional FDTD solver. E is stored at integer cells and H at half cells, staggered by half a time step. The two transverse axes are normalized field amplitudes, not spatial distances. No extra dimensions of propagation are simulated.',
+      parameters:[['S','Courant number',.2,1,.01],['Nl','Cells per wavelength',6,60,1],['er','Relative permittivity',1,9,.1],['mr','Relative permeability',1,9,.1]].map(function(a,index){return {label:a[1],min:a[2],max:a[3],step:a[4],get:function(){return P[a[0]];},set:function(v){var input=bar.querySelectorAll('input')[index];if(input){input.value=v;input.dispatchEvent(new Event('input',{bubbles:true}));}else{P[a[0]]=v;reset();}}};}),
+      getSnapshot:function(){return {revision:t+':'+P.er+':'+P.mr+':'+P.S,time:t*P.S,timeUnit:'normalized',coordinateCompatible:false,axes:[{label:'propagation x',unit:'cells'},{label:'Eᶻ',unit:'normalized'},{label:'Hʸ',unit:'normalized'}],bounds:[[0,NX-1],[-2.5,2.5],[-2.5,2.5]],lines:[{label:'E · integer cells',points:Array.from(Ez,function(e,i){return [i,e,0];}),color:'#91cae6'},{label:'H · half cells / half step',points:Array.from(Hy,function(h,i){return [i+.5,0,h];}),color:'#deb986'}]};}});
+    var L=typeof PhysicsViz!=="undefined"?PhysicsViz.run(host,function(){for(var k=0;k<3;k++)stepFDTD();},drawFields,{reset:reset}):loop(function(){for(var k=0;k<3;k++)stepFDTD();drawFields();});
+    function drawFields(){
+      var i,k; /* solver steps belong to the model clock */
       var p=pal(), g=fit(c), x=g.x, w=g.w, h=g.h; x.clearRect(0,0,w,h);
       var m={l:10,r:10,t:14,b:20};
       var X=function(j){ return m.l+j/(NX-1)*(w-m.l-m.r); }, y0=h*0.5, amp=h*0.34;
@@ -11938,7 +12029,7 @@ var ADV_SIM=(function(){
       oo.set('stab',unstable?'CFL violated — diverging':'S ≤ 1 — stable',unstable?'bad':'good');
       oo.set('en',isFinite(en)?(en.toExponential(3)+(enPeak>1e-9?('   '+(100*en/enPeak).toFixed(1)+' % of peak'):'')):'overflow',isFinite(en)?'':'bad');
       if(bad&&t>3000) reset();
-    });
+    }
     return { stop:L.stop };
   }
 
@@ -16144,6 +16235,538 @@ var LaminaLab=(function(){
 })();
 
 /* EXPERIENCE:LAMINA-LAB:END */
+/* EXPERIENCE:VISUALIZATION:START */
+/* Rendering adapters only. Experiment closures retain their model and state. */
+var PhysicsViz = (function () {
+  "use strict";
+  var bindings = [],
+    active = null,
+    modulePromise = null,
+    serial = 0;
+  function engine() {
+    return (
+      modulePromise ||
+      (modulePromise =
+        import("./assets/physics-visualization/engine.mjs").catch(function (e) {
+          modulePromise = null;
+          throw e;
+        }))
+    );
+  }
+  function connect(host, spec) {
+    if (
+      !host ||
+      host.matches(".thumb,.xg-thumb,.xg-viz,.xg-preview") ||
+      host.closest(".lab-card,.xg-card")
+    )
+      return null;
+    var listeners = new Set(),
+      binding = {
+        host: host,
+        spec: spec,
+        alive: true,
+        open: false,
+        playing: false,
+        speed: 1,
+        raf: 0,
+        clock: 0,
+        notify: function () {
+          listeners.forEach(function (fn) {
+            fn();
+          });
+        },
+      };
+    binding.entry = document.createElement("div");
+    binding.entry.className = "pv-entry";
+    var copy = document.createElement("span");
+    copy.textContent = "Inspect this model in 3D";
+    var button = document.createElement("button");
+    button.className = "mini-b";
+    button.type = "button";
+    button.textContent = "Open 3D view ↗";
+    binding.entry.append(copy, button);
+    var entryHost =
+      host.id === "lf-stage" ? document.getElementById("lf-ctl") : host;
+    (entryHost || host).prepend(binding.entry);
+    binding.adapter = Object.assign({}, spec, {
+      getSnapshot: spec.getSnapshot,
+      subscribe: function (fn) {
+        listeners.add(fn);
+        return function () {
+          listeners.delete(fn);
+        };
+      },
+    });
+    button.onclick = function () {
+      open(binding);
+    };
+    binding.button = button;
+    binding.dispose = function () {
+      if (!binding.alive) return;
+      binding.alive = false;
+      cancelAnimationFrame(binding.raf);
+      binding.adapter.gestures && binding.adapter.gestures.stop();
+      if (active === binding) close();
+      binding.entry.remove();
+      listeners.clear();
+    };
+    bindings.push(binding);
+    return binding;
+  }
+  function close() {
+    if (!active) return;
+    var b = active;
+    active = null;
+    b.open = false;
+    b.generation = ++serial;
+    b.viewer && b.viewer.dispose();
+    b.viewer = null;
+    if (b.overlay) b.overlay.remove();
+    if (b.inertElements)
+      b.inertElements.forEach(function (pair) {
+        pair[0].inert = pair[1];
+      });
+    b.inertElements = null;
+    b.overlay = null;
+    delete document.body.dataset.physicsGraph;
+    b.button && b.button.isConnected && b.button.focus({ preventScroll: true });
+  }
+  async function open(binding) {
+    close();
+    if (!binding.alive || !binding.host.isConnected) return;
+    active = binding;
+    document.body.dataset.physicsGraph = "open";
+    binding.open = true;
+    if (curView === "sandbox" && Sandbox.stopGraphHandInput)
+      Sandbox.stopGraphHandInput();
+    var generation = ++serial;
+    binding.generation = generation;
+    var overlay = document.createElement("section");
+    overlay.className = "pv-lab-overlay";
+    overlay.setAttribute("role", "dialog");
+    overlay.setAttribute("aria-modal", "true");
+    overlay.setAttribute(
+      "aria-label",
+      binding.spec.title || "Physics visualization",
+    );
+    var back = document.createElement("button");
+    back.className = "mini-b pv-back";
+    back.textContent = "← Back to experiment";
+    back.onclick = close;
+    overlay.append(back);
+    var slot = document.createElement("div");
+    slot.className = "pv-lab-slot";
+    slot.textContent = "Loading scientific renderer…";
+    overlay.append(slot);
+    document.body.append(overlay);
+    binding.inertElements = Array.from(document.body.children)
+      .filter(function (node) {
+        return node !== overlay;
+      })
+      .map(function (node) {
+        var was = node.inert;
+        node.inert = true;
+        return [node, was];
+      });
+    binding.overlay = overlay;
+    back.focus();
+    overlay.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        e.stopPropagation();
+        close();
+      }
+      if (e.key === "Tab") {
+        e.stopPropagation();
+        var focusable = Array.from(
+          overlay.querySelectorAll(
+            'button,input,select,summary,[tabindex="0"]',
+          ),
+        ).filter(function (el) {
+          return !el.disabled && el.getClientRects().length;
+        });
+        var first = focusable[0],
+          last = focusable[focusable.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    });
+    try {
+      var lib = await engine();
+      if (
+        !binding.alive ||
+        active !== binding ||
+        binding.generation !== generation
+      )
+        return;
+      slot.textContent = "";
+      binding.viewer = binding.spec.explorer
+        ? lib.mountExplorer(slot, {
+            compileExpression: binding.spec.compileExpression,
+          })
+        : lib.mount(slot, binding.adapter);
+    } catch (e) {
+      if (active === binding) {
+        slot.textContent =
+          "The 3D renderer could not load. Your experiment is unchanged. ";
+        var retry = document.createElement("button");
+        retry.className = "mini-b";
+        retry.textContent = "Try again";
+        retry.onclick = function () {
+          open(binding);
+        };
+        slot.append(retry);
+      }
+    }
+  }
+  function refresh(host) {
+    bindings.forEach(function (b) {
+      if (b.alive && b.host === host) b.notify();
+    });
+  }
+  // The model owner calls this instead of its previous frame loop. The original
+  // step function and fixed dt are unchanged; only wall-time scheduling changes.
+  function drive(step, draw, opts) {
+    var b = bindings[bindings.length - 1];
+    if (!opts.viz || !b || !b.alive) return false;
+    var h = opts.h || 0.006,
+      acc = 0,
+      last = 0;
+    for (var i = 0; i < (opts.warm || 0); i++) step();
+    b.clock = (opts.warm || 0) * h;
+    b.playing = !(typeof STILL !== "undefined" && STILL);
+    b.adapter.isPlaying = function () {
+      return b.playing;
+    };
+    b.adapter.setPlaying = function (v) {
+      b.playing = !!v;
+      last = 0;
+      b.notify();
+    };
+    b.adapter.setSpeed = function (v) {
+      if ([0.25, 0.5, 1, 2].indexOf(v) >= 0) b.speed = v;
+    };
+    var reset = b.spec.reset;
+    if (reset)
+      b.adapter.reset = function () {
+        reset();
+        b.clock = 0;
+        acc = 0;
+        last = 0;
+        draw();
+        b.notify();
+      };
+    function frame(now) {
+      if (!b.alive || !b.host.isConnected) {
+        b.dispose();
+        return;
+      }
+      var dt = last ? Math.min((now - last) / 1000, 0.1) : 0;
+      last = now;
+      if (document.hidden) {
+        b.playing = false;
+        acc = 0;
+        last = 0;
+      }
+      if (b.playing) {
+        acc += dt * b.speed;
+        for (var n = 0; acc + 1e-12 >= h && n < 200; n++) {
+          step();
+          acc -= h;
+          b.clock += h;
+        }
+      }
+      if (!b.open) draw();
+      b.notify();
+      b.raf = requestAnimationFrame(frame);
+    }
+    b.resumeFrame = function () {
+      last = 0;
+      cancelAnimationFrame(b.raf);
+      b.raf = requestAnimationFrame(frame);
+    };
+    draw();
+    b.raf = requestAnimationFrame(frame);
+    return true;
+  }
+  function dispose() {
+    close();
+    bindings.forEach(function (b) {
+      b.dispose();
+    });
+    bindings = [];
+  }
+  function latestTime() {
+    var b = bindings[bindings.length - 1];
+    return b ? b.clock : 0;
+  }
+  function run(host, step, draw, settings) {
+    settings = settings || {};
+    var b = bindings.find(function (item) {
+      return item.host === host && item.alive;
+    });
+    if (!b) return { stop: function () {} };
+    var last = 0,
+      acc = 0,
+      h = 1 / 60;
+    b.playing = !(typeof STILL !== "undefined" && STILL);
+    b.adapter.isPlaying = function () {
+      return b.playing;
+    };
+    b.adapter.setPlaying = function (v) {
+      b.playing = !!v;
+      last = 0;
+      acc = 0;
+      b.notify();
+    };
+    b.adapter.setSpeed = function (v) {
+      if ([0.25, 0.5, 1, 2].indexOf(v) >= 0) b.speed = v;
+    };
+    if (settings.reset)
+      b.adapter.reset = function () {
+        settings.reset();
+        last = 0;
+        acc = 0;
+        draw();
+        b.notify();
+      };
+    function frame(now) {
+      if (!b.alive || !host.isConnected) {
+        b.dispose();
+        return;
+      }
+      var dt = last ? Math.min(0.1, (now - last) / 1000) : 0;
+      last = now;
+      if (document.hidden) {
+        b.playing = false;
+        last = 0;
+      }
+      if (b.playing) {
+        acc += dt * b.speed;
+        for (var n = 0; acc + 1e-12 >= h && n < 12; n++) {
+          step();
+          acc -= h;
+        }
+      }
+      if (!b.open) draw();
+      b.notify();
+      b.raf = requestAnimationFrame(frame);
+    }
+    b.resumeFrame = function () {
+      last = 0;
+      cancelAnimationFrame(b.raf);
+      b.raf = requestAnimationFrame(frame);
+    };
+    draw();
+    b.raf = requestAnimationFrame(frame);
+    return { stop: b.dispose };
+  }
+  function parameter(label, selector, unit) {
+    return {
+      label: label,
+      unit: unit || "",
+      min: Number(document.querySelector(selector).min),
+      max: Number(document.querySelector(selector).max),
+      step: Number(document.querySelector(selector).step) || 0.1,
+      get: function () {
+        return Number(document.querySelector(selector).value);
+      },
+      set: function (v) {
+        var input = document.querySelector(selector);
+        if (input) {
+          input.value = v;
+          input.dispatchEvent(new Event("input", { bubbles: true }));
+          bindings.forEach(function (b) {
+            b.notify();
+          });
+        }
+      },
+    };
+  }
+  function hands() {
+    var on = false,
+      previous = null,
+      cam = { x: 0, y: 0, z: 1, tx: 0, ty: 0, tz: 1 },
+      raf = 0,
+      commands = null,
+      last = { x: 0, y: 0, z: 1 };
+    function stop() {
+      if (!on) return;
+      on = false;
+      cancelAnimationFrame(raf);
+      UniHands.stop();
+      UniHands.attach(previous);
+      previous = null;
+    }
+    return {
+      active: function () {
+        return on && UniHands.isOn();
+      },
+      start: async function (actions) {
+        if (typeof UniHands === "undefined")
+          throw Error("Hand tracking is unavailable.");
+        if (curView === "sandbox")
+          throw Error(
+            "Sandbox keeps ownership of hand manipulation. Use the normal graph controls here.",
+          );
+        commands = actions;
+        previous = UniHands.bindings();
+        UniHands.stop();
+        on = true;
+        cam = { x: 0, y: 0, z: 1, tx: 0, ty: 0, tz: 1 };
+        last = { x: 0, y: 0, z: 1 };
+        function noop() {}
+        UniHands.attach({
+          cam: cam,
+          size: function () {
+            return [innerWidth, innerHeight];
+          },
+          getHover: function () {
+            return null;
+          },
+          getSel: function () {
+            return null;
+          },
+          nodeAt: function () {
+            return null;
+          },
+          hideCard: noop,
+          setHover: noop,
+          flyTo: noop,
+          showCard: noop,
+          redraw: noop,
+        });
+        UniHands.start();
+        try {
+          await new Promise(function (resolve, reject) {
+            var start = Date.now();
+            function check() {
+              if (!on) return reject(Error("Camera navigation cancelled."));
+              if (!UniHands.isOn())
+                return reject(
+                  Error(
+                    "Camera access was denied or hand tracking could not start.",
+                  ),
+                );
+              if (UniHands.ready()) return resolve();
+              if (Date.now() - start > 20000)
+                return reject(
+                  Error(
+                    "Camera startup timed out. You can retry or use the normal controls.",
+                  ),
+                );
+              setTimeout(check, 100);
+            }
+            check();
+          });
+        } catch (e) {
+          stop();
+          throw e;
+        }
+        function update() {
+          if (!on) return;
+          if (!UniHands.isOn()) {
+            stop();
+            return;
+          }
+          cam.x = cam.tx;
+          cam.y = cam.ty;
+          cam.z = cam.tz;
+          commands.orbit(
+            Math.max(-0.12, Math.min(0.12, (cam.x - last.x) * 0.001)),
+            Math.max(-0.12, Math.min(0.12, (cam.y - last.y) * 0.001)),
+          );
+          if (cam.z !== last.z)
+            commands.zoom(Math.max(0.9, Math.min(1.1, last.z / cam.z)));
+          last = { x: cam.x, y: cam.y, z: cam.z };
+          raf = requestAnimationFrame(update);
+        }
+        update();
+      },
+      stop: stop,
+    };
+  }
+  var goBefore = go;
+  go = function (v, id) {
+    dispose();
+    return goBefore(v, id);
+  };
+  var labBefore = viewLab;
+  viewLab = function () {
+    dispose();
+    return labBefore.apply(this, arguments);
+  };
+  var theoryOpen = Theory.open;
+  Theory.open = function () {
+    dispose();
+    return theoryOpen.apply(this, arguments);
+  };
+  var fullClose = closeLabFull;
+  closeLabFull = function () {
+    dispose();
+    return fullClose.apply(this, arguments);
+  };
+  var grapherMount = Grapher.mount;
+  Grapher.mount = function (host) {
+    var result = grapherMount.apply(this, arguments);
+    connect(typeof host === "string" ? document.querySelector(host) : host, {
+      title: "Mathematical workspace",
+      explorer: true,
+    });
+    return result;
+  };
+  var sandboxMount = Sandbox.mount;
+  Sandbox.mount = function (host) {
+    var result = sandboxMount.apply(this, arguments);
+    connect(host, {
+      title: "Sandbox trajectories",
+      subtitle: "Your live experiment, viewed from another angle.",
+      description:
+        "Read-only coordinates and recorded trails from the existing Sandbox. Dynamics remain planar at z = 0. Sandbox y increases downwards. Cat’s Cradle uses centimetres; other scenes retain their model units. Hand manipulation stays in the original workspace; no camera control is captured by this inspector.",
+      getSnapshot: Sandbox.graphSnapshot,
+    });
+    return result;
+  };
+  document.addEventListener("input", function () {
+    bindings.forEach(function (b) {
+      b.notify();
+    });
+  });
+  document.addEventListener("visibilitychange", function () {
+    if (document.hidden)
+      bindings.forEach(function (b) {
+        b.playing = false;
+        cancelAnimationFrame(b.raf);
+        if (b.adapter.gestures) b.adapter.gestures.stop();
+      });
+    else
+      bindings.forEach(function (b) {
+        if (b.alive && b.resumeFrame) b.resumeFrame();
+      });
+  });
+  addEventListener("pagehide", dispose);
+  return {
+    connect: connect,
+    drive: drive,
+    run: run,
+    refresh: refresh,
+    dispose: dispose,
+    time: latestTime,
+    parameter: parameter,
+    hands: hands,
+    open: open,
+    active: function () {
+      return active;
+    },
+  };
+})();
+
+/* EXPERIENCE:VISUALIZATION:END */
 /* ===== INIT ===== */
 Me.streakInit(); renderSide(); buildSide(); Tutor.init(); Theme.init(); Presence.init();AppDesign.init();AccountEntry.init();WelcomeTour.init();
 go(window.__peqShare?'sandbox':'home');

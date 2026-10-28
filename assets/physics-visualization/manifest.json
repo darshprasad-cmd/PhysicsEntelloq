@@ -4,8 +4,8 @@
   "assets": [
     {
       "path": "engine.mjs",
-      "bytes": 604069,
-      "sha256": "8b0d28f5c377afee7b3c0450d5c561f14a6d9fa692913a5905fbbdc27cb97d2b"
+      "bytes": 604379,
+      "sha256": "f9ae85d2521c76f182ee11c0eb19244dc3b4315911f10f429a909e60142ef30b"
     },
     {
       "path": "engine.css",

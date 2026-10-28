@@ -1,0 +1,36 @@
+/* Precision pass: shared chrome, readable instruments, and collision-free controls.
+   Keep the observatory artwork, field colours, routes, and science untouched. */
+html.pe-refined .lv-card .lv-ring{position:relative;flex:0 0 43px;width:43px;height:43px}
+html.pe-refined .lv-card .lv-ring svg{position:absolute;inset:0;display:block;width:100%;height:100%;filter:none}
+html.pe-refined .lv-card .lv-ring .n{display:grid;place-items:center;inset:0;font-size:12px;line-height:1;letter-spacing:0;font-variant-numeric:tabular-nums;font-weight:600}
+html.pe-refined .lv-card .lv-ring circle:first-child{stroke:var(--line)}
+html.pe-refined .lv-card #lv-fg{stroke:var(--blue)}
+html.pe-refined .lv-card .lv-row{gap:11px;align-items:center}
+html.pe-refined .lv-meta{min-width:0}
+html.pe-refined .lv-meta .s{line-height:1.5}
+html.pe-refined .side-card .streak{display:block;line-height:1.65;font-variant-numeric:tabular-nums}
+html.pe-refined .side-card .streak>span:first-child{margin-right:5px}
+html.pe-refined .side-card.lv-card:hover{transform:none;box-shadow:none;border-color:var(--pe-border)}
+/* The fixed product switcher owns this footer band; the map card must not. */
+@media(min-width:851px){html.pe-refined .side{padding-bottom:82px}}
+
+html.pe-refined .t-search{min-height:40px;gap:9px}
+html.pe-refined .t-search>.pe-icon-svg{width:16px;height:16px}
+html.pe-refined .t-search .pe-search-label{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html.pe-refined .t-search .k{flex:none;line-height:1.2}
+html.pe-refined .st-row>span:has(>.lvl-chip){display:flex;flex-wrap:wrap;gap:8px;min-width:0}
+html.pe-refined .st-row .lvl-chip{margin:0;min-height:44px;border-radius:8px;line-height:1.4}
+html.pe-refined .st-row .lvl-chip.on{box-shadow:none;border-color:var(--blue)}
+html.pe-refined :is(.lab-stat,.sbx-stat,.pv-readout,.pg-dp,output){font-variant-numeric:tabular-nums}
+html.pe-refined :is(.btn,.mini-b,.lvl-chip){text-wrap:pretty}
+html.pe-refined :is(input,textarea,select):focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+html.pe-refined #toast{width:max-content;max-width:calc(100vw - 32px);border-radius:14px;line-height:1.5;padding:12px 16px;box-shadow:0 8px 28px #0002;overflow-wrap:anywhere}
+html.pe-refined #toast .xp{white-space:nowrap;flex:none;font-variant-numeric:tabular-nums}
+html.pe-refined[data-theme=light] body:not(.pe-landing-open) .eqx-fab{background:var(--bg-panel);color:var(--ink);border-color:var(--pe-border);box-shadow:0 4px 16px #16304414}
+@media(max-width:850px){
+  html.pe-refined body:not(.pe-landing-open) #toast{bottom:calc(148px + env(safe-area-inset-bottom,0px))}
+  html.pe-refined .st-sec{padding:22px}
+}
+@media(hover:none),(prefers-reduced-motion:reduce){
+  html.pe-refined .eqx-fab:hover{transform:none}
+}

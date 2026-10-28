@@ -83,3 +83,4 @@ jobs:
           node scripts/check-visual-tools-browser.cjs
           node qa/learning-host-quality.cjs
           node qa/physics-visualization.cjs
+          node qa/interface-quality.cjs

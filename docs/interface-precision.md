@@ -8,7 +8,7 @@ physics equations, simulation clocks, and camera/hand-input logic are preserved.
 
 | Before | After | Why |
 | --- | --- | --- |
-| A 54 px progress SVG inside a 43 px ring; the number was offset from the drawn ring by 5.5 px in both directions | SVG and percentage share one 43 px box; tabular figures, explicit line height, and checks for 0%, 9%, 42%, 100% | Correct geometry, including three-digit percentages |
+| A 54 px progress SVG inside a 43 px ring; the number was offset from the drawn ring by 5.5 px in both directions | SVG and percentage share one 43 px box; the compact instrument-number font, explicit line height, and checks for 0%, 9%, 42%, 100% | Correct geometry, including three-digit percentages and cross-platform fallback fonts |
 | Product switcher covered the lower progress card | A reserved desktop footer band leaves 20 px between the map card and launcher | Both controls remain visible and usable; navigation scrolls in shorter windows |
 | Progress counts were split into flex items with gaps around the slash | Natural inline count flow and a separated leading icon | A readable `0/89 concepts explored` line |
 | Near-invisible ring track and dark launcher in light mode | Theme-aware track, progress stroke and launcher material | Legible controls in both themes |

@@ -1,0 +1,62 @@
+/* Actual packaged browser workflows. Synthetic apparatus, not physical skill or timing validation. */
+const {chromium}=require('playwright'),fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
+const {pathToFileURL}=require('node:url'),M=require('../experience/pulse-model.js');
+const root=path.resolve(__dirname,'..'),html=fs.readFileSync(path.join(root,'index.html'),'utf8');
+const live=process.argv.includes('--live'),base=process.env.PULSE_URL||'https://physics.entelloq.com/';
+const out=process.env.PULSE_OUTPUT||path.join(__dirname,'results','pulse'),KEY='peq_pulse_v1';
+const report={cases:[],target:live?base:'local exact artifact + offline file',limits:'Chromium emulation, not physical phone, screen-reader certification, human reaction-time measurement, apparatus calibration or educator review.'};
+fs.mkdirSync(out,{recursive:true});
+const notes={peq_notes:'Retain my study notes',peq_practical_notes_v1:JSON.stringify({v:1,notes:{'s9-e10':'Retain real observations'}}),peq_measurements_v1:'measurement sentinel',peq_spherometer_v1:'spherometer sentinel',peq_lamina_v1:'lamina sentinel'};
+const profile={v:1,status:'ready',class:'9',goal:'foundations',minutes:'20',focus:'sound'};
+function row(s=M.defaults()){const e=M.experiment(s);return M.check(s,e.idealTimeS,{lengthM:s.lengthM,roundTrips:s.roundTrips,timeS:e.observedTimeS,distanceM:e.distanceM,speedMps:Number(e.speedMps.toFixed(2))}).record;}
+async function context(browser,width,options={}){
+ const c=await browser.newContext({viewport:{width,height:900},reducedMotion:options.motion?'no-preference':'reduce',acceptDownloads:true});
+ c.setDefaultTimeout(20000);c.setDefaultNavigationTimeout(90000);
+ await c.route('**/*',r=>{const u=r.request().url();if(u.startsWith('file:'))return r.continue();if(!live&&r.request().resourceType()==='document'&&u.startsWith(base))return r.fulfill({status:200,contentType:'text/html',body:html});return live&&u.startsWith(base)?r.continue():r.abort();});
+ await c.addInitScript(({options,notes,profile,KEY,raw})=>{
+  if(top!==window)return;
+  if(!sessionStorage.getItem('pulse-qa-seeded')){Object.entries(notes).forEach(([k,v])=>localStorage.setItem(k,v));if(!options.fresh)localStorage.setItem('peq_cbse_study_v1',JSON.stringify(profile));if(options.corrupt)localStorage.setItem(KEY,'{bad');if(options.injected)localStorage.setItem(KEY,JSON.stringify({v:1,trials:[{...raw,label:'<img src=x onerror="window.__injected=true">',speedMps:99999},{setup:'__proto__'}]}));sessionStorage.setItem('pulse-qa-seeded','yes');}
+  window.__cameraCalls=0;window.__injected=false;if(navigator.mediaDevices)navigator.mediaDevices.getUserMedia=()=>{window.__cameraCalls++;return Promise.reject(Error('No camera action'));};
+  if(options.blocked){const get=Storage.prototype.getItem,set=Storage.prototype.setItem;Storage.prototype.getItem=function(k){if(k===KEY)throw Error('Storage denied');return get.call(this,k);};Storage.prototype.setItem=function(k,v){if(k===KEY)throw Error('Storage denied');return set.call(this,k,v);};}
+ },{options,notes,profile,KEY,raw:row()});return c;
+}
+async function open(p,route='practical:pulse'){await p.goto(base+'?still#'+route,{waitUntil:'load'});}
+async function completeSetup(p,skip){await p.locator('#cbse-questionnaire[open]').waitFor();if(skip)await p.locator('#cbse-questionnaire [data-cbse-dismiss]').first().click();else for(const v of ['9','foundations','20','sound']){await p.locator('#cbse-questionnaire input[value="'+v+'"]').check();await p.locator('#cbse-questionnaire button[type=submit]').click();}}
+async function fit(p){const b=await p.locator('.pulse-workspace').evaluate(e=>({l:e.getBoundingClientRect().left,r:e.getBoundingClientRect().right,w:innerWidth,overflow:e.scrollWidth>e.clientWidth+1}));assert.ok(b.l>=-1&&b.r<=b.w+1&&!b.overflow,JSON.stringify(b));}
+async function axe(p){await p.addScriptTag({path:require.resolve('axe-core/axe.min.js')});const errors=await p.evaluate(async()=>(await axe.run('.pulse-workspace',{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa']}})).violations.map(v=>({id:v.id,nodes:v.nodes.map(n=>n.target)})));assert.deepEqual(errors,[]);}
+async function saved(p,n){await p.locator('.pulse-workspace').waitFor();assert.equal(await p.locator('#pulse-notebook tbody tr').count(),n);}
+async function fill(p,s){const e=M.experiment(s);for(const [id,value] of Object.entries({length:s.lengthM,trips:s.roundTrips,time:e.observedTimeS,distance:e.distanceM,speed:e.speedMps.toFixed(2)}))await p.locator('#pulse-read-'+id).fill(String(value));return e;}
+async function submit(p){await p.locator('#pulse-reading button[type=submit]').click();}
+async function selected(p,s){for(const [id,v]of Object.entries({setup:s.setup,length:s.lengthM,trips:s.roundTrips,trial:s.trial}))await p.locator('#pulse-'+id).selectOption(String(v));}
+async function capture(p,s,n,negative=false){await selected(p,s);const e=await fill(p,s);
+ if(negative){await submit(p);assert.match(await p.locator('#pulse-feedback').innerText(),/Finish|finish/);await saved(p,n-1);}
+ await p.locator('#pulse-finish').click();assert.equal(await p.locator('#pulse-timer').innerText(),e.observedTimeS.toFixed(2)+' s');assert.equal(await p.locator('#pulse-returns').innerText(),s.roundTrips+' / '+s.roundTrips);
+ if(negative){await p.locator('#pulse-read-distance').fill(String(e.distanceM/2));await submit(p);assert.match(await p.locator('#pulse-feedback').innerText(),/return journey/);await saved(p,n-1);await fill(p,s);await p.locator('#pulse-read-speed').fill('1');await submit(p);assert.match(await p.locator('#pulse-feedback').innerText(),/Divide|divide/);await fill(p,s);}
+ await submit(p);assert.match(await p.locator('#pulse-feedback').innerText(),/checked and recorded/);await saved(p,n);
+}
+async function preservation(p){assert.deepEqual(await p.evaluate(keys=>Object.fromEntries(keys.map(k=>[k,localStorage.getItem(k)])),Object.keys(notes)),notes);assert.equal(await p.evaluate(()=>window.__cameraCalls),0);assert.equal(await p.evaluate(()=>window.__injected),false);}
+async function responsive(browser,width){const c=await context(browser,width,{fresh:true}),p=await c.newPage(),errors=[];p.on('pageerror',e=>errors.push(e.message));
+ try{await open(p);await completeSetup(p,width!==1440);await p.locator('.pulse-workspace').waitFor();assert.equal(new URL(p.url()).hash,'#practical:pulse');await fit(p);await axe(p);
+ assert.equal(await p.locator('#pulse-play').isDisabled(),true);await p.locator('#pulse-scrub').focus();await p.keyboard.press('ArrowRight');assert.ok(Number(await p.locator('#pulse-scrub').inputValue())>0);await p.locator('#pulse-step').click();
+ const x=await p.evaluate(()=>({time:Number(document.querySelector('#pulse-scrub').value),position:Number(document.querySelector('#pulse-svg').dataset.positionM)}));assert.ok(Math.abs(x.position-M.frame(M.defaults(),x.time).positionM)<.00011);
+ await p.locator('.pulse-heading').scrollIntoViewIfNeeded();await p.screenshot({path:path.join(out,'entry-'+width+'.png'),fullPage:true});
+ await p.locator('.pulse-art').scrollIntoViewIfNeeded();await p.screenshot({path:path.join(out,'apparatus-'+width+'.png'),fullPage:true});
+ await selected(p,{setup:'A',lengthM:1,roundTrips:1,trial:0});await p.locator('#pulse-scrub').focus();await p.keyboard.press('End');assert.equal(await p.locator('#pulse-svg').getAttribute('data-complete'),'true');assert.match(await p.locator('#pulse-timer').innerText(),/0\.63 s/);
+ await p.locator('#pulse-restart').click();for(let trial=0;trial<3;trial++)await capture(p,{setup:'A',lengthM:2,roundTrips:3,trial},trial+1,trial===0);
+ assert.match(await p.locator('#pulse-summary').innerText(),/4\.0067 s/);await submit(p);await saved(p,3);
+ await p.screenshot({path:path.join(out,'dark-'+width+'.png'),fullPage:true});
+ for(let trial=0;trial<3;trial++)await capture(p,{setup:'B',lengthM:1,roundTrips:5,trial},trial+4);
+ const b=await p.evaluate(k=>JSON.parse(localStorage.getItem(k)),KEY);assert.equal(b.trials.length,6);assert.ok(b.trials.every(r=>!Object.hasOwn(r,'speedMps')));
+ const [download]=await Promise.all([p.waitForEvent('download'),p.locator('#pulse-export').click()]);const file=path.join(out,'observations-'+width+'.csv');await download.saveAs(file);assert.equal(fs.readFileSync(file,'utf8'),M.csv(b.trials));
+ await p.locator('#pulse-restart').click();await saved(p,6);await p.reload({waitUntil:'load'});await p.locator('.pulse-workspace').waitFor();await saved(p,6);await preservation(p);
+ // The existing theme attribute is the documented runtime theme contract.
+ await p.evaluate(()=>document.documentElement.setAttribute('data-theme','light'));await fit(p);await axe(p);await p.screenshot({path:path.join(out,'light-'+width+'.png'),fullPage:true});
+ p.once('dialog',d=>d.dismiss());await p.locator('#pulse-clear').click();await saved(p,6);p.once('dialog',d=>d.accept());await p.locator('#pulse-clear').click();await saved(p,0);await preservation(p);
+ assert.deepEqual(errors,[]);report.cases.push({width,firstQuestionnaire:true,deepLink:true,keyboardManualReplay:true,offGridEndpointViaEnd:true,reducedMotion:true,twoSettingsSixTrials:true,meanTimeBeforeSpeed:true,incorrectInputsRejected:true,dedupe:true,CSVExact:true,reload:true,resetAndClearIsolation:true,axeScans:2,axeViolations:0});
+ }finally{await c.close();}}
+async function extras(browser){
+ for(const kind of ['corrupt','injected','blocked']){const c=await context(browser,390,{[kind]:true}),p=await c.newPage();try{await open(p);await p.locator('.pulse-workspace').waitFor();await saved(p,kind==='injected'?1:0);if(kind==='injected')assert.equal(await p.locator('#pulse-notebook img').count(),0);else await capture(p,M.defaults(),1);if(kind==='blocked'){assert.match(await p.locator('#pulse-storage').innerText(),/session/);await p.locator('a[href="#practicals:9"]').click();await p.locator('[data-pulse-entry]').click();await saved(p,1);}await preservation(p);report.cases.push({storage:kind,passed:true});}finally{await c.close();}}
+ const c=await context(browser,1440,{motion:true}),p=await c.newPage();try{await open(p);await p.locator('.pulse-workspace').waitFor();await p.locator('#pulse-play').click();await p.waitForFunction(()=>Number(document.querySelector('#pulse-scrub').value)>.15);await p.locator('#pulse-play').click();const paused=await p.locator('#pulse-scrub').inputValue();await p.waitForTimeout(150);assert.equal(await p.locator('#pulse-scrub').inputValue(),paused);await p.locator('#pulse-play').click();await p.emulateMedia({reducedMotion:'reduce'});await p.waitForFunction(()=>document.querySelector('#pulse-play').disabled);assert.equal(await p.locator('#pulse-play').innerText(),'Play replay');await p.emulateMedia({reducedMotion:'no-preference'});await p.locator('#pulse-play').click();const oldWave=await p.locator('#pulse-wave').elementHandle();await p.locator('a[href="#practicals:9"]').click();await p.locator('.practical-library').waitFor();const stopped=await oldWave.getAttribute('d');await p.waitForTimeout(150);assert.equal(await oldWave.getAttribute('d'),stopped);assert.equal(await p.locator('.pulse-workspace').count(),0);assert.equal(await p.locator('[data-pulse-entry]').count(),1);await p.locator('[data-pulse-entry]').click();await p.locator('.pulse-workspace').waitFor();await p.locator('a[href="#practical-guide:s9-e10"]').click();await p.locator('.practical-reader').waitFor();assert.equal(await p.locator('[data-pulse-entry]').count(),1);await p.locator('[data-pulse-entry]').click();await p.locator('.pulse-workspace').waitFor();await preservation(p);report.cases.push({explicitPlayback:true,pause:true,reducedMotionChange:true,navigationCleanup:true,catalogueAndGuideEntry:true});}finally{await c.close();}
+ if(!live){const off=await context(browser,390),p=await off.newPage();try{await p.goto(pathToFileURL(path.join(root,'index.html')).href+'#practical:pulse',{waitUntil:'load'});await p.locator('.pulse-workspace').waitFor();await capture(p,M.defaults(),1);await preservation(p);report.cases.push({copiedSingleFileOffline:true});}finally{await off.close();}}
+}
+(async()=>{const browser=await chromium.launch({headless:true});try{for(const width of [1440,768,390,320])await responsive(browser,width);await extras(browser);report.status='passed';}catch(e){report.status='failed';report.error=e.stack;throw e;}finally{fs.writeFileSync(path.join(out,'report.json'),JSON.stringify(report,null,2));await browser.close();}console.log(JSON.stringify(report,null,2));})().catch(e=>{console.error(e);process.exitCode=1;});

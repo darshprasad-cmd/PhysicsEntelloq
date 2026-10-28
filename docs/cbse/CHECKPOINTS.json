@@ -25,15 +25,31 @@
   },
   "interactionMilestones": [
     {
+      "id": "s9-e10",
+      "name": "Transverse-string pulse speed from repeated travel",
+      "status": "verified-local",
+      "route": "#practical:pulse",
+      "capability": "interactive-measurement-with-practical-preparation",
+      "sourcePage": 19,
+      "source": "https://cbseacademic.nic.in/web_material/CurriculumMain27/SecPart1/ScienceSt_SecP1_2026-27.pdf",
+      "releaseEvidence": "PULSE-RELEASE.md",
+      "releaseStatusAuthority": "The release PR conversation records subsequent required checks, merge, deployment and live verification. This source checkpoint is local evidence only.",
+      "limits": "Transverse-string alternative only; ideal motion and deterministic synthetic timing offsets, not longitudinal slinky dynamics or measured reaction time.",
+      "schoolPracticalCompleted": false,
+      "educatorReviewed": false,
+      "physicalCalibration": false
+    },
+    {
       "id": "p11-a-e03",
       "name": "Irregular lamina area and five-point thickness",
-      "status": "verified-local",
+      "status": "released-live-verified",
       "route": "#practical:lamina",
       "capability": "interactive-measurement-with-practical-preparation",
       "sourcePage": 7,
       "source": "https://cbseacademic.nic.in/web_material/CurriculumMain27/SecPart2/Physics_SecP2_2026-27.pdf",
       "releaseEvidence": "LAMINA-RELEASE.md",
-      "productionEvidence": "https://github.com/darshprasad-cmd/PhysicsEntelloq/pull/40",
+      "productionEvidence": "https://github.com/darshprasad-cmd/PhysicsEntelloq/pull/40#issuecomment-6436512807",
+      "releaseCommit": "4e8a9b18f776824bd72fb3d64645232fccd53c54",
       "releaseStatusAuthority": "The linked release PR conversation records the subsequent required checks, merge, deployment and live verification; source-checkpoint status alone is not production evidence.",
       "schoolPracticalCompleted": false,
       "educatorReviewed": false,
@@ -67,7 +83,7 @@
     "newInteractiveLabsInThatRelease": 0,
     "releaseCommit": "7c9c67783a3deba8c4d9571b8fb550d562c1c402",
     "evidence": "https://github.com/darshprasad-cmd/biology-entelloq/pull/41#issuecomment-6374201740",
-    "laterInteractiveMilestones": [{"id":"b11-a-e03","name":"Illustrative paired potato osmometer","releaseCommit":"210878845e69af2169bd584736dfb59c35e65e21","evidence":"https://github.com/darshprasad-cmd/biology-entelloq/pull/45#issuecomment-6403044952","physicalCalibration":false}]
+    "laterInteractiveMilestones": [{"id":"b11-a-e03","name":"Illustrative paired potato osmometer","releaseCommit":"210878845e69af2169bd584736dfb59c35e65e21","evidence":"https://github.com/darshprasad-cmd/biology-entelloq/pull/45#issuecomment-6403044952","physicalCalibration":false},{"id":"s9-e04","name":"Illustrative onion and cheek microscopy","status":"released-live-verified","releaseCommit":"a8c303ca7d9f6a43598275708a4b7155664750c6","evidence":"https://github.com/darshprasad-cmd/biology-entelloq/pull/48#issuecomment-6460832954","verifiedDate":"2026-10-28","physicalCalibration":false,"schoolPracticalCompleted":false}]
   },
   "tracks": [
     {

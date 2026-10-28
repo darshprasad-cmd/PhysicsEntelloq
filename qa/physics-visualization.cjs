@@ -59,6 +59,7 @@ const server = http.createServer((req, res) => {
   try {
     await page.goto(
       "http://127.0.0.1:" + server.address().port + "/#learning:graphs",
+      {waitUntil:'domcontentloaded'},
     );
     await page.locator(".lt-frame").waitFor();
     // Exercise the actual Lab tab in fresh documents, including a failed module
@@ -70,7 +71,7 @@ const server = http.createServer((req, res) => {
       attempts++;
       return attempts===1 ? route.abort('failed') : route.continue();
     });
-    await loadingPage.goto('http://127.0.0.1:'+server.address().port+'/#learning:graphs');
+    await loadingPage.goto('http://127.0.0.1:'+server.address().port+'/#learning:graphs',{waitUntil:'domcontentloaded'});
     await loadingPage.locator('.nav-i[data-go="lab"]').click();
     await loadingPage.locator('[data-lm="graphs"]').click();
     await loadingPage.getByRole('button',{name:'Retry 3D graphs'}).click();
@@ -82,7 +83,7 @@ const server = http.createServer((req, res) => {
     let releaseLoad, sawLoad;
     const held=new Promise(r=>releaseLoad=r), requested=new Promise(r=>sawLoad=r);
     await pendingPage.route('**/assets/physics-visualization/engine.mjs*',async route=>{sawLoad();await held;await route.continue();});
-    await pendingPage.goto('http://127.0.0.1:'+server.address().port+'/#learning:graphs');
+    await pendingPage.goto('http://127.0.0.1:'+server.address().port+'/#learning:graphs',{waitUntil:'domcontentloaded'});
     await pendingPage.locator('.nav-i[data-go="lab"]').click();
     await pendingPage.locator('[data-lm="graphs"]').click();
     await requested;
@@ -118,7 +119,8 @@ const server = http.createServer((req, res) => {
     await page.getByRole('tab', {name:'2D curves'}).click();
     assert.equal(await page.locator('.gx-inp').first().inputValue(), '3*x+2');
     assert.equal(await page.getByRole('slider', {name:'Parameter a',exact:true}).inputValue(), '2');
-    assert.ok(await page.locator('#gx-cv').evaluate(el=>el.width > 100));
+    // ResizeObserver commits the canvas backing size on the next rendering step.
+    await page.waitForFunction(()=>document.querySelector('#gx-cv')?.width > 100);
     await page.getByRole('tab', {name:'3D graphs'}).click();
     await page.getByLabel('Graph type', {exact:true}).selectOption('curve');
     await page.waitForFunction(() => !!document.querySelector('.pv-workspace').__physicsVisualization.getSnapshot().lines);

@@ -1,6 +1,6 @@
 # Pulse speed from repeated travel
 
-Source checkpoint: 28 October 2026. The release PR conversation is the authority for subsequent required checks, merge, deployment and exact live artifact parity. Do not infer production release from an authored checkpoint.
+Source checkpoint: 28 October 2026. [Release PR #45](https://github.com/darshprasad-cmd/PhysicsEntelloq/pull/45) is the authority for subsequent required checks, merge, deployment and exact live artifact parity. Do not infer production release from an authored checkpoint.
 
 ## Bounded objective and references
 

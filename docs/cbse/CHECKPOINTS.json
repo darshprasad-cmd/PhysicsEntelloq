@@ -33,6 +33,7 @@
       "sourcePage": 19,
       "source": "https://cbseacademic.nic.in/web_material/CurriculumMain27/SecPart1/ScienceSt_SecP1_2026-27.pdf",
       "releaseEvidence": "PULSE-RELEASE.md",
+      "productionEvidence": "https://github.com/darshprasad-cmd/PhysicsEntelloq/pull/45",
       "releaseStatusAuthority": "The release PR conversation records subsequent required checks, merge, deployment and live verification. This source checkpoint is local evidence only.",
       "limits": "Transverse-string alternative only; ideal motion and deterministic synthetic timing offsets, not longitudinal slinky dynamics or measured reaction time.",
       "schoolPracticalCompleted": false,

@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { displayPixelRatio, modestDevice } from "./resolution.mjs";
 import {
   clamp,
   finitePoint,
@@ -93,7 +94,6 @@ export class GraphRenderer {
         alpha: false,
         powerPreference: "low-power",
       });
-      this.renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 1.75));
       this.scene = new THREE.Scene();
       this.camera = new THREE.PerspectiveCamera(40, 1, 0.01, 100);
       this.camera.up.set(0, 0, 1);
@@ -667,7 +667,8 @@ export class GraphRenderer {
     this.width = Math.max(1, r.width);
     this.height = Math.max(1, r.height);
     if (this.renderer) {
-      this.renderer.setSize(this.width, this.height, false);
+      this.renderer.setDrawingBufferSize(this.width, this.height,
+        displayPixelRatio(this.width, this.height, devicePixelRatio || 1, modestDevice(navigator)));
       this.camera.aspect = this.width / this.height;
       this.camera.updateProjectionMatrix();
       const aspect = this.width / this.height;
@@ -696,7 +697,7 @@ export class GraphRenderer {
   renderFallback() {
     if (!this.snapshot) return;
     const c = this.fallback,
-      dpr = Math.min(devicePixelRatio || 1, 1.5),
+      dpr = displayPixelRatio(this.width, this.height, devicePixelRatio || 1, modestDevice(navigator)),
       w = this.width,
       h = this.height;
     c.width = w * dpr;

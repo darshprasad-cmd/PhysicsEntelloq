@@ -14,7 +14,8 @@ function withoutLamina(text){
   const css='\n'+normalize(fs.readFileSync(path.join(root,'experience/lamina-lab.css'),'utf8'));
   assert.equal(text.split(css).length,2,'One exact lamina stylesheet');return text.replace(css,'');
 }
-function beforePulse(){return require('./pulse-preservation.cjs')(normalize(fs.readFileSync(path.join(root,'index.html'),'utf8')));}
+function beforePulse(){return require('./pulse-preservation.cjs')(require('./precision-preservation.cjs')(normalize(fs.readFileSync(path.join(root,'index.html'),'utf8'))));}
+require('./test-precision-ui.js');
 function existingArtifact(){return withoutLamina(require('./visualization-preservation.cjs')(beforePulse()));}
 test('Pulse bench preserves every published visualization application byte (fd8794c)',()=>{
   let text=beforePulse();

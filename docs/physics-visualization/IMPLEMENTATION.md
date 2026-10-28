@@ -2,6 +2,19 @@
 
 ## Purpose and integration
 
+### Lab Graphs placement correction (28 October 2026)
+
+Lab → Graphs now opens the shared 3D surface/parametric workspace directly, not a modal behind the original 2D graph. An adjacent keyboard-accessible **2D curves** tab retains the original parser, sliders and canvas. Both editors retain their entries during tab switches; this does not add cross-session saving. Equations/domain controls collapse on narrow hosts. The graph and observers are disposed on navigation, including navigation during import. A failed module download has a working retry with a fresh import URL.
+
+| Before | After | Why |
+| --- | --- | --- |
+| Lab Graphs opened only the 2D editor with a secondary 3D launch button | Embedded 3D graphs selected on entry, with an adjacent 2D curves tab | Put 3D graphing in the requested section without hiding the original tools. |
+| Equation controls consumed most of a phone viewport | Collapsible equations and a compact mobile canvas | Keep the actual graph visible and the page scrollable. |
+
+Changed: `experience/visualization-labs.js`, `experience/visualization-labs.css`, generated `index.html`, `qa/physics-visualization.cjs`, `.github/test-cbse-preservation.js`, and immutable adapter/style fixtures under `.github/fixtures/visualization-baseline-fd8794c/`. No scientific equations, engine bundle, saved-work keys, hand tracking, or deployment configuration changed.
+
+Validation: 301 Node checks passed. The complete visualization browser suite passed with zero page errors, including the real Lab → Graphs navigation, numerical surface/curve checks, both themes at 320/390/768/1440 pixels, retained edits, keyboard switching, download retry, navigation during load, WebGL fallback and disposal. Local browser coverage is headless Chromium, not physical-device testing.
+
 A locally bundled Three.js engine adds spatial inspection to existing experiments. It is not a new app, a replacement solver, or a wholesale conversion of plots into 3D. Ordinary function/time-series/error plots, the original Sandbox apparatus, learning lenses, launch page, founder material, accounts, and saved-work keys remain intact.
 
 The implementation follows the approved audit in ARCHITECTURE-REVIEW.md. The main app is vanilla JavaScript, the motion workspace uses ES modules/JSXGraph, and Reality Lab uses React. All three use the same lazy ES-module renderer without adding a frontend framework.

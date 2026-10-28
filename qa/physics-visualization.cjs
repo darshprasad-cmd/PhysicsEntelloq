@@ -61,6 +61,93 @@ const server = http.createServer((req, res) => {
       "http://127.0.0.1:" + server.address().port + "/#learning:graphs",
     );
     await page.locator(".lt-frame").waitFor();
+    // Exercise the actual Lab tab in fresh documents, including a failed module
+    // fetch and navigation away while the module is still downloading.
+    const loadingPage = await context.newPage();
+    loadingPage.on('pageerror', e=>errors.push(e.message));
+    let attempts=0;
+    await loadingPage.route('**/assets/physics-visualization/engine.mjs*', route=>{
+      attempts++;
+      return attempts===1 ? route.abort('failed') : route.continue();
+    });
+    await loadingPage.goto('http://127.0.0.1:'+server.address().port+'/#learning:graphs');
+    await loadingPage.locator('.nav-i[data-go="lab"]').click();
+    await loadingPage.locator('[data-lm="graphs"]').click();
+    await loadingPage.getByRole('button',{name:'Retry 3D graphs'}).click();
+    await loadingPage.locator('#pv-graph-3d .pv-workspace').waitFor();
+    assert.equal(attempts,2);
+    await loadingPage.close();
+    const pendingPage = await context.newPage();
+    pendingPage.on('pageerror', e=>errors.push(e.message));
+    let releaseLoad, sawLoad;
+    const held=new Promise(r=>releaseLoad=r), requested=new Promise(r=>sawLoad=r);
+    await pendingPage.route('**/assets/physics-visualization/engine.mjs*',async route=>{sawLoad();await held;await route.continue();});
+    await pendingPage.goto('http://127.0.0.1:'+server.address().port+'/#learning:graphs');
+    await pendingPage.locator('.nav-i[data-go="lab"]').click();
+    await pendingPage.locator('[data-lm="graphs"]').click();
+    await requested;
+    await pendingPage.getByRole('tab',{name:'2D curves'}).click();
+    await pendingPage.locator('.gx-inp').first().fill('2*x+1');
+    await pendingPage.locator('[data-lm="labs"]').click();
+    const response=pendingPage.waitForResponse(r=>r.url().includes('/physics-visualization/engine.mjs'));
+    releaseLoad();
+    await response;
+    await pendingPage.waitForTimeout(100);
+    assert.equal(await pendingPage.locator('.pv-workspace').count(),0);
+    await pendingPage.locator('[data-lm="graphs"]').click();
+    await pendingPage.locator('#pv-graph-3d .pv-workspace').waitFor();
+    await pendingPage.close();
+    checks.push('Lab graphs recover from a failed module download; 2D stays usable while loading; leaving during import cannot resurrect the old canvas');
+    await page.locator('.nav-i[data-go="lab"]').click();
+    await page.locator('[data-lm="graphs"]').click();
+    await page.locator('#pv-graph-3d .pv-workspace').waitFor();
+    assert.equal(await page.locator('.pv-lab-overlay').count(), 0);
+    assert.equal(await page.getByRole('tab', {name:'3D graphs'}).getAttribute('aria-selected'), 'true');
+    await page.waitForFunction(() => document.querySelector('#pv-graph-3d .pv-workspace')?.__physicsVisualization?.renderer.samples.length > 100);
+    assert.equal(await page.locator('#pv-graph-3d .pv-workspace').evaluate(el=>el.__physicsVisualization.renderer.mode), '3d');
+    await page.getByLabel('Surface expression', {exact:true}).fill('x^2-y^2');
+    await page.getByRole('button', {name:'Plot expression',exact:true}).click();
+    await page.waitForFunction(() => document.querySelector('.pv-workspace').__physicsVisualization.getSnapshot().surface.sample(2,1) === 3);
+    await page.getByRole('tab', {name:'2D curves'}).click();
+    await page.locator('.gx-inp').first().fill('3*x+2');
+    await page.getByRole('slider', {name:'Parameter a',exact:true}).fill('2');
+    await page.getByRole('tab', {name:'2D curves'}).focus();
+    await page.keyboard.press('ArrowLeft');
+    assert.equal(await page.getByRole('tab',{name:'3D graphs'}).evaluate(el=>el===document.activeElement), true);
+    assert.equal(await page.getByLabel('Surface expression', {exact:true}).inputValue(), 'x^2-y^2');
+    await page.getByRole('tab', {name:'2D curves'}).click();
+    assert.equal(await page.locator('.gx-inp').first().inputValue(), '3*x+2');
+    assert.equal(await page.getByRole('slider', {name:'Parameter a',exact:true}).inputValue(), '2');
+    assert.ok(await page.locator('#gx-cv').evaluate(el=>el.width > 100));
+    await page.getByRole('tab', {name:'3D graphs'}).click();
+    await page.getByLabel('Graph type', {exact:true}).selectOption('curve');
+    await page.waitForFunction(() => !!document.querySelector('.pv-workspace').__physicsVisualization.getSnapshot().lines);
+    assert.ok(await page.locator('.pv-workspace').evaluate(el=>{
+      const p=el.__physicsVisualization.getSnapshot().lines[0].points;
+      return Math.abs(p[0][0]-1)<1e-10 && Math.abs(p.at(-1)[2]-2*Math.PI/3)<1e-10;
+    }));
+    await page.getByLabel('Graph type', {exact:true}).selectOption('surface');
+    for (const theme of ['dark','light']) {
+      await page.evaluate(t=>document.documentElement.dataset.theme=t,theme);
+      for (const width of [1440,768,390,320]) {
+        await page.setViewportSize({width,height:1000});
+        await page.locator('.pv-graph-equations').evaluate((el,w)=>el.open=w>600,width);
+        await page.waitForTimeout(80);
+        assert.ok(await page.locator('.pv-graph-section').evaluate(el=>el.scrollWidth <= el.clientWidth+2), theme+' '+width+' graph overflow');
+        assert.ok(await page.locator('.pv-stage').evaluate(el=>el.clientWidth>150 && el.clientHeight>=300));
+        if (width===1440 || width===390) {
+          await page.locator('.pv-stage').scrollIntoViewIfNeeded();
+          await page.screenshot({path:path.join(output,'lab-graphs-'+theme+'-'+width+'.png')});
+        }
+      }
+    }
+    await page.setViewportSize({width:1440,height:1000});
+    await page.evaluate(()=>document.documentElement.dataset.theme='dark');
+    await page.locator('.pv-workspace').evaluate(el=>window.departedGraph=el.__physicsVisualization);
+    await page.locator('[data-lm="labs"]').click();
+    assert.ok(await page.evaluate(()=>window.departedGraph.renderer.disposed));
+    assert.equal(await page.locator('.pv-graph-section').count(),0);
+    checks.push('Lab > Graphs opens inline 3D by default; analytical surfaces/curves, retained 2D/3D edits, keyboard tabs, both themes, 320–1440px and disposal');
     async function theory(id) {
       await page.locator('.nav-i[data-go="lab"]').click();
       await page.locator('[data-lm="theory"]').click();
@@ -465,6 +552,13 @@ const server = http.createServer((req, res) => {
     checks.push(
       "WebGL unavailable: field/streamline fallback and numerical inspection",
     );
+    await page.getByRole('button',{name:/Back to experiment/}).click();
+    await page.locator('[data-lm="graphs"]').click();
+    await page.locator('#pv-graph-3d .pv-workspace').waitFor();
+    assert.ok(await page.locator('#pv-graph-3d .pv-fallback').isVisible());
+    await page.getByRole('tab',{name:'2D curves'}).click();
+    assert.ok(await page.locator('#gx-cv').isVisible());
+    checks.push('Lab > Graphs remains usable without WebGL; original 2D tools remain available');
     assert.deepEqual(errors, []);
     console.log(JSON.stringify({ checks, errors }, null, 2));
     fs.writeFileSync(

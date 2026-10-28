@@ -17,7 +17,17 @@ function withoutLamina(text){
 function beforePulse(){return require('./pulse-preservation.cjs')(normalize(fs.readFileSync(path.join(root,'index.html'),'utf8')));}
 function existingArtifact(){return withoutLamina(require('./visualization-preservation.cjs')(beforePulse()));}
 test('Pulse bench preserves every published visualization application byte (fd8794c)',()=>{
-  assert.equal(createHash('sha256').update(beforePulse()).digest('hex'),'29d2dc21e8462d804105e315078fa54e02ce2a4ae5bef553899394089c2b4c10');
+  let text=beforePulse();
+  // Lab > Graphs now mounts inline. Restore only its source-owned adapter/style
+  // slots to immutable release fixtures before checking the historical digest.
+  for(const file of ['visualization-labs.js','visualization-labs.css']){
+    const current=normalize(fs.readFileSync(path.join(root,'experience',file),'utf8'));
+    const frozen=normalize(fs.readFileSync(path.join(__dirname,'fixtures/visualization-baseline-fd8794c',file),'utf8'));
+    const slot=source=>file.endsWith('.js')?'/* EXPERIENCE:VISUALIZATION:START */\n'+source+'\n/* EXPERIENCE:VISUALIZATION:END */':'\n'+source;
+    assert.equal(text.split(slot(current)).length,2,'One exact current '+file+' slot');
+    text=text.replace(slot(current),slot(frozen));
+  }
+  assert.equal(createHash('sha256').update(text).digest('hex'),'29d2dc21e8462d804105e315078fa54e02ce2a4ae5bef553899394089c2b4c10');
 });
 // Required CI already executes this preservation entrypoint. Keep the new
 // apparatus arithmetic/validation suite in that gate without editing workflows.

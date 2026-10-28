@@ -14,9 +14,17 @@ function withoutLamina(text){
   const css='\n'+normalize(fs.readFileSync(path.join(root,'experience/lamina-lab.css'),'utf8'));
   assert.equal(text.split(css).length,2,'One exact lamina stylesheet');return text.replace(css,'');
 }
-function existingArtifact(){return withoutLamina(require('./visualization-preservation.cjs')(normalize(fs.readFileSync(path.join(root,'index.html'),'utf8'))));}
+function beforePulse(){return require('./pulse-preservation.cjs')(normalize(fs.readFileSync(path.join(root,'index.html'),'utf8')));}
+function existingArtifact(){return withoutLamina(require('./visualization-preservation.cjs')(beforePulse()));}
+test('Pulse bench preserves every published visualization application byte (fd8794c)',()=>{
+  assert.equal(createHash('sha256').update(beforePulse()).digest('hex'),'29d2dc21e8462d804105e315078fa54e02ce2a4ae5bef553899394089c2b4c10');
+});
+// Required CI already executes this preservation entrypoint. Keep the new
+// apparatus arithmetic/validation suite in that gate without editing workflows.
+require('./test-pulse-model.js');
+require('./test-pulse-ui.js');
 test('Visualization preserves the complete released lamina application (4e8a9b1)',()=>{
-  const text=require('./visualization-preservation.cjs')(normalize(fs.readFileSync(path.join(root,'index.html'),'utf8')));
+  const text=require('./visualization-preservation.cjs')(beforePulse());
   assert.equal(createHash('sha256').update(text).digest('hex'),'c9de19cd5f6830612f30d9c5f6c6e19262e51e06dd90cd5016bb9ae0dfaa7366');
 });
 test('Lamina and visualization preserve every published application byte (aca2bb6)',()=>{

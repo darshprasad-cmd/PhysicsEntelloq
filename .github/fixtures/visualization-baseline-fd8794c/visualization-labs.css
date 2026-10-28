@@ -1,0 +1,57 @@
+.pv-entry {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 12px 0;
+  padding: 12px 16px;
+  border: 1px solid var(--pe-border, var(--line));
+  border-radius: 9px;
+  color: var(--ink);
+  background: var(--bg-panel);
+  font-size: 13px;
+}
+.pv-entry .mini-b {
+  min-height: 40px;
+}
+.pv-lab-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10040;
+  overflow: auto;
+  background: var(--bg, #080e14);
+  padding: 20px max(20px, calc((100vw - 1500px) / 2));
+  color: var(--ink);
+  overscroll-behavior: contain;
+}
+.pv-back {
+  margin-bottom: 16px;
+  min-height: 40px;
+}
+.pv-lab-slot {
+  width: 100%;
+  min-height: 400px;
+}
+.pv-lab-overlay .pv-stage {
+  height: clamp(400px, 58vh, 740px);
+}
+@media (max-width: 720px) {
+  .pv-lab-overlay {
+    padding: 10px;
+  }
+  .pv-lab-overlay .pv-stage {
+    height: 390px;
+  }
+  .pv-entry {
+    padding: 10px;
+    font-size: 12px;
+  }
+}
+.pv-lab-overlay {
+  padding-bottom: 40px;
+}
+body[data-physics-graph] #eqx-fab,
+body[data-physics-graph] #tutor-fab {
+  visibility: hidden !important;
+  pointer-events: none !important;
+}

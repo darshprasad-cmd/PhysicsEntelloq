@@ -3034,6 +3034,89 @@ body[data-physics-graph] #tutor-fab {
   visibility: hidden !important;
   pointer-events: none !important;
 }
+.pv-graph-section {
+  min-width: 0;
+  color: var(--ink);
+}
+.pv-graph-section [hidden] { display: none !important; }
+.pv-graph-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 18px 0;
+}
+.pv-graph-bar [role="tablist"] {
+  display: inline-flex;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--bg-panel);
+}
+.pv-graph-bar [role="tab"] {
+  min-height: 44px;
+  padding: 9px 18px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+.pv-graph-bar [aria-selected="true"] {
+  border-color: var(--line);
+  background: var(--bg);
+  box-shadow: 0 1px 4px #0002;
+}
+.pv-graph-bar [role="tab"]:focus-visible {
+  outline: 2px solid var(--accent, #8eb9ec);
+  outline-offset: 2px;
+}
+.pv-graph-bar [role="tab"]:active { transform: scale(.97); }
+.pv-graph-bar p, .pv-graph-status {
+  color: var(--ink-dim, var(--ink));
+  font-size: 13px;
+  line-height: 1.6;
+  margin: 0;
+}
+.pv-graph-status { padding: 30px 16px; }
+.pv-graph-section .pv-stage { height: clamp(350px, 53vh, 640px); }
+.pv-graph-section .pv-focused .pv-stage { height: calc(100dvh - 285px); }
+.pv-graph-section .pv-expressions {
+  background: var(--bg-panel);
+  border-color: var(--line);
+}
+.pv-graph-equations { margin-bottom: 12px; }
+.pv-graph-equations > summary {
+  cursor: pointer;
+  padding: 12px 0;
+  min-height: 44px;
+  font-size: 13px;
+}
+.pv-graph-section .pv-expressions :is(input, select, button) {
+  min-height: 40px;
+  max-width: 100%;
+  font: inherit;
+  font-size: 13px;
+  color: var(--ink);
+  background: var(--bg-panel);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 8px 10px;
+}
+.pv-graph-section .pv-expressions > label { min-width: 0; }
+.pv-graph-section .pv-expressions :focus-visible {
+  outline: 2px solid var(--accent, #8eb9ec);
+  outline-offset: 2px;
+}
+@media (max-width: 600px) {
+  .pv-graph-section .pv-stage { height: clamp(300px, 90vw, 400px); }
+  .pv-graph-bar p { flex-basis: 100%; }
+  .pv-graph-section .pv-expressions > label { width: 100%; }
+  .pv-graph-section .pv-expressions :is(input, select) { width: 100%; }
+}
 
 /* Scoped apparatus only. No shell palette, scientific-model or launcher changes. */
 .pulse-workspace{--pulse-bg:#101f2d;--pulse-line:#526f80;--pulse-text:#e4eff6;--pulse-muted:#bad1df;--pulse-accent:#a6eed4;color:var(--pulse-text);max-width:1280px;padding-bottom:80px!important;font-variant-numeric:tabular-nums}
@@ -16246,17 +16329,22 @@ var PhysicsViz = (function () {
   "use strict";
   var bindings = [],
     active = null,
+    graphWorkspace = null,
     modulePromise = null,
+    moduleAttempt = 0,
     serial = 0;
   function engine() {
-    return (
-      modulePromise ||
-      (modulePromise =
-        import("./assets/physics-visualization/engine.mjs").catch(function (e) {
-          modulePromise = null;
-          throw e;
-        }))
-    );
+    if (!modulePromise) {
+      // Browsers cache failed module fetches. A deliberate retry needs a new URL.
+      var url = "./assets/physics-visualization/engine.mjs";
+      if (moduleAttempt) url += "?retry=" + moduleAttempt;
+      moduleAttempt++;
+      modulePromise = import(url).catch(function (e) {
+        modulePromise = null;
+        throw e;
+      });
+    }
+    return modulePromise;
   }
   function connect(host, spec) {
     if (
@@ -16501,6 +16589,8 @@ var PhysicsViz = (function () {
   }
   function dispose() {
     close();
+    if (graphWorkspace) graphWorkspace.dispose();
+    graphWorkspace = null;
     bindings.forEach(function (b) {
       b.dispose();
     });
@@ -16718,12 +16808,110 @@ var PhysicsViz = (function () {
   };
   var grapherMount = Grapher.mount;
   Grapher.mount = function (host) {
-    var result = grapherMount.apply(this, arguments);
-    connect(typeof host === "string" ? document.querySelector(host) : host, {
-      title: "Mathematical workspace",
-      explorer: true,
+    host = typeof host === "string" ? document.querySelector(host) : host;
+    if (!host) return;
+    if (graphWorkspace) graphWorkspace.dispose();
+    // Lab > Graphs is the workspace itself, not a link to a modal elsewhere.
+    var shell = document.createElement("section");
+    shell.className = "pv-graph-section";
+    shell.setAttribute("aria-label", "Graphing workspace");
+    shell.innerHTML =
+      '<div class="pv-graph-bar"><div role="tablist" aria-label="Graphing tools">' +
+      '<button type="button" role="tab" id="pv-graph-tab-3d" aria-controls="pv-graph-3d" aria-selected="true">3D graphs</button>' +
+      '<button type="button" role="tab" id="pv-graph-tab-2d" aria-controls="pv-graph-2d" aria-selected="false" tabindex="-1">2D curves</button>' +
+      '</div><p>Plot a surface. Trace a curve. Inspect every coordinate.</p></div>' +
+      '<div id="pv-graph-3d" role="tabpanel" aria-labelledby="pv-graph-tab-3d"></div>' +
+      '<div id="pv-graph-2d" role="tabpanel" aria-labelledby="pv-graph-tab-2d" hidden></div>';
+    host.replaceChildren(shell);
+    var tabs = Array.from(shell.querySelectorAll('[role="tab"]')),
+      spatial = shell.querySelector("#pv-graph-3d"),
+      planar = shell.querySelector("#pv-graph-2d"),
+      selected = 0,
+      viewer = null,
+      planarMounted = false,
+      alive = true,
+      loading = false,
+      generation = 0;
+    function choose(index) {
+      selected = index;
+      tabs.forEach(function (tab, i) {
+        tab.setAttribute("aria-selected", String(i === index));
+        tab.tabIndex = i === index ? 0 : -1;
+      });
+      spatial.hidden = index !== 0;
+      planar.hidden = index !== 1;
+      if (index === 0) loadSpatial();
+      else if (!planarMounted) {
+        // Mount the existing parser, sliders and canvas only at a visible size.
+        // Keep its DOM alive across tab switches so entered expressions survive.
+        grapherMount.call(Grapher, planar);
+        planarMounted = true;
+      }
+    }
+    async function loadSpatial() {
+      if (viewer || loading || !alive) return;
+      loading = true;
+      var token = ++generation;
+      spatial.setAttribute("aria-busy", "true");
+      var status = document.createElement("p");
+      status.className = "pv-graph-status";
+      status.setAttribute("role", "status");
+      status.textContent = "Loading 3D graphs… Your 2D tools are available beside this tab.";
+      spatial.replaceChildren(status);
+      try {
+        var lib = await engine();
+        if (!alive || token !== generation || !host.isConnected) return;
+        // A fast switch to 2D must not create a hidden WebGL canvas.
+        if (selected !== 0) return;
+        spatial.replaceChildren();
+        viewer = lib.mountExplorer(spatial);
+        var equations = document.createElement("details"),
+          summary = document.createElement("summary");
+        equations.className = "pv-graph-equations";
+        equations.open = host.getBoundingClientRect().width > 600;
+        summary.textContent = "Equations & domain";
+        equations.append(summary, spatial.querySelector(".pv-expressions"));
+        spatial.prepend(equations);
+      } catch (e) {
+        if (!alive || token !== generation) return;
+        status.textContent = "3D graphs could not load. Retry, or use the 2D curves tab.";
+        var retry = document.createElement("button");
+        retry.type = "button";
+        retry.className = "mini-b";
+        retry.textContent = "Retry 3D graphs";
+        retry.onclick = loadSpatial;
+        spatial.replaceChildren(status, retry);
+      } finally {
+        if (alive && token === generation) {
+          loading = false;
+          spatial.removeAttribute("aria-busy");
+        }
+      }
+    }
+    tabs.forEach(function (tab, i) {
+      tab.onclick = function () { choose(i); };
+      tab.onkeydown = function (event) {
+        var next = event.key === "Home" ? 0 : event.key === "End" ? 1 :
+          ["ArrowLeft", "ArrowRight"].includes(event.key) ? 1 - i : null;
+        if (next === null) return;
+        event.preventDefault();
+        choose(next);
+        tabs[next].focus();
+      };
     });
-    return result;
+    graphWorkspace = {
+      dispose: function () {
+        if (!alive) return;
+        alive = false;
+        generation++;
+        if (viewer) viewer.dispose();
+        viewer = null;
+        if (planarMounted) Grapher.stop();
+        shell.remove();
+      },
+    };
+    choose(0);
+    return graphWorkspace;
   };
   var sandboxMount = Sandbox.mount;
   Sandbox.mount = function (host) {

@@ -3,17 +3,22 @@ var PhysicsViz = (function () {
   "use strict";
   var bindings = [],
     active = null,
+    graphWorkspace = null,
     modulePromise = null,
+    moduleAttempt = 0,
     serial = 0;
   function engine() {
-    return (
-      modulePromise ||
-      (modulePromise =
-        import("./assets/physics-visualization/engine.mjs").catch(function (e) {
-          modulePromise = null;
-          throw e;
-        }))
-    );
+    if (!modulePromise) {
+      // Browsers cache failed module fetches. A deliberate retry needs a new URL.
+      var url = "./assets/physics-visualization/engine.mjs";
+      if (moduleAttempt) url += "?retry=" + moduleAttempt;
+      moduleAttempt++;
+      modulePromise = import(url).catch(function (e) {
+        modulePromise = null;
+        throw e;
+      });
+    }
+    return modulePromise;
   }
   function connect(host, spec) {
     if (
@@ -258,6 +263,8 @@ var PhysicsViz = (function () {
   }
   function dispose() {
     close();
+    if (graphWorkspace) graphWorkspace.dispose();
+    graphWorkspace = null;
     bindings.forEach(function (b) {
       b.dispose();
     });
@@ -475,12 +482,110 @@ var PhysicsViz = (function () {
   };
   var grapherMount = Grapher.mount;
   Grapher.mount = function (host) {
-    var result = grapherMount.apply(this, arguments);
-    connect(typeof host === "string" ? document.querySelector(host) : host, {
-      title: "Mathematical workspace",
-      explorer: true,
+    host = typeof host === "string" ? document.querySelector(host) : host;
+    if (!host) return;
+    if (graphWorkspace) graphWorkspace.dispose();
+    // Lab > Graphs is the workspace itself, not a link to a modal elsewhere.
+    var shell = document.createElement("section");
+    shell.className = "pv-graph-section";
+    shell.setAttribute("aria-label", "Graphing workspace");
+    shell.innerHTML =
+      '<div class="pv-graph-bar"><div role="tablist" aria-label="Graphing tools">' +
+      '<button type="button" role="tab" id="pv-graph-tab-3d" aria-controls="pv-graph-3d" aria-selected="true">3D graphs</button>' +
+      '<button type="button" role="tab" id="pv-graph-tab-2d" aria-controls="pv-graph-2d" aria-selected="false" tabindex="-1">2D curves</button>' +
+      '</div><p>Plot a surface. Trace a curve. Inspect every coordinate.</p></div>' +
+      '<div id="pv-graph-3d" role="tabpanel" aria-labelledby="pv-graph-tab-3d"></div>' +
+      '<div id="pv-graph-2d" role="tabpanel" aria-labelledby="pv-graph-tab-2d" hidden></div>';
+    host.replaceChildren(shell);
+    var tabs = Array.from(shell.querySelectorAll('[role="tab"]')),
+      spatial = shell.querySelector("#pv-graph-3d"),
+      planar = shell.querySelector("#pv-graph-2d"),
+      selected = 0,
+      viewer = null,
+      planarMounted = false,
+      alive = true,
+      loading = false,
+      generation = 0;
+    function choose(index) {
+      selected = index;
+      tabs.forEach(function (tab, i) {
+        tab.setAttribute("aria-selected", String(i === index));
+        tab.tabIndex = i === index ? 0 : -1;
+      });
+      spatial.hidden = index !== 0;
+      planar.hidden = index !== 1;
+      if (index === 0) loadSpatial();
+      else if (!planarMounted) {
+        // Mount the existing parser, sliders and canvas only at a visible size.
+        // Keep its DOM alive across tab switches so entered expressions survive.
+        grapherMount.call(Grapher, planar);
+        planarMounted = true;
+      }
+    }
+    async function loadSpatial() {
+      if (viewer || loading || !alive) return;
+      loading = true;
+      var token = ++generation;
+      spatial.setAttribute("aria-busy", "true");
+      var status = document.createElement("p");
+      status.className = "pv-graph-status";
+      status.setAttribute("role", "status");
+      status.textContent = "Loading 3D graphs… Your 2D tools are available beside this tab.";
+      spatial.replaceChildren(status);
+      try {
+        var lib = await engine();
+        if (!alive || token !== generation || !host.isConnected) return;
+        // A fast switch to 2D must not create a hidden WebGL canvas.
+        if (selected !== 0) return;
+        spatial.replaceChildren();
+        viewer = lib.mountExplorer(spatial);
+        var equations = document.createElement("details"),
+          summary = document.createElement("summary");
+        equations.className = "pv-graph-equations";
+        equations.open = host.getBoundingClientRect().width > 600;
+        summary.textContent = "Equations & domain";
+        equations.append(summary, spatial.querySelector(".pv-expressions"));
+        spatial.prepend(equations);
+      } catch (e) {
+        if (!alive || token !== generation) return;
+        status.textContent = "3D graphs could not load. Retry, or use the 2D curves tab.";
+        var retry = document.createElement("button");
+        retry.type = "button";
+        retry.className = "mini-b";
+        retry.textContent = "Retry 3D graphs";
+        retry.onclick = loadSpatial;
+        spatial.replaceChildren(status, retry);
+      } finally {
+        if (alive && token === generation) {
+          loading = false;
+          spatial.removeAttribute("aria-busy");
+        }
+      }
+    }
+    tabs.forEach(function (tab, i) {
+      tab.onclick = function () { choose(i); };
+      tab.onkeydown = function (event) {
+        var next = event.key === "Home" ? 0 : event.key === "End" ? 1 :
+          ["ArrowLeft", "ArrowRight"].includes(event.key) ? 1 - i : null;
+        if (next === null) return;
+        event.preventDefault();
+        choose(next);
+        tabs[next].focus();
+      };
     });
-    return result;
+    graphWorkspace = {
+      dispose: function () {
+        if (!alive) return;
+        alive = false;
+        generation++;
+        if (viewer) viewer.dispose();
+        viewer = null;
+        if (planarMounted) Grapher.stop();
+        shell.remove();
+      },
+    };
+    choose(0);
+    return graphWorkspace;
   };
   var sandboxMount = Sandbox.mount;
   Sandbox.mount = function (host) {

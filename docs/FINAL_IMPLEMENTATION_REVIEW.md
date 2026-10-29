@@ -83,4 +83,3 @@ Paths below are relative to the two-repository `entelloq-product-excellence` sta
 | `biology/labs.html` | `122b53dc1c2b68d992cc23681b8c40e1050a21b9a9bbf1470ee7229d7f4a6ead` |
 
 The final notebook graph-selection refinement is included in the recorded Biology hashes. Any subsequent executable change requires a relevant check. Real-student usability, production approval and the remaining native gates are separate outstanding evidence boundaries.
-

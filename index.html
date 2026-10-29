@@ -3164,6 +3164,61 @@ html.pe-refined[data-theme=light] body:not(.pe-landing-open) .eqx-fab{background
   html.pe-refined .eqx-fab:hover{transform:none}
 }
 
+/* Shared scientific workspace tokens; subject-specific accents remain local. */
+:root{--eq-space-1:4px;--eq-space-2:8px;--eq-space-3:12px;--eq-space-4:16px;--eq-space-6:24px;--eq-radius:12px;--eq-focus:#2563eb;--eq-touch:44px}
+.eq-science{font-family:inherit;line-height:1.5;font-variant-numeric:tabular-nums}
+.eq-science button,.eq-science input,.eq-science select,.eq-science summary{min-height:var(--eq-touch);font:inherit}
+.eq-science button,.eq-science summary{cursor:pointer}
+.eq-science :focus-visible{outline:3px solid var(--eq-focus);outline-offset:3px}
+.eq-science input,.eq-science textarea,.eq-science select{box-sizing:border-box;max-width:100%;padding:10px;border:1px solid currentColor;border-radius:8px;background:transparent;color:inherit}
+.eq-science textarea{width:100%;min-height:96px;resize:vertical;font:inherit}
+.eq-science .eq-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.eq-science .eq-status{min-height:1.5em;overflow-wrap:anywhere}
+.eq-science [hidden]{display:none!important}
+.eq-science dialog{max-width:min(880px,calc(100vw - 24px));max-height:calc(100dvh - 32px);overflow:auto;padding:24px;border-radius:16px}
+.eq-science pre{white-space:pre-wrap;overflow-wrap:anywhere}
+.eq-science .eq-muted{opacity:.78}
+.eq-classroom{width:min(760px,calc(100vw - 32px));max-height:calc(100dvh - 40px);box-sizing:border-box;overflow:auto;background:#f8fafc;color:#172b3b;border:1px solid #8fa3b7;border-radius:16px;padding:24px}
+.eq-classroom::backdrop{background:#081622aa}
+.eq-classroom header h2{margin-right:auto}
+.eq-classroom label{display:grid;gap:6px;margin:16px 0}
+.eq-classroom button{padding:8px 14px;border:1px solid #839bad;border-radius:8px;background:#fff;color:#172b3b}
+.eq-classroom details{padding:12px 0;border-top:1px solid #b9c9d7}
+@media(max-width:600px){.eq-science .eq-actions>*{flex-grow:1}.eq-science dialog{padding:16px}}
+@media(prefers-reduced-motion:reduce){.eq-science *{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
+
+/* Product additions share the existing subject palette. Scientific renderers are untouched. */
+.science-excellence .side-scroll>.nav-i[data-go]:not([data-science-primary]),.science-excellence .side-scroll>.side-sep{display:none}
+.science-excellence .side-scroll [data-science-primary]{display:flex}
+.science-excellence .science-notebook-trigger{border:1px solid var(--line);border-radius:7px;background:var(--bg-panel);color:var(--ink);padding:9px 12px;font:inherit;font-size:12px;white-space:nowrap;min-height:40px}
+.science-excellence .science-subject-switch{color:var(--blue);font-weight:600;text-decoration:none;min-height:40px;display:inline-flex;align-items:center}
+.science-excellence #science-save-observation{display:inline-flex;align-items:center;justify-content:center}.science-excellence #science-classroom{min-height:40px;font-size:11px;border:1px solid var(--line);background:var(--bg-panel);color:var(--ink);border-radius:7px;padding:8px;cursor:pointer}
+.science-excellence .science-heading{display:flex;gap:20px;align-items:center;justify-content:space-between;margin-bottom:20px}
+.science-excellence .science-heading h1,.science-excellence .science-heading h2{font-size:clamp(24px,3vw,34px);letter-spacing:-.04em;line-height:1.2;margin:5px 0 8px;color:var(--ink)}
+.science-excellence .science-heading p{margin:0;color:var(--ink-dim);font-size:14px}.science-excellence .science-eyebrow{font:10px var(--mono);letter-spacing:.14em;color:var(--blue)}
+.science-excellence .science-discover button,.science-excellence .science-explore-links button,.science-excellence .science-save-workspace{border:1px solid var(--line);border-radius:8px;background:var(--bg-panel);color:var(--ink);font:inherit;cursor:pointer;min-height:44px;padding:10px 14px}
+.science-excellence .science-discover button:hover,.science-excellence .science-explore-links button:hover{border-color:var(--blue);background:var(--bg-2)}
+.science-excellence .science-feature{display:grid;grid-template-columns:2fr 1fr;gap:25px;padding:25px;border:1px solid var(--line);border-radius:14px;background:var(--bg-panel);margin:0 0 24px}
+.science-excellence .science-feature small{font:10px var(--mono);color:var(--blue);letter-spacing:.1em}.science-excellence .science-feature h2{font-size:28px;line-height:1.2;margin:12px 0;color:var(--ink)}.science-excellence .science-feature p{font-size:14px;max-width:60ch;color:var(--ink-dim);margin-bottom:18px}.science-excellence .science-feature button{background:var(--blue);color:var(--bg);font-weight:650}
+.science-excellence .science-feature-art{font-size:120px;color:var(--blue);display:grid;place-content:center;text-align:center;line-height:1}.science-excellence .science-feature-art span{font:9px var(--mono);letter-spacing:.06em;margin-top:10px}
+.science-excellence .science-filters{display:grid;grid-template-columns:minmax(0,1fr) 190px;gap:12px}.science-excellence .science-filters label{display:grid;gap:7px;font-size:12px;color:var(--ink-dim)}
+.science-excellence .science-filters input,.science-excellence .science-filters select{border:1px solid var(--line);border-radius:8px;min-height:44px;padding:10px 12px;background:var(--bg-panel);color:var(--ink);font:inherit;width:100%;min-width:0}
+.science-excellence .science-result-status,.science-excellence .science-search-hint{font-size:12px;color:var(--ink-dim);margin:12px 0}.science-excellence .science-catalog{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.science-excellence button.science-card{display:grid;text-align:left;align-content:start;gap:8px;padding:17px;min-height:150px;min-width:0}.science-excellence .science-card small{font-size:10px;color:var(--blue);text-transform:uppercase;letter-spacing:.07em}.science-excellence .science-card strong{font-size:17px;line-height:1.25;color:var(--ink)}.science-excellence .science-card span{font-size:12px;line-height:1.6;color:var(--ink-dim)}
+.science-excellence .science-explore-links{display:flex;flex-wrap:wrap;gap:10px;margin-top:25px}.science-excellence .science-lab-entry{max-width:1200px;margin:0 auto;padding:24px var(--pe-gutter)}.science-excellence .science-original-library{margin:20px var(--pe-gutter);padding:12px;border:1px solid var(--line);border-radius:8px}.science-excellence .science-original-library summary{cursor:pointer;min-height:36px;color:var(--ink)}
+.science-excellence .science-context{padding:12px;border:1px solid var(--line);border-radius:9px;margin:12px 0;font-size:12px;color:var(--ink-dim)}.science-excellence .science-context p{margin:7px 0}.science-excellence .science-context strong{color:var(--ink)}.science-excellence .science-context summary{cursor:pointer;min-height:30px;padding-top:4px}
+.science-excellence .sci-workspace{padding:16px 22px 20px}.science-excellence .sci-workspace-head{display:flex;flex-direction:row;align-items:center;gap:15px}.science-excellence .sci-workspace-head>div{display:flex;align-items:center;gap:14px;flex:1;min-width:0}.science-excellence .sci-workspace-head .eyebrow{display:none}.science-excellence .sci-workspace h1{font-size:21px;margin:0;letter-spacing:-.03em}.science-excellence .sci-back{font-size:12px;margin:0;min-height:44px;white-space:nowrap}
+.science-excellence .science-workspace-about{font-size:12px;margin:4px 0 12px;color:var(--ink-dim)}.science-excellence .science-workspace-about summary{cursor:pointer;min-height:32px;padding:5px 0}.science-excellence .science-workspace-about .sci-boundary{margin:6px 0}.science-excellence .sci-frame{height:max(560px,calc(100dvh - 195px));border-radius:9px}.science-excellence .science-visually-hidden{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;overflow:hidden!important;clip-path:inset(50%);white-space:nowrap}
+.science-dialog{width:min(720px,calc(100vw - 24px));max-height:calc(100dvh - 36px);overflow:auto;background:var(--bg-panel,#101e29);color:var(--ink,#e4edea);border:1px solid var(--line,#40546b);border-radius:14px;padding:22px;font:14px/1.6 var(--body,system-ui);box-sizing:border-box}.science-dialog::backdrop{background:#000b}.science-dialog-head{display:flex;align-items:center;gap:15px;justify-content:space-between}.science-dialog h2{font-size:23px;line-height:1.25;margin:0}.science-dialog button{min-height:44px;border:1px solid var(--line,#40546b);border-radius:7px;background:var(--bg-2,#162733);color:var(--ink,#e4edea);padding:9px 13px;font:inherit;cursor:pointer}.science-dialog button:disabled{opacity:.6;cursor:default}.science-dialog label{display:grid;gap:6px;margin-bottom:14px;font-size:12px}.science-dialog input,.science-dialog textarea{width:100%;box-sizing:border-box;border:1px solid var(--line,#40546b);border-radius:7px;background:var(--bg,#09121a);color:var(--ink,#e4edea);padding:10px 12px;font:16px/1.5 system-ui;min-height:44px}.science-dialog textarea{resize:vertical}.science-dialog pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:11px}.science-measurement-fields{display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px}.science-caption{font-size:12px;color:var(--ink-dim)}.science-notebook-actions{display:flex;flex-wrap:wrap;gap:9px}.science-notebook-entry{margin-top:18px;padding:16px;border:1px solid var(--line);border-radius:9px;overflow-wrap:anywhere}.science-notebook-entry h3{font-size:17px;margin:0}.science-notebook-entry p{white-space:pre-wrap}.science-notebook-entry small{display:block;margin-bottom:12px}.science-inline-status:not(:empty){margin:8px 0;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg-2);color:var(--ink);font-size:12px;pointer-events:none}
+.science-excellence :is(.science-discover,.science-dialog,.science-explore-links,.science-original-library,.science-workspace-about) :focus-visible{outline:2px solid var(--blue,#8bbcf0);outline-offset:3px}
+.science-excellence .eq-classroom{background:var(--bg-panel);color:var(--ink);border-color:var(--line)}.science-excellence .eq-classroom :is(input,select,textarea,button){background:var(--bg-2);color:var(--ink);border-color:var(--line);min-height:44px;max-width:100%;box-sizing:border-box}.science-excellence .eq-classroom details{border-color:var(--line)}.science-excellence .eq-classroom textarea{min-height:84px}.science-excellence .eq-classroom :focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+@media(max-width:850px){.science-excellence .topbar{gap:10px;padding:0 16px}.science-excellence .science-notebook-trigger{margin-left:auto;font-size:11px;padding:8px}.science-excellence .science-catalog{grid-template-columns:repeat(2,minmax(0,1fr))}.science-excellence .science-feature-art{font-size:90px}.science-excellence .lf-top{flex-wrap:wrap}.science-excellence .lf-id{flex:1}.science-excellence #science-save-observation{font-size:11px;padding:8px}.science-excellence .sci-workspace-head>div{gap:8px;flex-wrap:wrap}.science-excellence .sci-workspace h1{font-size:18px}.science-excellence .sci-back{font-size:11px}.science-excellence .science-save-workspace{font-size:11px;padding:7px}.science-excellence .sci-workspace{padding:12px}.science-excellence .sci-frame{height:max(540px,calc(100dvh - 250px))}}
+@media(max-width:500px){.science-excellence .science-heading{gap:10px}.science-excellence .science-heading>button{display:none}.science-excellence .science-feature{padding:18px;grid-template-columns:1fr}.science-excellence .science-feature-art{display:none}.science-excellence .science-feature h2{font-size:25px}.science-excellence .science-filters{grid-template-columns:1fr 130px;gap:8px}.science-excellence .science-filters input::placeholder{color:transparent}.science-excellence .science-catalog{grid-template-columns:1fr}.science-excellence button.science-card{min-height:0;padding:14px;gap:6px}.science-excellence .science-card span{line-height:1.45}.science-excellence .science-lab-entry{padding:20px 18px}.science-excellence .science-lab-entry .science-catalog{grid-template-columns:1fr 1fr}.science-excellence .science-lab-entry .science-card span{display:none}.science-excellence .science-lab-entry .science-card strong{font-size:14px}.science-excellence .science-lab-entry .science-card{padding:12px}.science-excellence .science-lab-entry .science-search-hint{font-size:11px}.science-measurement-fields{grid-template-columns:1fr 1fr}.science-measurement-fields label:first-child{grid-column:1/-1}.science-dialog{padding:17px}.science-excellence .mtab button{font-size:10px}.science-excellence .lt-toolbar{flex-wrap:wrap}.science-excellence .lt-toolbar h1{min-width:100px}}
+@media(prefers-reduced-motion:reduce){.science-excellence .science-discover *,.science-dialog *{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
+.science-excellence body:is(.science-lab-open,.science-workspace-open) :is(#eqx-fab,#eqx-panel,#tutor-fab){display:none!important}
+@media(max-width:500px){.science-excellence .lf-top{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:8px;padding:12px 14px}.science-excellence .lf-top>div[style]{display:none}.science-excellence .lf-id{grid-column:1/3;grid-row:1;min-width:0}.science-excellence .lf-id .lf-ey{white-space:nowrap;font-size:8px}.science-excellence .lf-id .lf-ti{font-size:18px;line-height:1.25;margin-top:5px}.science-excellence #lf-close{grid-column:3;grid-row:1}.science-excellence #lf-back{grid-column:1;grid-row:2}.science-excellence #science-save-observation{grid-column:2;grid-row:2;min-height:44px}.science-excellence #lf-focus{grid-column:3;grid-row:2}.science-excellence #lf-ask{display:none}}
+
 </style>
 <!-- EXPERIENCE:CSS:END -->
 </head>
@@ -3192,6 +3247,11 @@ html.pe-refined[data-theme=light] body:not(.pe-landing-open) .eqx-fab{background
   try{saved=JSON.parse(localStorage.getItem(key)||'null');}catch(e){}
   var valid=saved&&saved.v===1&&(saved.status==='skipped'||saved.status==='ready'&&typeof saved.class==='string'&&Object.prototype.hasOwnProperty.call(focus,saved.class)&&focus[saved.class].indexOf(saved.focus)>=0&&['foundations','revision','practice'].indexOf(saved.goal)>=0&&['10','20','30'].indexOf(saved.minutes)>=0);
   if(valid){gate.remove();return;}
+  // Staging experiment-first entry keeps personalisation available on demand.
+  var excellence=new URLSearchParams(location.search).get('excellence');
+  if(excellence==='1'||excellence!=='0'&&/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)){
+    window.__peqCbseEntry={skipped:true,temporary:true};gate.remove();return;
+  }
   window.__peqCbseEntry={};
   gate.showModal();document.getElementById('cbse-entry-title').focus({preventScroll:true});
   function skip(){window.__peqCbseEntry={skipped:true};try{localStorage.setItem(key,JSON.stringify({v:1,status:'skipped'}));}catch(e){}gate.close();gate.remove();}
@@ -4093,34 +4153,19 @@ function renderAcct(){ var el=$('#nav-acct'); if(!el)return; var u=GAuth.user();
   if(u){ el.innerHTML=(u.pic?'<img src="'+u.pic+'" alt="" onerror="this.style.display=\'none\'">':'<span class="ic">\u25cf</span>')+'<span>'+esc(u.n.split(' ')[0])+'</span>'+(u.g?'<i class="gd">G</i>':''); el.classList.add('on'); }
   else { el.innerHTML='<span class="ic">\u25cb</span><span class="si">Sign in</span>'; el.classList.remove('on'); } }
 /* ===== Pass 93 — Track: Microsoft Clarity, lazy + config-gated ===== */
+/* EXPERIENCE:PRIVACY-ANALYTICS:START */
+/* School-facing product: external session replay and identity analytics disabled.
+   Keep the existing caller interface so lessons, experiments and auth keep working.
+   No identifier, student profile, camera data or notebook content is transmitted. */
 var Track=(function(){
-  var loaded=false;
-  function pid(){ var v=''; try{ v=(localStorage.getItem('peq_clarity_id')||'').trim(); }catch(e){} return v||CLARITY_PROJECT_ID||''; }
-  function enabled(){ return !!pid(); }
-  function anonId(){ var a=''; try{ a=localStorage.getItem('peq_anon')||''; if(!a){ a='pe-'+Math.random().toString(36).slice(2,10)+Date.now().toString(36); localStorage.setItem('peq_anon',a); } }catch(e){} return a||'pe-anon'; }
-  function load(){ if(loaded||!enabled())return; loaded=true;
-    (function(c,l,a,r,i,t,y){ c[a]=c[a]||function(){ (c[a].q=c[a].q||[]).push(arguments); };
-      t=l.createElement(r); t.async=1; t.src='https://www.clarity.ms/tag/'+i;
-      y=l.getElementsByTagName(r)[0]; y.parentNode.insertBefore(t,y);
-    })(window,document,'clarity','script',pid());
-    ident(); tags(); }
-  function ident(pageId){ if(!loaded)return; var c=window.clarity; if(!c)return;
-    try{ var u=(typeof GAuth!=='undefined')?GAuth.user():null;
-      if(u&&u.e) c('identify',u.e,undefined,pageId||undefined,(u.n||'').split(' ')[0]);
-      else c('identify',anonId(),undefined,pageId||undefined); }catch(e){} }
-  function tags(){ if(!loaded)return; var c=window.clarity; if(!c)return;
-    try{ if(typeof Style!=='undefined'&&Style.get()) c('set','learning_style',Style.get());
-      var pr=null; try{ pr=JSON.parse(localStorage.getItem('peq_profile')||'null'); }catch(e2){}
-      if(pr&&pr.level) c('set','level',pr.level);
-      if(pr&&pr.goal) c('set','goal',pr.goal);
-      var th='dark'; try{ th=localStorage.getItem('peq_theme')||'dark'; }catch(e3){}
-      c('set','theme',th); }catch(e){} }
-  function view(v){ if(!loaded)return; try{ var c=window.clarity; if(c){ c('set','view',v); ident(v); } }catch(e){} }
-  function ev(name){ if(!loaded)return; try{ var c=window.clarity; if(c)c('event',name); }catch(e){} }
-  function upgrade(r){ if(!loaded)return; try{ var c=window.clarity; if(c)c('upgrade',r); }catch(e){} }
-  try{ window.PEQ_track={enabled:enabled,loaded:function(){ return loaded; },ev:ev,view:view}; }catch(e){}
-  return { load:load,view:view,ev:ev,tags:tags,ident:ident,upgrade:upgrade,enabled:enabled };
+  function disabled(){return false;}
+  function noop(){}
+  var api={load:noop,view:noop,ev:noop,tags:noop,ident:noop,upgrade:noop,enabled:disabled};
+  window.PEQ_track={enabled:disabled,loaded:disabled,ev:noop,view:noop};
+  return api;
 })();
+
+/* EXPERIENCE:PRIVACY-ANALYTICS:END */
 Track.load();
 /* ===== Pass 89 — learning-style engine: the questionnaire personalises everything ===== */
 var Style=(function(){
@@ -7519,6 +7564,7 @@ var Cmdk=(function(){
   }
   function pushRecent(it){try{var r=recents().filter(function(x){return !(x.k===it.k&&x.id===it.id);});r.unshift({k:it.k,id:it.id});localStorage.setItem(RKEY,JSON.stringify(r.slice(0,6)));}catch(e){}}
   function build(){ix=[];
+    if(window.PhysicsExcellence&&PhysicsExcellence.enabled){ix=PhysicsExcellence.catalog().map(function(t){return Object.assign({},t,{k:'science',n:t.title,sub:t.subject.charAt(0).toUpperCase()+t.subject.slice(1)+' · '+t.kind,c:t.subject==='biology'?'#86cbb0':'#8bbcf0'});});return;}
     DB.forEach(function(t){var dm=DMAP[t.domain]||{};ix.push({k:'lesson',id:t.id,n:t.name,sub:'Lesson · '+(dm.n||''),c:dm.c||'#7dd3fc',x:(t.summary||'').toLowerCase()});});
     DOMAINS.forEach(function(d){ix.push({k:'domain',id:d.k,n:d.n,sub:'Field · '+topicsOf(d.k).length+' lessons',c:d.c,x:''});});
     [['home','Home'],['universe','Universe'],['learn','Learn'],['solve','Solve'],['practice','Practice'],['lab','Lab'],['sandbox','Sandbox'],['research','Research'],['progress','Progress'],['review','Review'],['journeys','Journeys'],['deeps','Deep Dives'],['adv','Advanced Studio'],['settings','Settings']].forEach(function(v){ix.push({k:'view',id:v[0],n:v[1],sub:v[0]==='adv'?'Upper-undergraduate physics':'Space',c:'#a3b1cc',x:''});});
@@ -7534,11 +7580,11 @@ var Cmdk=(function(){
     $('#cp-none').hidden=!!res.length;$('#cp-status').textContent=res.length?res.length+' results. Use arrow keys to choose.':'No matching concepts. Try another search or ask Entelloq.';$('#cp-ask').disabled=!inp.value.trim();
     $$('.cp-row',list).forEach(function(r){r.addEventListener('click',function(){select(+r.dataset.i,false);exec();});r.addEventListener('pointermove',function(){if(sel!==+r.dataset.i)select(+r.dataset.i,false);});});select(sel,false);
   }
-  function refresh(){var q=inp.value.trim().toLowerCase();sel=0;if(!q){var out=[];recents().forEach(function(r){var found=ix.find(function(it){return it.k===r.k&&it.id===r.id;});if(found)out.push(found);});if(Me.d.lastTopic){var t=ix.find(function(it){return it.k==='lesson'&&it.id===Me.d.lastTopic;});if(t&&!out.some(function(it){return it.k===t.k&&it.id===t.id;}))out.unshift(t);}res=out.slice(0,7);if(!res.length)res=ix.filter(function(it){return it.k==='view';}).slice(0,7);}else res=ix.map(function(it){return{it:it,sc:match(q,it)};}).filter(function(r){return r.sc>=0;}).sort(function(a,b){return b.sc-a.sc;}).slice(0,9).map(function(r){return r.it;});paint();}
-  function exec(){var it=res[sel];if(!it)return;pushRecent(it);trigger=null;close();if(it.k==='view')go(it.id);else go(it.k,it.id);var h=main.querySelector('h1');if(h){h.tabIndex=-1;h.focus({preventScroll:true});}}
+  function refresh(){var q=inp.value.trim().toLowerCase();sel=0;if(window.PhysicsExcellence&&PhysicsExcellence.enabled){build();res=q?EntelloqScience.search(ix,q,12):ix.filter(function(it){return it.kind==='Experiment';}).slice(0,7);paint();return;}if(!q){var out=[];recents().forEach(function(r){var found=ix.find(function(it){return it.k===r.k&&it.id===r.id;});if(found)out.push(found);});if(Me.d.lastTopic){var t=ix.find(function(it){return it.k==='lesson'&&it.id===Me.d.lastTopic;});if(t&&!out.some(function(it){return it.k===t.k&&it.id===t.id;}))out.unshift(t);}res=out.slice(0,7);if(!res.length)res=ix.filter(function(it){return it.k==='view';}).slice(0,7);}else res=ix.map(function(it){return{it:it,sc:match(q,it)};}).filter(function(r){return r.sc>=0;}).sort(function(a,b){return b.sc-a.sc;}).slice(0,9).map(function(r){return r.it;});paint();}
+  function exec(){var it=res[sel];if(!it)return;pushRecent(it);trigger=null;close();if(it.k==='science')PhysicsExcellence.openById(it.id);else if(it.k==='view')go(it.id);else go(it.k,it.id);var h=main.querySelector('h1');if(h&&!document.querySelector('#lab-full.on')){h.tabIndex=-1;h.focus({preventScroll:true});}}
   function mountEl(){el=ce('dialog');el.id='cmdk';el.setAttribute('aria-label','Search Physics Entelloq');
     el.innerHTML='<div class="cp-panel"><div class="cp-inwrap"><span class="cp-ic" aria-hidden="true">⌕</span><input id="cp-in" role="combobox" aria-autocomplete="list" aria-controls="cp-list" aria-expanded="false" aria-label="Search concepts, fields, courses and spaces" placeholder="Find a concept, field or space…" autocomplete="off" spellcheck="false"><button id="cp-close" type="button" aria-label="Close search">×</button></div><div class="cp-list" id="cp-list" role="listbox" aria-label="Search results"></div><div class="cp-none" id="cp-none" hidden>Nothing matches. Try another concept, field or space.</div><div class="pe-sr-only" id="cp-status" role="status"></div><div class="cp-foot"><span>↑↓ choose · Enter opens</span><button id="cp-ask" type="button" disabled>Ask Entelloq ↗</button></div></div>';
-    document.body.appendChild(el);inp=$('#cp-in');list=$('#cp-list');inp.addEventListener('input',refresh);$('#cp-close').addEventListener('click',close);$('#cp-ask').addEventListener('click',function(){var q=inp.value.trim();if(q){trigger=null;close();Tutor.ask(q);}});
+    document.body.appendChild(el);inp=$('#cp-in');list=$('#cp-list');if(window.PhysicsExcellence&&PhysicsExcellence.enabled){el.setAttribute('aria-label','Search Physics and Biology Entelloq');inp.setAttribute('aria-label','Search concepts, experiments, lessons, tools and saved observations');inp.placeholder='Search science: pendulum, osmosis, graphs…';}inp.addEventListener('input',refresh);$('#cp-close').addEventListener('click',close);$('#cp-ask').addEventListener('click',function(){var q=inp.value.trim();if(q){trigger=null;close();Tutor.ask(q);}});
     el.addEventListener('click',function(e){if(e.target===el)close();});el.addEventListener('cancel',function(e){e.preventDefault();close();});
     inp.addEventListener('keydown',function(e){if(e.isComposing)return;if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();if(res.length)select((sel+(e.key==='ArrowDown'?1:-1)+res.length)%res.length,true);}else if(e.key==='Enter'){e.preventDefault();exec();}else if(e.key==='Escape'){e.preventDefault();e.stopPropagation();close();}});
     el.addEventListener('keydown',function(e){if(e.key!=='Tab')return;var items=$$('input,button',el).filter(function(n){return !n.disabled&&n.getClientRects().length;}),first=items[0],last=items[items.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}});
@@ -14218,7 +14264,8 @@ var Landing=(function(){
     try{localStorage.setItem('peq_entered','1');}catch(e){}
     el.remove();el=null;document.body.classList.remove('pe-landing-open');
     ['.app','.mtab','#tutor-fab','#audio-btn','#eq-pres'].forEach(function(s){var n=document.querySelector(s);if(n){n.inert=false;n.removeAttribute('aria-hidden');}});
-    if(dest==='catcradle'){window.__peqNextPreset='catcradle';go('sandbox');}
+    if(dest==='science-featured'&&window.PhysicsExcellence&&PhysicsExcellence.enabled){PhysicsExcellence.openById('physics:sim:refraction');}
+    else if(dest==='catcradle'){window.__peqNextPreset='catcradle';go('sandbox');}
     else if(dest==='waves')go('lesson','wave-basics');
     else if(dest==='tutor'){go('home');Tutor.open();}
     else if(dest==='search'){go('home');Cmdk.open();}
@@ -17260,6 +17307,368 @@ var PulseLab = (function () {
 })();
 
 /* EXPERIENCE:PULSE-LAB:END */
+/* EXPERIENCE:SCIENCE-CORE:START */
+/* Entelloq scientific workspace contracts. No network requests or scientific solvers. */
+(function (root, factory) {
+  var api = factory();
+  if (typeof module === 'object' && module.exports) module.exports = api;
+  else root.EntelloqScience = api;
+})(typeof globalThis !== 'undefined' ? globalThis : this, function () {
+  'use strict';
+  var VERSION = '1.0.0';
+  var STOP = new Set('a an the is are was were how what why can could would i we me my you to of for in on with and does do show find try experiment about happens when please work works working measure explore'.split(' '));
+  var GROUPS = [
+    ['projectile','projectiles','trajectory','trajectories','throw','thrown','ballistic'],
+    ['pendulum','pendulums','swing','swinging'], ['oscillation','oscillations','oscillate','vibration','vibrations'],
+    ['circuit','circuits','electricity','electrical'], ['resistance','resistor','resistors','ohm','ohms'],
+    ['gravity','gravitation','gravitational'], ['refraction','refract','bending'],
+    ['microscope','microscopy','microscopic'], ['osmosis','osmotic','tonicity','swelling','swell','swollen'],
+    ['diffusion','diffuse','diffusing'], ['photosynthesis','photosynthetic'],
+    ['mitosis','cell division','divide'], ['dna','genetics','genetic','heredity','inheritance'],
+    ['heart','cardiac','circulation','circulatory'], ['frog','amphibian'],
+    ['dissection','dissect','anatomy','anatomical'], ['neuron','neural','nerve'],
+    ['enzyme','enzymes','catalyst'], ['notebook','notes','saved','observations'],
+    ['speed','velocity'], ['force','forces'], ['wave','waves'], ['cell','cells'],
+    ['lesson','lessons','learn','concept','concepts'], ['lab','labs','practical','practicals']
+  ];
+  function normalize(s) { return String(s == null ? '' : s).normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[’']/g, '').replace(/[^a-z0-9μΩωαβγδλπ\s-]/g, ' ').replace(/\s+/g, ' ').trim(); }
+  function terms(s) { return normalize(s).split(' ').filter(function (x) { return x && !STOP.has(x); }); }
+  function aliases(token) { var groups = GROUPS.filter(function (g) { return g.indexOf(token) >= 0; }); return groups.length ? Array.from(new Set([token].concat.apply([token], groups))) : [token]; }
+  function search(items, query, limit) {
+    var q = normalize(query), tokens = terms(query), max = Math.max(1, Math.min(100, limit || 20));
+    if (!tokens.length) return items.slice(0, max);
+    return items.map(function (item, index) {
+      var title = normalize(item.title || item.n || item.name), extra = normalize([item.description, item.kind, item.subject, (item.tags || []).join(' '), item.id].join(' '));
+      var hay = title + ' ' + extra, score = title === q ? 200 : title.indexOf(q) >= 0 ? 100 : 0, matches = 0;
+      tokens.forEach(function (token) {
+        var best = 0;
+        aliases(token).forEach(function (word) {
+          var exact = word === token, wordRx = new RegExp('(^|\\s)' + word + '(?=\\s|$)');
+          if (wordRx.test(title)) best = Math.max(best, exact ? 32 : 20);
+          else if (title.indexOf(word) >= 0) best = Math.max(best, exact ? 19 : 12);
+          else if (wordRx.test(hay)) best = Math.max(best, exact ? 12 : 7);
+        });
+        if (best) { matches++; score += best; }
+      });
+      // Every meaningful term must match: avoid confident-looking irrelevant results.
+      return { item: item, score: matches === tokens.length ? score : -1, index: index };
+    }).filter(function (x) { return x.score >= 0; }).sort(function (a, b) { return b.score - a.score || a.index - b.index; }).slice(0, max).map(function (x) { return x.item; });
+  }
+  function enabled(locationLike) {
+    var loc = locationLike || (typeof location !== 'undefined' ? location : { search: '', hostname: '' });
+    if (!locationLike && typeof window !== 'undefined') { try { if (window.top !== window) loc = window.top.location; } catch (_) {} }
+    var flag = new URLSearchParams(loc.search || '').get('excellence');
+    return flag === '1' || (flag !== '0' && /^(localhost|127\.0\.0\.1|\[::1\])$/.test(loc.hostname || ''));
+  }
+  function classroomEnabled(locationLike) { var loc = locationLike || (typeof location !== 'undefined' ? location : {}); if (!locationLike && typeof window !== 'undefined') { try { loc = window.top.location; } catch (_) {} } return new URLSearchParams(loc.search || '').get('classroom') === '1'; }
+  function resolveSubjectURL(item, locationLike) {
+    if (!item || !/^(physics|biology)$/.test(item.subject)) throw new Error('Unknown Entelloq subject.');
+    var target = new URL(item.url), expected = 'https://' + item.subject + '.entelloq.com';
+    if (target.origin !== expected || target.username || target.password) throw new Error('Untrusted subject destination.');
+    var loc = locationLike || (typeof location !== 'undefined' ? location : {search:'',hostname:''});
+    if (!locationLike && typeof window !== 'undefined') { try { loc = window.top.location; } catch (_) {} }
+    var params = new URLSearchParams(loc.search || ''), peers = {};
+    if (/^(localhost|127\.0\.0\.1|\[::1\])$/.test(loc.hostname || '')) {
+      ['physics','biology'].forEach(function(subject){
+        var value=params.get(subject==='physics'?'eqPhysics':'eqBiology');if(!value)return;
+        try { var peer=new URL(value);if(/^https?:$/.test(peer.protocol)&&peer.hostname===loc.hostname&&!peer.username&&!peer.password&&peer.pathname==='/'&&!peer.search&&!peer.hash)peers[subject]=peer.origin; } catch(_) {}
+      });
+      if(peers[item.subject])target=new URL(target.pathname+target.search+target.hash,peers[item.subject]);
+      Object.keys(peers).forEach(function(subject){target.searchParams.set(subject==='physics'?'eqPhysics':'eqBiology',peers[subject]);});
+    }
+    if(enabled(loc))target.searchParams.set('excellence','1');
+    if(classroomEnabled(loc))target.searchParams.set('classroom','1');
+    return target.href;
+  }
+  function clone(value, limit) {
+    var text = JSON.stringify(value);
+    if (!text || text.length > (limit || 2000000)) throw new Error('This record is too large. Export or reduce the captured data before saving.');
+    return JSON.parse(text, function (key, val) { if (key === '__proto__' || key === 'constructor' || key === 'prototype') throw new Error('Unsupported record key.'); return val; });
+  }
+  function uid() { return typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'record-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2); }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function csvCell(s) { var v = typeof s === 'object' && s !== null ? JSON.stringify(s) : String(s == null ? '' : s); if (/^[\s]*[=+@-]/.test(v) && !/^-?\d+(\.\d+)?([eE][+-]?\d+)?$/.test(v)) v = "'" + v; return '"' + v.replace(/"/g, '""') + '"'; }
+  function exportCSV(entries) {
+    var rows = [['id','subject','experiment','saved_at','field','value','unit','observations']];
+    entries.forEach(function (e) {
+      var prefix = [e.id, e.subject, e.title, e.updatedAt], note = e.observations || e.observation || '';
+      rows.push(prefix.concat(['configuration', e.config || {}, '', note]));
+      var measurements = e.measurements || [];
+      if (!Array.isArray(measurements)) measurements = Object.keys(measurements).map(function (key) { return { name: key, value: measurements[key] }; });
+      measurements.forEach(function (m, i) { var reading=m&&typeof m==='object'?m:{value:m}; rows.push(prefix.concat([reading.name || reading.label || ('measurement ' + (i + 1)), reading.value === undefined ? reading : reading.value, reading.unit || '', note])); });
+      if (e.graph) { var graph = clone(e.graph); if (graph && typeof graph === 'object' && graph.image) { delete graph.image; graph.imageExport = 'Raster capture is included in the JSON backup and printable report.'; } rows.push(prefix.concat(['graph', graph, '', note])); }
+      if (e.model) rows.push(prefix.concat(['model', e.model, '', '']));
+      if (e.provenance) rows.push(prefix.concat(['provenance', e.provenance, '', '']));
+    });
+    return '\uFEFF' + rows.map(function (row) { return row.map(csvCell).join(','); }).join('\r\n');
+  }
+  function reportHTML(entries) {
+    return '<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Entelloq laboratory report</title><style>body{font:16px/1.55 system-ui;max-width:900px;margin:36px auto;padding:0 24px;color:#132638}h1,h2{line-height:1.2}article{border-top:1px solid #bac6cf;padding-top:20px;margin-top:28px;break-inside:avoid}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#f1f5f9;padding:12px}small{color:#456} @media print{body{margin:0}button{display:none}}</style><h1>Entelloq laboratory report</h1><p>Local notebook export. Simulation results are educational model outputs, not physical measurements or clinical findings.</p>' + entries.map(function (e) {
+      return '<article><h2>' + esc(e.title || 'Experiment') + '</h2><small>' + esc(e.subject) + ' · ' + (e.updatedAt ? 'Saved ' + esc(e.updatedAt) : 'Unsaved draft export') + '</small><h3>Observations</h3><p>' + esc(e.observations || e.observation || 'No observation recorded.').replace(/\n/g, '<br>') + '</p>' + ['config','measurements','graph','model','provenance'].filter(function (k) { return e[k] != null; }).map(function (k) {
+        var heading = '<h3>' + esc({config:'Configuration',measurements:'Measurements',graph:'Graph or viewport evidence',model:'Model and limitations',provenance:'Provenance'}[k]) + '</h3>';
+        if (k === 'graph' && e.graph.kind === 'canvas-observation' && /^data:image\/png;base64,[a-zA-Z0-9+/=]+$/.test(e.graph.image || '')) return heading + '<img style="max-width:100%;height:auto" alt="Captured experiment viewport" src="' + e.graph.image + '"><p>' + esc(e.graph.note || 'Actual displayed canvas capture; not raw numerical data.') + '</p>';
+        return heading + '<pre>' + esc(JSON.stringify(e[k], null, 2)) + '</pre>';
+      }).join('') + '</article>';
+    }).join('') + '</html>';
+  }
+  function createNotebook(storage, key) {
+    key = key || 'entelloq.science.notebook.v1';
+    var error = null, baseline = null;
+    function read() {
+      try {
+        var raw = storage.getItem(key), data = raw === null ? { version: 1, entries: [] } : JSON.parse(raw);
+        if (!data || data.version !== 1 || !Array.isArray(data.entries) || data.entries.length > 200) throw new Error('Notebook format is unreadable. Existing data has been left untouched.');
+        data.entries.forEach(function (e) { if (!e || typeof e.id !== 'string' || typeof e.title !== 'string') throw new Error('Notebook contains an unreadable record. Existing data has been left untouched.'); });
+        error = null; baseline = raw; return data;
+      } catch (e) { error = 'Local notebook unavailable: ' + e.message; return null; }
+    }
+    function write(data, expectedRaw) {
+      try {
+        var current = storage.getItem(key);
+        if (current !== expectedRaw) return { ok: false, conflict: true, error: 'This notebook changed in another window. Reload its entries before saving.' };
+        var raw = JSON.stringify(data); if (raw.length > 4500000) throw new Error('Notebook is full. Export your records before removing older entries.');
+        storage.setItem(key, raw);
+        if (storage.getItem(key) !== raw) throw new Error('Storage did not confirm the write.');
+        baseline = raw; error = null; return { ok: true };
+      } catch (e) { error = 'Not saved: ' + e.message; return { ok: false, error: error }; }
+    }
+    return {
+      list: function () { var d = read(); if (!d) return []; try { return clone(d.entries,4500000); } catch(e) { error = 'Local notebook unavailable: ' + e.message; return []; } },
+      status: function () { return { available: !error, error: error, mode: 'local-only', cloudSync: false }; },
+      save: function (entry, expectedUpdatedAt) {
+        var data = read(); if (!data) return { ok: false, error: error };
+        var expectedRaw = baseline;
+        try {
+          var saved = clone(entry); saved.id = saved.id || uid();
+          if (typeof saved.id !== 'string' || saved.id.length > 128 || !saved.id.trim()) throw new Error('Record ID must be a nonempty string of up to 128 characters.');
+          if (typeof saved.title !== 'string' || !saved.title.trim() || saved.title.length > 300) throw new Error('An experiment title is required (up to 300 characters).');
+          if (saved.subject !== 'physics' && saved.subject !== 'biology') throw new Error('Choose Physics or Biology.');
+          var index = data.entries.findIndex(function (e) { return e.id === saved.id; }), previous = data.entries[index];
+          if (previous && (expectedUpdatedAt === undefined || expectedUpdatedAt !== previous.updatedAt)) return { ok: false, conflict: true, error: 'A saved version already exists. Reload it or save a separate copy.' };
+          if (!previous && expectedUpdatedAt != null) return { ok: false, conflict: true, error: 'This record was removed. Save a separate copy to keep your changes.' };
+          var now = Math.max(Date.now(), previous ? Date.parse(previous.updatedAt) + 1 : 0);
+          saved.createdAt = previous ? previous.createdAt : new Date(now).toISOString(); saved.updatedAt = new Date(now).toISOString();
+          saved = clone(saved); // Check the final record, including generated metadata, before persisting it.
+          if (previous) data.entries[index] = saved; else { if (data.entries.length >= 200) throw new Error('Notebook contains 200 records. Export before removing older entries.'); data.entries.unshift(saved); }
+          var result = write(data, expectedRaw); if (result.ok) result.entry = saved; return result;
+        } catch (e) { return { ok: false, error: 'Not saved: ' + e.message }; }
+      },
+      remove: function (id, expectedUpdatedAt) {
+        var data = read(); if (!data) return { ok: false, error: error };
+        var expectedRaw = baseline, previous = data.entries.find(function (e) { return e.id === id; });
+        if (!previous || expectedUpdatedAt !== previous.updatedAt) return { ok: false, conflict: true, error: 'The record changed. Reload before removing it.' };
+        data.entries = data.entries.filter(function (e) { return e.id !== id; }); return write(data, expectedRaw);
+      },
+      exportCSV: exportCSV,
+      reportHTML: reportHTML,
+      exportJSON: function (entries) { return JSON.stringify({ format: 'entelloq-notebook', version: 1, exportedAt: new Date().toISOString(), entries: clone(entries,4500000) }, null, 2); }
+    };
+  }
+  function download(filename, text, mime) {
+    var blob = new Blob([text], { type: mime || 'text/plain;charset=utf-8' }), url = URL.createObjectURL(blob), a = document.createElement('a'); a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(url); }, 5000);
+  }
+  return { version: VERSION, enabled: enabled, classroomEnabled: classroomEnabled, resolveSubjectURL: resolveSubjectURL, normalize: normalize, search: search, createNotebook: createNotebook, exportCSV: exportCSV, reportHTML: reportHTML, escapeHTML: esc, download: download, uid: uid };
+});
+
+/* EXPERIENCE:SCIENCE-CORE:END */
+/* EXPERIENCE:SCIENCE-CLASSROOM:START */
+/* Optional local classroom exchange. No accounts, uploads, grading or cloud service. */
+(function (root, factory) {
+  if (typeof module === 'object' && module.exports) module.exports = factory(require('./entelloq-science.js'));
+  else root.EntelloqClassroom = factory(root.EntelloqScience);
+})(typeof globalThis !== 'undefined' ? globalThis : this, function (Science) {
+  'use strict';
+  function plain(value, limit, field) { if (typeof value !== 'string' || !value.trim() || value.length > limit) throw new Error(field + ' is required (maximum ' + limit + ' characters).'); return value.trim(); }
+  function validateAssignment(value, catalog) {
+    if (!value || value.format !== 'entelloq-assignment' || value.version !== 1) throw new Error('Choose an Entelloq assignment file, version 1.');
+    var id = plain(value.id, 100, 'Assignment ID'), experiment = value.experiment;
+    if (!experiment || (experiment.subject !== 'physics' && experiment.subject !== 'biology')) throw new Error('Invalid assignment subject.');
+    var ref = { id: plain(experiment.id, 180, 'Experiment ID'), subject: experiment.subject };
+    var item = catalog.find(function (x) { return x.id === ref.id && x.subject === ref.subject; });
+    if (!item) throw new Error('This experiment is not available in this catalogue. Open the matching subject or update the app.');
+    return { format: 'entelloq-assignment', version: 1, id: id, title: plain(value.title, 200, 'Title'), experiment: ref, objective: plain(value.objective, 2000, 'Learning objective'), question: plain(value.question, 4000, 'Investigation question'), curriculum: (item.tags || []).filter(function (tag) { return /cbse|class|grade|curriculum/i.test(tag); }), createdAt: typeof value.createdAt === 'string' ? value.createdAt : null };
+  }
+  function validateSubmission(value, catalog) {
+    if (!value || value.format !== 'entelloq-submission' || value.version !== 1) throw new Error('Choose an Entelloq submission file, version 1.');
+    var a = validateAssignment(value.assignment, catalog), e = value.entry;
+    if (!e || e.subject !== a.experiment.subject || typeof e.title !== 'string') throw new Error('Submission does not contain a matching subject record.');
+    if (!matchesEntry(a, e, catalog)) throw new Error('This observation belongs to a different experiment. Save evidence from the assigned experiment before submitting.');
+    // The exported scientific record is data, never executable HTML or a URL destination.
+    var serialized = JSON.stringify(e); if (serialized.length > 2000000) throw new Error('Submission record exceeds 2 MB.');
+    return { format: 'entelloq-submission', version: 1, assignment: a, entry: JSON.parse(serialized), studentCode: typeof value.studentCode === 'string' ? value.studentCode.slice(0,80) : '', submittedAt: typeof value.submittedAt === 'string' ? value.submittedAt : null };
+  }
+  function matchesEntry(assignment, entry, catalog) {
+    var item = catalog.find(function (x) { return x.id === assignment.experiment.id && x.subject === assignment.experiment.subject; });
+    if (!item || !entry || entry.subject !== item.subject || entry.kind === 'classroom-review') return false;
+    return entry.catalogId === item.id || (!entry.catalogId && (entry.experimentId === item.id || (item.experimentId && entry.experimentId === item.experimentId)));
+  }
+  function serialize(value) { var text=JSON.stringify(value); if(new TextEncoder().encode(text).byteLength>2100000)throw new Error('The exchange file exceeds 2.1 MB. Reduce its captured data before exporting.');return text; }
+  function parse(text, catalog) { if (new TextEncoder().encode(text).byteLength > 2100000) throw new Error('Choose a file smaller than 2.1 MB.'); var value = JSON.parse(text, function(k,v){if(k==='__proto__'||k==='constructor'||k==='prototype')throw new Error('Unsupported file content.');return v;}); return value.format === 'entelloq-assignment' ? validateAssignment(value,catalog) : validateSubmission(value,catalog); }
+  function worksheetHTML(assignment) {
+    var e = Science.escapeHTML;
+    return '<!doctype html><html lang="en"><meta charset="utf-8"><title>' + e(assignment.title) + '</title><style>body{font:17px/1.6 system-ui;max-width:850px;margin:40px auto;padding:20px;color:#172b3b}section{min-height:100px;border-bottom:1px solid #bccbd4;break-inside:avoid}small{color:#456}</style><h1>' + e(assignment.title) + '</h1><p>' + e(assignment.experiment.subject) + ' · ' + e(assignment.experiment.id) + '</p><h2>Learning objective</h2><p>' + e(assignment.objective) + '</p><h2>Investigate</h2><p>' + e(assignment.question) + '</p><section><h2>Predict</h2><p>What do you expect, and why?</p></section><section><h2>Method</h2><p>Which parameter will you change? Which will you hold fixed?</p></section><section><h2>Evidence</h2><p>Record settings, readings with units and graph observations.</p></section><section><h2>Explain and evaluate</h2><p>Use your evidence to explain the result. State model assumptions and limitations.</p></section><small>Local classroom pilot. Return your exported submission using the method agreed with your teacher. This app does not upload work or provide a private teacher inbox.</small></html>';
+  }
+  function open(options) {
+    if (!Science.classroomEnabled()) return false;
+    var catalog = options.catalog || [], notebook = options.notebook, previous = document.activeElement, active = null;
+    var dialog = document.createElement('dialog'); dialog.className = 'eq-classroom eq-science'; dialog.setAttribute('aria-label','Classroom pilot');
+    dialog.innerHTML = '<header class="eq-actions"><h2>Classroom pilot</h2><button type="button" data-close>Close</button></header><p>Local file exchange · No cloud sync or student accounts</p><p>Create a worksheet, complete an experiment and export a submission. Teachers can open a submission here and save private review notes on this device. Use anonymous student codes.</p><details open><summary>Create an assignment</summary><form data-create><label>Experiment<select name="experiment" required></select></label><label>Assignment title<input name="title" maxlength="200" required></label><label>Learning objective<textarea name="objective" maxlength="2000" required></textarea></label><label>Investigation question<textarea name="question" maxlength="4000" required></textarea></label><button type="submit">Create assignment</button></form></details><details><summary>Open an assignment or submission</summary><label>Entelloq JSON file<input type="file" data-import accept="application/json,.json"></label></details><div class="eq-status" role="status" data-status></div><section data-active hidden></section>';
+    document.body.appendChild(dialog);
+    var picker = dialog.querySelector('select'), status = dialog.querySelector('[data-status]'), body = dialog.querySelector('[data-active]');
+    catalog.filter(function (item) { return /lab|experiment|simulation|practical/i.test(item.kind || ''); }).forEach(function (item) { var option = document.createElement('option'); option.value = catalog.indexOf(item); option.textContent = item.subject + ' · ' + item.title; picker.appendChild(option); });
+    function inform(message) { status.textContent = message; }
+    function close() { dialog.close(); dialog.remove(); if (previous && previous.isConnected) previous.focus(); }
+    dialog.querySelector('[data-close]').onclick = close; dialog.addEventListener('cancel', function (event) { event.preventDefault(); close(); });
+    function render(value) {
+      active = value; var a = value.assignment || value, item = catalog.find(function(x){return x.id===a.experiment.id&&x.subject===a.experiment.subject;});
+      body.hidden = false;
+      body.innerHTML = '<h3>' + Science.escapeHTML(a.title) + '</h3><p><strong>Objective:</strong> ' + Science.escapeHTML(a.objective) + '</p><p>' + Science.escapeHTML(a.question) + '</p><p>' + Science.escapeHTML(item.title) + '</p><div class="eq-actions"><button type="button" data-launch>Open experiment</button><button type="button" data-assignment>Export assignment JSON</button><button type="button" data-worksheet>Printable worksheet</button></div>';
+      body.querySelector('[data-launch]').onclick = function(){ close(); if(options.openExperiment)options.openExperiment(item); };
+      body.querySelector('[data-assignment]').onclick = function(){ try{Science.download('entelloq-assignment.json',serialize(a),'application/json');inform('Assignment exported. No student work was uploaded.');}catch(e){inform(e.message);} };
+      body.querySelector('[data-worksheet]').onclick = function(){ Science.download('entelloq-worksheet.html',worksheetHTML(a),'text/html');inform('Worksheet exported. Open it in a browser to print or save as PDF.'); };
+      if(value.format==='entelloq-submission'){
+        var attribution=document.createElement('p');attribution.textContent='Student code: '+(value.studentCode||'Not supplied')+' · Submitted: '+(value.submittedAt||'Not supplied');body.appendChild(attribution);
+        var record = document.createElement('pre');record.textContent=JSON.stringify(value.entry,null,2);body.appendChild(record);
+        var label = document.createElement('label');label.textContent='Teacher review notes (local only)';var notes=document.createElement('textarea');notes.maxLength=10000;label.appendChild(notes);body.appendChild(label);
+        var save=document.createElement('button');save.type='button';save.textContent='Save review locally';body.appendChild(save);
+        save.onclick=function(){var result=notebook.save({title:'Review: '+a.title,subject:a.experiment.subject,experimentId:a.experiment.id,kind:'classroom-review',config:{assignment:a,submission:value.entry,studentCode:value.studentCode,submittedAt:value.submittedAt},observations:notes.value,provenance:{source:'Imported classroom submission; values have not been independently verified.'}});inform(result.ok?'Review saved on this device. No feedback was sent.':result.error);};
+      }else{
+        var label=document.createElement('label');label.textContent='Saved observation to submit';var entries=notebook.list().filter(function(e){return matchesEntry(a,e,catalog);}), select=document.createElement('select');entries.forEach(function(e,i){var o=document.createElement('option');o.value=i;o.textContent=e.title+' · '+e.updatedAt;select.appendChild(o);});label.appendChild(select);body.appendChild(label);
+        var codeLabel=document.createElement('label');codeLabel.textContent='Anonymous student code (optional)';var code=document.createElement('input');code.maxLength=80;codeLabel.appendChild(code);body.appendChild(codeLabel);
+        var exportButton=document.createElement('button');exportButton.type='button';exportButton.textContent='Export submission JSON';exportButton.disabled=!entries.length;body.appendChild(exportButton);
+        var hint=document.createElement('p');hint.textContent=entries.length?'Only records from the assigned experiment are offered. Check the readings and your explanation before exporting.':'Save an observation in the assigned experiment, then reopen this assignment to submit it.';body.appendChild(hint);
+        exportButton.onclick=function(){try{var e=entries[Number(select.value)],v=validateSubmission({format:'entelloq-submission',version:1,assignment:a,entry:e,studentCode:code.value,submittedAt:new Date().toISOString()},catalog);Science.download('entelloq-submission.json',serialize(v),'application/json');inform('Submission exported. Deliver the file using the method agreed with your teacher.');}catch(e){inform(e.message);}};
+      }
+    }
+    dialog.querySelector('[data-create]').onsubmit=function(event){event.preventDefault();try{var form=new FormData(event.target),item=catalog[Number(form.get('experiment'))];if(!item)throw Error('No supported experiments in this catalogue.');render(validateAssignment({format:'entelloq-assignment',version:1,id:Science.uid(),title:form.get('title'),objective:form.get('objective'),question:form.get('question'),experiment:{id:item.id,subject:item.subject},createdAt:new Date().toISOString()},catalog));inform('Assignment ready. Export its JSON file and worksheet.');}catch(e){inform(e.message);}};
+    dialog.querySelector('[data-import]').onchange=async function(event){try{var file=event.target.files[0];if(!file)return;if(file.size>2100000)throw Error('Choose a file smaller than 2.1 MB.');render(parse(await file.text(),catalog));inform('File opened locally. Nothing was uploaded.');}catch(e){inform('Could not open file: '+e.message);}event.target.value='';};
+    dialog.showModal();dialog.querySelector('[data-close]').focus();return true;
+  }
+  return {open:open,parse:parse,serialize:serialize,validateAssignment:validateAssignment,validateSubmission:validateSubmission,matchesEntry:matchesEntry,worksheetHTML:worksheetHTML};
+});
+
+/* EXPERIENCE:SCIENCE-CLASSROOM:END */
+/* EXPERIENCE:PRODUCT-EXCELLENCE:START */
+/* Additive product shell. Existing experiment factories own all scientific state. */
+var PhysicsExcellence=(function(){
+  'use strict';
+  var core=window.EntelloqScience,active=!!(core&&core.enabled()),items=[],foreign=[],book=null,current=null,returnTrigger=null,dialog=null,pendingRestore=null,routing=false,booting=true;
+  if(!active)return (window.PhysicsExcellence={enabled:false});
+  document.documentElement.classList.add('science-excellence');
+  function safeStorage(){try{return localStorage;}catch(e){return null;}}
+  book=core.createNotebook(safeStorage(),'entelloq.science.notebook.physics.v1');
+  function text(value){return String(value==null?'':value).replace(/<[^>]+>/g,'').trim();}
+  function node(tag,cls,content){var e=document.createElement(tag);if(cls)e.className=cls;if(content!==undefined)e.textContent=content;return e;}
+  function href(type,id){return '#science:'+type+':'+encodeURIComponent(id||'all');}
+  function fullURL(type,id){return 'https://physics.entelloq.com/?excellence=1'+href(type,id);}
+  function peerURL(value){try{return core.resolveSubjectURL({subject:'biology',url:value});}catch(e){return null;}}
+  function modelFor(id){
+    var models={
+      projectile:{classification:'illustrative',assumptions:['Screen-scaled point projectile with constant downward acceleration; drag and wind omitted.'],limitations:['The speed slider and elapsed frames are not SI measurements. Saved controls do not save elapsed time or trajectories.']},
+      refraction:{classification:'analytical',assumptions:['Snell’s law at a planar boundary from an adjustable refractive index into air (n = 1).','Homogeneous, isotropic media; ray-optics approximation.'],limitations:['Ray lengths are illustrative. Diffraction, wavelength dispersion and Fresnel reflection intensity are omitted.']},
+      spring:{classification:'analytical',assumptions:['Linear spring, ideal mass, harmonic motion.'],limitations:['No physical apparatus measurement; displayed motion is a model.']},
+      pendulum:{classification:'numerical',assumptions:['Coupled planar double pendulum with stated idealized parameters.'],limitations:['Chaotic trajectories are sensitive to initial conditions and numerical error.']},
+      orbit:{classification:'illustrative',assumptions:['An ellipse is drawn with adjustable eccentricity.'],limitations:['This legacy preview advances its angle uniformly; it does not establish Kepler timing or orbital energy conservation. Use the numerical Sandbox for dynamics.']}
+    };
+    return models[id]||{classification:'illustrative',assumptions:['Educational model; consult the experiment-specific equations and assumptions.'],limitations:['Not a physical measurement. This catalog classification is conservative until a per-model numerical review is complete.']};
+  }
+  function build(){
+    var out=[];
+    function add(type,id,title,kind,description,tags,model){if(!id||!title)return;out.push({id:'physics:'+type+':'+id,title:text(title),subject:'physics',kind:kind,description:text(description),tags:tags||[],url:fullURL(type,id),route:href(type,id),type:type,target:String(id),model:model});}
+    Object.keys(SIM_META).forEach(function(id){if(typeof SIMS[id]==='function')add('sim',id,SIM_META[id].n,'Experiment',SIM_META[id].d,['simulation','interactive',id],modelFor(id));});
+    DB.forEach(function(t){add('lesson',t.id,t.name,'Lesson',t.summary,[t.domain,'concept',t.id]);});
+    DOMAINS.forEach(function(d){add('domain',d.k,d.n,'Concept collection',topicsOf(d.k).length+' connected lessons',[d.k]);});
+    [['theory',Theory,'Numerical workspace'],['research',Research,'Measurement bench'],['investigate',Investigate,'Investigation'],['deep',Deep,'Course'],['adv',Adv,'Advanced treatment']].forEach(function(group){try{group[1].list().forEach(function(t){add(group[0],t.id,t.name||t.title||t.short,group[2],t.q||t.description||t.method||t.summary,[t.domain||'',group[0],t.id]);});}catch(e){}});
+    try{Object.keys(JOURNEYS).forEach(function(id){add('journey',id,JOURNEYS[id].title,'Learning journey',JOURNEYS[id].desc,['guided learning']);});}catch(e){}
+    var scenes=[['solar','Solar system'],['binary','Binary stars'],['figure8','Three-body figure eight'],['springs','Spring chain'],['dpendulum','Double pendulum'],['cradle',"Newton’s cradle"],['atwood','Atwood machine'],['wavestring','Wave string'],['hangrope','Hanging rope'],['catcradle',"Cat’s cradle"],['gas','Gas in a box'],['dipole','Charges and field'],['cyclotron','Cyclotron'],['velselect','Velocity selector'],['massspec','Mass spectrometer'],['cycloid','Charge in gravity and magnetic field'],['magorbit','Magnetized orbit'],['exbdrift','E × B drift'],['counter','Counterfactual gravity'],['clear','Empty sandbox']];
+    scenes.forEach(function(s){add('scene',s[0],s[1],'Sandbox scene','Build and manipulate this existing Sandbox scene. Mouse, touch and keyboard controls; camera remains optional.',['sandbox','build',s[0]]);});
+    ['reality','discovery','robotics','reason','proof'].forEach(function(id){var t=ScientificLabs.get(id);if(t)add('scientific',id,t.name,'Scientific tool',t.copy+' '+t.note,[id,t.label]);});
+    ['equations','graphs','circuits','sketches','animations','review','notebook','search'].forEach(function(id){var t=LearningTools.get(id);if(t)add('learning',id,t.title,'Learning tool',t.copy+' '+t.note,[id,t.label]);});
+    if(window.PeqPracticalGuides)PeqPracticalGuides.entries.forEach(function(t){add('practical-guide',t.id,t.title,'Preparation guide','Class '+t.year+' · '+t.kind+'. '+t.principle,['CBSE',String(t.year),'practical',t.apparatus||'']);});
+    [['vernier-calipers','Vernier calipers','measurement'],['screw-gauge','Screw gauge','measurement'],['spherometer','Spherometer','spherometer'],['lamina','Irregular lamina','lamina'],['pulse','Pulse speed on a string','pulse']].forEach(function(t){add('bench',t[0],t[1],'Interactive practical','Simulated apparatus, checked observations and the existing dedicated measurement notebook.',['CBSE','measurement',t[0],t[2]]);});
+    [['home','Explore'],['learn','Learn'],['lab','Labs'],['sandbox','Sandbox'],['adv','Advanced Studio'],['universe','Concept universe'],['solve','Solve'],['practice','Practice'],['research','Research'],['progress','Your Physics Map'],['settings','Settings'],['cbse','CBSE sections']].forEach(function(v){add('view',v[0],v[1],'Workspace','Open '+v[1]+'.',[v[0]]);});
+    items=out;return out;
+  }
+  function catalog(){if(!items.length)build();return items.concat(foreign).concat(book.list().map(function(e){return {id:'saved:'+e.id,title:e.title,subject:'physics',kind:'Saved observation',description:e.observations,tags:['notebook','saved',e.experimentId||''],url:fullURL('saved',e.id),type:'saved',target:e.id};}));}
+  function loadForeign(){fetch('assets/entelloq-biology-catalog.json').then(function(r){if(!r.ok)throw Error('catalog');return r.json();}).then(function(data){var list=Array.isArray(data)?data:data.items;foreign=(list||[]).filter(function(e){return e&&e.subject==='biology'&&typeof e.id==='string'&&typeof e.title==='string'&&/^https:\/\/biology\.entelloq\.com\//.test(e.url);});}).catch(function(){foreign=[];});}
+  function find(id){return catalog().find(function(e){return e.id===id;});}
+  function navigateHash(type,id){var route=href(type,id);if(location.hash!==route)history.pushState(null,'',route);}
+  function openById(id){var item=find(id);if(item)open(item);}
+  function open(item,restoring){
+    if(!item)return;if(item.subject==='biology'){var target=peerURL(item.url);if(target)location.assign(target);return;}
+    if(item.type==='saved'){var entry=book.list().find(function(e){return e.id===item.target;});if(entry)resume(entry);return;}
+    if(dialog&&dialog.open)dialog.close();if($('#lab-full.on'))closeLabFull();
+    current=item;var type=item.type,id=item.target;routing=true;
+    try{
+      if(type==='sim'){go('lab');openLabFull(id);}
+      else if(type==='scene'){window.__peqNextPreset=id;go('sandbox');}
+      else if(type==='scientific')ScientificLabs.open(id);
+      else if(type==='learning')LearningTools.open(id);
+      else if(type==='theory'){labMode='theory';window.__thJump=id;go('lab');}
+      else if(type==='research'||type==='investigate'){labMode=type;go('lab');var section=type==='research'?Research:Investigate,entry=section.list().find(function(e){return e.id===id;});var pick=main.querySelector(type==='research'?'#rs-pick':'#nb-pick'),host=main.querySelector(type==='research'?'#rs-work':'#nb-work');if(entry&&host){if(pick)pick.hidden=true;section.open(host,entry);}}
+      else if(type==='bench'){var routes={'vernier-calipers':['measurement','vernier-calipers'],'screw-gauge':['measurement','screw-gauge'],spherometer:['spherometer'],lamina:['lamina'],pulse:['pulse']};if(routes[id])go(routes[id][0],routes[id][1]);}
+      else go(type==='view'?id:type,type==='view'?undefined:id);
+      current=item;navigateHash(type,id);if(!restoring)pendingRestore=null;
+    }finally{routing=false;}
+    if(curView==='home')renderExplore();decorateWorkspace();
+  }
+  function parseRoute(){var m=/^#science:([a-z-]+):([^#]+)$/.exec(location.hash);if(!m)return null;try{return {type:m[1],target:decodeURIComponent(m[2])};}catch(e){return null;}}
+  function route(){var r=parseRoute();if(!r)return;if(r.type==='notebook'){showNotebook();return;}var item=r.type==='saved'?{type:'saved',target:r.target,subject:'physics'}:catalog().find(function(e){return e.type===r.type&&e.target===r.target;});if(item)open(item);}
+  function card(item){var b=node('button','science-card');b.type='button';b.dataset.scienceId=item.id;b.append(node('small','',(item.subject==='biology'?'Biology · ':'')+item.kind),node('strong','',item.title),node('span','',item.description.slice(0,155)));b.addEventListener('click',function(){open(item);});return b;}
+  function discovery(host,full){
+    var section=node('section','science-discover');section.setAttribute('aria-label','Find an experiment');
+    section.innerHTML='<div class="science-heading"><div><p class="science-eyebrow">EXPLORE / PHYSICS</p><h'+(full?'1':'2')+'>'+(full?'What will you discover?':'Find your experiment')+'</h'+(full?'1':'2')+'><p>Change one thing. Observe what happens. Keep your evidence.</p></div><button type="button" data-notebook>My notebook</button></div>'+
+      (full?'<div class="science-feature"><div><small>TRY IT NOW · NO ACCOUNT</small><h2>When does light turn back?</h2><p>Change the angle where light meets air. Find the point where refraction becomes total internal reflection.</p><button type="button" data-featured>Try the experiment →</button></div><div class="science-feature-art" aria-hidden="true">↗<span>ANGLE → REFRACTION → EVIDENCE</span></div></div>':'')+
+      '<div class="science-filters"><label>Find experiments, concepts and tools<input type="search" placeholder="Try pendulum, electric current, or how plants grow" data-find></label><label>Show<select data-kind><option value="interactive">Experiments & tools</option><option value="all">Everything</option><option value="lesson">Lessons & courses</option><option value="practical">Practical preparation</option></select></label></div><p class="science-result-status" role="status" data-count></p><div class="science-catalog"></div><p class="science-search-hint">Ctrl / ⌘ K searches both subjects. Biology opens in its own app; notes remain local to each subject.</p>';
+    section.querySelector('[data-notebook]').onclick=showNotebook;var featured=section.querySelector('[data-featured]');if(featured)featured.onclick=function(){openById('physics:sim:refraction');};
+    var input=section.querySelector('[data-find]'),kind=section.querySelector('[data-kind]'),grid=section.querySelector('.science-catalog'),count=section.querySelector('[data-count]');
+    function results(){var all=catalog().filter(function(e){if(e.type==='view'||e.type==='saved')return false;if(kind.value==='interactive')return ['experiment','sandbox scene','scientific tool','learning tool','interactive practical','numerical workspace','measurement bench','investigation','lab','tool'].indexOf(String(e.kind).toLowerCase())>=0;if(kind.value==='lesson')return /Lesson|Course|Concept|treatment|journey/i.test(e.kind);if(kind.value==='practical')return /practical|guide/i.test(e.kind);return true;});var q=input.value.trim(),result=q?core.search(all,q,full?24:8):kind.value!=='interactive'?all.slice(0,full?24:8):all.filter(function(e){return ['physics:sim:projectile','physics:sim:spring','physics:scene:catcradle','physics:scientific:reality','physics:learning:graphs','physics:bench:vernier-calipers'].indexOf(e.id)>=0;});grid.replaceChildren();result.forEach(function(e){grid.appendChild(card(e));});count.textContent=result.length?(q?result.length+' matching resources':kind.value==='interactive'?'Start with a familiar experiment':'Showing '+result.length+' of '+all.length+' resources. Search to narrow the list.'):'No matches. Try a concept such as gravity, waves or cells; or choose Everything.';}
+    input.addEventListener('input',results);kind.addEventListener('change',results);results();host.appendChild(section);return section;
+  }
+  function renderExplore(){main.innerHTML='';var wrap=node('div','wrap science-explore');discovery(wrap,true);var footer=node('div','science-explore-links');[['universe','Concept universe'],['cbse','Your CBSE path'],['progress','Your Physics Map']].forEach(function(v){var b=node('button','',v[1]);b.type='button';b.onclick=function(){go(v[0]);};footer.appendChild(b);});wrap.appendChild(footer);main.appendChild(wrap);setCrumb([{t:'Explore'}]);}
+  function enhanceLab(){if(curView!=='lab'||labMode!=='labs'||main.querySelector('.science-lab-entry'))return;var lead=node('div','science-lab-entry');discovery(lead,false);main.prepend(lead);var extras=node('details','science-original-library');extras.appendChild(node('summary','','More laboratory tools and preparation'));Array.from(main.querySelectorAll('.practical-discovery,.sci-lab-tools,.lt-entry')).forEach(function(e){extras.appendChild(e);});if(extras.children.length>1)main.appendChild(extras);}
+  function selectionLabel(el){var label=el.getAttribute('aria-label');if(!label){var container=el.labels&&el.labels.length?el.labels[0]:el.parentElement,copy=container.cloneNode(true);copy.querySelectorAll('input,select,button,output,b,canvas').forEach(function(n){n.remove();});label=copy.textContent;}return text(label).replace(/\s+/g,' ').slice(0,120);}
+  function controlScope(){var lab=$('#lab-full.on');if(lab)return {root:$('#lf-ctl'),source:'legacy-controls'};var frame=main.querySelector('.sci-frame,.lt-frame');if(frame){try{return {root:frame.contentDocument,source:'embedded-controls'};}catch(e){return null;}}return {root:main,source:'page-controls'};}
+  function capture(){var scope=controlScope(),controls=[];if(scope&&scope.root)Array.from(scope.root.querySelectorAll('input[type=range],input[type=number],select')).filter(function(e){return !e.disabled&&!e.closest('.science-save-dialog,.science-discover');}).slice(0,60).forEach(function(el,index){controls.push({index:index,label:selectionLabel(el),type:el.type||el.tagName.toLowerCase(),value:el.value});});return {schema:'entelloq-visible-controls-v1',scope:scope?scope.source:'none',controls:controls,restoration:'Named controls only. Does not restore elapsed time, uploaded media, hidden engine state or camera input.'};}
+  function applyControls(entry){var cfg=entry.config;if(!cfg||cfg.schema!=='entelloq-visible-controls-v1')return;var scope=controlScope();if(!scope||!scope.root)return;var nodes=Array.from(scope.root.querySelectorAll('input[type=range],input[type=number],select')).filter(function(e){return !e.disabled&&!e.closest('.science-save-dialog,.science-discover');});var restored=0;(cfg.controls||[]).forEach(function(c){var el=nodes[c.index];if(!el||selectionLabel(el)!==c.label||(el.type||el.tagName.toLowerCase())!==c.type)return;if(el.tagName==='SELECT'&&!Array.from(el.options).some(function(o){return o.value===c.value;}))return;if(el.type==='range'||el.type==='number'){var number=Number(c.value);if(!Number.isFinite(number)||el.min!==''&&number<Number(el.min)||el.max!==''&&number>Number(el.max))return;}el.value=c.value;el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));restored++;});var msg=restored+' named control'+(restored===1?'':'s')+' restored. The experiment starts a new run; saved observations remain in your notebook.';announce(msg);pendingRestore=null;}
+  function resume(entry){var item=find(entry.experimentId);if(!item){announce('This experiment is unavailable in this build. Your saved observation remains in the notebook.');return;}pendingRestore=entry;open(item,true);var frame=main.querySelector('.sci-frame,.lt-frame');if(frame){var tries=0;function retry(){if(pendingRestore!==entry||!frame.isConnected)return;var scope=controlScope(),ready=scope&&scope.root&&scope.root.querySelector('input[type=range],input[type=number],select');if(ready){applyControls(entry);return;}if(++tries<40)setTimeout(retry,250);else{pendingRestore=null;announce('The tool opened, but its saved controls are not available yet. Your observation remains in the notebook.');}}frame.addEventListener('load',retry,{once:true});}else applyControls(entry);}
+  function captureGraph(){var scope=controlScope(),canvas=scope&&scope.root&&scope.root.querySelector('canvas');if($('#lab-full.on'))canvas=$('#lf-stage canvas');if(!canvas||!canvas.width||!canvas.height)return {kind:'not-captured',note:'No readable canvas was exposed. Use the tool’s own graph or data export.'};try{var image=document.createElement('canvas'),ratio=Math.min(1,640/canvas.width);image.width=Math.round(canvas.width*ratio);image.height=Math.round(canvas.height*ratio);image.getContext('2d').drawImage(canvas,0,0,image.width,image.height);return {kind:'canvas-observation',image:image.toDataURL('image/png'),note:'Raster capture of the actual displayed canvas, not raw numerical data. WebGL canvases may not retain their last frame.'};}catch(e){return {kind:'not-captured',note:'Canvas capture unavailable. Use the tool’s own graph or data export.'};}}
+  function announce(message){var el=document.getElementById('science-status'),host=document.querySelector('#lab-full.on .science-context')||main.querySelector('.sci-workspace')||main;if(!el){el=node('div','science-inline-status');el.id='science-status';el.setAttribute('role','status');}host.prepend(el);el.textContent=message;clearTimeout(announce.timer);announce.timer=setTimeout(function(){el.textContent='';},8000);}
+  function download(name,body,mime){var url=URL.createObjectURL(new Blob([body],{type:mime})),a=node('a');a.href=url;a.download=name;a.click();setTimeout(function(){URL.revokeObjectURL(url);},1000);}
+  function makeDialog(title){if(dialog){dialog.remove();dialog=null;}returnTrigger=document.activeElement;dialog=node('dialog','science-dialog');dialog.setAttribute('aria-label',title);var head=node('header','science-dialog-head');head.append(node('h2','',title));var close=node('button','','Close');close.type='button';close.onclick=function(){dialog.close();};head.appendChild(close);dialog.appendChild(head);dialog.addEventListener('close',function(){if(returnTrigger&&returnTrigger.isConnected)returnTrigger.focus({preventScroll:true});});document.body.appendChild(dialog);return dialog;}
+  function saveObservation(){
+    var item=current||inferCurrent();if(!item){announce('Open an experiment or scientific tool before saving an observation.');return;}
+    var config=capture(),graph=captureGraph(),d=makeDialog('Save your observation');d.classList.add('science-save-dialog');
+    d.innerHTML+='<p>Local notebook · cloud sync is not connected. Saves the named controls and your observations. Engine time, camera input and uploaded media are not captured.</p><form><label>Observation title<input name="title" maxlength="300" required></label><label>What did you change, measure or notice?<textarea name="observations" rows="5" maxlength="50000" required placeholder="I changed… I observed… My evidence is…"></textarea></label><div class="science-measurement-fields"><label>Measurement name<input name="measurement" maxlength="100" placeholder="Range"></label><label>Value<input name="value" maxlength="100" placeholder="From the experiment"></label><label>Unit<input name="unit" maxlength="40" placeholder="m"></label></div><p class="science-caption">Only enter readings you actually observed. A blank measurement is allowed.</p><details><summary>Model and saved settings</summary><pre data-config></pre><p data-model></p></details><p role="status" data-save-status></p><button type="submit">Save on this device</button></form>';
+    // innerHTML above recreates the close button; restore its handler explicitly.
+    d.querySelector('header button').onclick=function(){d.close();};var form=d.querySelector('form');form.elements.title.value=item.title+' observation';d.querySelector('[data-config]').textContent=JSON.stringify(config.controls,null,2);var model=item.model||modelFor(item.target);d.querySelector('[data-model]').textContent=model.classification+' model. '+(model.assumptions||[]).concat(model.limitations||[]).join(' ');var status=d.querySelector('[data-save-status]');status.textContent=book.status().available?'Ready to save locally.':book.status().error||'Storage unavailable; you can export this observation.';
+    form.onsubmit=function(e){e.preventDefault();var measurement=form.elements.measurement.value.trim(),value=form.elements.value.value.trim();var entry={title:form.elements.title.value,subject:'physics',experimentId:item.id,catalogId:item.id,route:item.route,url:item.url,kind:item.kind,config:config,graph:graph,measurements:measurement&&value?[{name:measurement,value:value,unit:form.elements.unit.value.trim()}]:[],observations:form.elements.observations.value,model:model,provenance:{source:'User observation from an educational simulation',capturedAt:new Date().toISOString(),deviceOnly:true}};var result=book.save(entry);if(result.ok){status.textContent='Saved on this device. Cloud sync is not connected.';var submit=form.querySelector('[type=submit]');submit.disabled=true;submit.textContent='Saved on this device';announce('Observation saved on this device.');}else{status.textContent='Not saved: '+result.error+' Export a copy before leaving.';var rescue=d.querySelector('[data-rescue]');if(!rescue){rescue=node('button','','Download unsaved observation');rescue.type='button';rescue.dataset.rescue='';rescue.onclick=function(){download('physics-unsaved-observation.json',JSON.stringify(entry,null,2),'application/json');};form.appendChild(rescue);}}};d.showModal();form.elements.observations.focus();
+  }
+  function showNotebook(){var d=makeDialog('My scientific notebook'),entries=book.list(),state=book.status();d.appendChild(node('p','',state.available?'Saved on this device only · cloud sync is not connected.':state.error||'Local storage unavailable.'));var actions=node('div','science-notebook-actions');[['CSV',function(){download('physics-notebook.csv',book.exportCSV(entries),'text/csv');}],['JSON',function(){download('physics-notebook.json',book.exportJSON(entries),'application/json');}],['Print / Save PDF',function(){var w=window.open('','_blank');if(!w){announce('Allow a new window to print or save the notebook as PDF.');return;}w.document.write(book.reportHTML(entries));w.document.close();w.focus();w.print();}]].forEach(function(pair){var b=node('button','',pair[0]);b.type='button';b.disabled=!entries.length;b.onclick=pair[1];actions.appendChild(b);});d.appendChild(actions);if(!entries.length)d.appendChild(node('p','science-empty','No observations yet. Open an experiment, change a control and choose Save observation.'));
+    entries.forEach(function(e){var article=node('article','science-notebook-entry');article.append(node('h3','',e.title),node('p','',e.observations),node('small','',new Date(e.updatedAt).toLocaleString()+' · '+(e.model&&e.model.classification||'model classification unavailable')));var buttons=node('div','science-notebook-actions'),resumeButton=node('button','','Resume settings');resumeButton.type='button';resumeButton.onclick=function(){d.close();resume(e);};buttons.appendChild(resumeButton);var remove=node('button','','Delete this observation');remove.type='button';remove.onclick=function(){if(!confirm('Delete only this saved observation?'))return;var result=book.remove(e.id,e.updatedAt);if(result.ok)showNotebook();else announce('Not deleted: '+result.error);};buttons.appendChild(remove);article.appendChild(buttons);d.appendChild(article);});d.showModal();}
+  function inferCurrent(){var r=parseRoute();if(r)return items.find(function(e){return e.type===r.type&&e.target===r.target;});var h=/^#(scientific|learning):([a-z]+)$/.exec(location.hash);if(h)return items.find(function(e){return e.type===h[1]&&e.target===h[2];});return null;}
+  function decorateWorkspace(){
+    document.body.classList.toggle('science-workspace-open',!!main.querySelector('.sci-workspace,.lt-workspace'));
+    if(!current)current=inferCurrent();
+    var shell=main.querySelector('.sci-workspace');if(shell&&!shell.dataset.scienceCompact){shell.dataset.scienceCompact='true';var head=shell.querySelector('.sci-workspace-head'),details=node('details','science-workspace-about'),summary=node('summary','','About this workspace');details.appendChild(summary);var boundary=shell.querySelector('.sci-boundary'),source=shell.querySelector('.sci-source'),footer=shell.querySelector('.sci-workspace-foot');[boundary,source,footer].forEach(function(e){if(e)details.appendChild(e);});head.after(details);var save=node('button','science-save-workspace','Save observation');save.type='button';save.onclick=saveObservation;head.appendChild(save);var frame=shell.querySelector('iframe');if(frame){frame.addEventListener('load',function(){var status=shell.querySelector('#scientific-status');if(status&&!status.classList.contains('sci-load-error'))status.classList.add('science-visually-hidden');});} }
+    var learning=main.querySelector('.lt-workspace .lt-toolbar');if(learning&&!learning.querySelector('[data-science-save]')){var b=node('button','','Save observation');b.type='button';b.dataset.scienceSave='';b.onclick=saveObservation;learning.appendChild(b);}
+  }
+  function decorateExperiment(sim){current=items.find(function(e){return e.type==='sim'&&e.target===sim;});var bar=$('#lab-full .lf-top');if(!bar)return;var save=node('button','lf-ask','Save observation');save.type='button';save.id='science-save-observation';save.onclick=saveObservation;bar.insertBefore(save,$('#lf-close'));var hint=node('section','science-context');hint.innerHTML='<strong>Try → observe → save</strong><p>Change one control. Compare the motion or readout. Save what you notice.</p><details><summary>Model & limitations</summary><p></p></details>';var model=modelFor(sim);hint.querySelector('details p').textContent=model.classification+' model. '+model.assumptions.concat(model.limitations).join(' ');$('#lf-ctl').after(hint);}
+  function navigation(){var primary=[['home','Explore'],['learn','Learn'],['lab','Labs'],['sandbox','Sandbox'],['adv','Advanced']];var side=document.querySelector('.side-scroll');primary.forEach(function(p){var b=side.querySelector('[data-go="'+p[0]+'"]');if(b){b.dataset.sciencePrimary='';b.innerHTML=AppDesign.icon(p[0])+'<span>'+p[1]+'</span>';side.appendChild(b);}});var anchor=side.querySelector('#nav-cmdk');primary.slice().reverse().forEach(function(p){var b=side.querySelector('[data-go="'+p[0]+'"]');if(b)anchor.after(b);});var mobile=document.querySelector('.mtab');mobile.innerHTML=primary.map(function(p){return '<button type="button" data-go="'+p[0]+'">'+AppDesign.icon(p[0])+'<span>'+p[1]+'</span></button>';}).join('');var more=$('#pe-explore');if(more){more.innerHTML=AppDesign.icon('explore')+'<span>More</span>';more.setAttribute('aria-label','More Physics workspaces');}var grid=document.querySelector('.pe-explore-grid');[['home','Explore'],['universe','Concept universe'],['progress','Your Physics Map']].forEach(function(r){var b=node('button');b.type='button';b.dataset.exploreGo=r[0];b.innerHTML=AppDesign.icon(r[0])+'<span><b>'+r[1]+'</b><small>Open this existing workspace.</small></span>';grid.appendChild(b);});var notebook=node('button','science-notebook-trigger','My notebook');notebook.type='button';notebook.onclick=showNotebook;document.querySelector('.topbar').insertBefore(notebook,more);var switcher=node('a','science-subject-switch','Biology ↗');switcher.href='https://biology.entelloq.com/?excellence=1';switcher.setAttribute('aria-label','Switch to Biology Entelloq');document.querySelector('.pe-explore-sheet footer').prepend(switcher);}
+  var originalInit=AppDesign.init;AppDesign.init=function(){originalInit();build();navigation();loadForeign();var peer=document.querySelector('.science-subject-switch');if(peer)peer.href=peerURL(peer.href);if(core.classroomEnabled()&&window.EntelloqClassroom){var b=node('button','','Classroom pilot');b.type='button';b.id='science-classroom';b.onclick=function(){var more=$('#pe-explore-sheet');if(more&&more.open)more.close();$('#pe-explore').focus();EntelloqClassroom.open({catalog:catalog(),notebook:book,openExperiment:open});};document.querySelector('.pe-explore-grid').appendChild(b);}};
+  var originalAfter=AppDesign.afterView;AppDesign.afterView=function(){originalAfter();if(!routing)current=inferCurrent();if(curView==='home'&&!routing)renderExplore();enhanceLab();decorateWorkspace();};
+  var originalLab=viewLab;viewLab=function(){originalLab();enhanceLab();};
+  var originalOpen=openLabFull;openLabFull=function(sim){originalOpen(sim);document.body.classList.add('science-lab-open');decorateExperiment(sim);};
+  var originalClose=closeLabFull;closeLabFull=function(){originalClose();document.body.classList.remove('science-lab-open');};
+  var originalLanding=Landing.show;Landing.show=function(callback){originalLanding(callback);var launch=$('#lnd');if(launch){var button=launch.querySelector('.obs-primary');if(button){button.textContent='Try an experiment →';button.dataset.enter='science-featured';}var note=launch.querySelector('.obs-copy>p');if(note)note.textContent='Try an experiment without an account. Change one control, follow the science, and keep your observations.';}};
+  var originalGo=go;go=function(v,id){if(!booting&&!routing&&parseRoute()){history.replaceState(null,'',location.pathname+location.search);current=null;}originalGo(v,id);};
+  var originalPending=Landing.pending;Landing.pending=function(){return parseRoute()?false:originalPending();};
+  window.addEventListener('hashchange',function(){if(!routing)route();});window.addEventListener('popstate',function(){if(!routing)route();});
+  setTimeout(function(){build();if(parseRoute())route();booting=false;},0);
+  return (window.PhysicsExcellence={enabled:true,catalog:catalog,localCatalog:function(){return items.slice();},open:open,openById:openById,notebook:book,showNotebook:showNotebook,saveObservation:saveObservation,capture:capture,modelFor:modelFor,peerURL:peerURL});
+})();
+
+/* EXPERIENCE:PRODUCT-EXCELLENCE:END */
 /* ===== INIT ===== */
 Me.streakInit(); renderSide(); buildSide(); Tutor.init(); Theme.init(); Presence.init();AppDesign.init();AccountEntry.init();WelcomeTour.init();
 go(window.__peqShare?'sandbox':'home');

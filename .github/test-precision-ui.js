@@ -1,6 +1,6 @@
 const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),{createHash}=require('node:crypto');
 const root=path.resolve(__dirname,'..');
-const html=fs.readFileSync(path.join(root,'index.html'),'utf8').replace(/\r\n/g,'\n');
+const html=require('./product-preservation.cjs')(fs.readFileSync(path.join(root,'index.html'),'utf8').replace(/\r\n/g,'\n'));
 test('Precision UI preserves every surrounding published byte (ab76e15)',()=>{
   const prior=require('./precision-preservation.cjs')(html);
   assert.equal(createHash('sha256').update(prior).digest('hex'),'654c17c742eed5b6bbce60ae4a2202023c73642a750e8f4e6e31dd3a7312082c');

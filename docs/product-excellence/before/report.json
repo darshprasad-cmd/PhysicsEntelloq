@@ -1,0 +1,58 @@
+{
+  "baseline": "63a86b4",
+  "scope": "Local Chromium, external services blocked; no physical webcam/student/iOS evidence",
+  "devices": [
+    {
+      "width": 1440,
+      "errors": [],
+      "checks": [
+        "Cold guest opens blocking four-question CBSE entry; skip visible.",
+        "Guest orbit control changes displayed state after skipping questionnaire.",
+        "Lab mode bar opens using primary navigation.",
+        "Reality Lab host opens; runtime/model interactions not established by screenshot."
+      ],
+      "coldLoadMs": 619,
+      "firstOrbitInteractionMs": 1194,
+      "labModeCount": 9,
+      "searchResults": [
+        "Simple Harmonic MotionLesson · Mechanics↵",
+        "Standing Waves & ResonanceLesson · Waves & Sound↵",
+        "Temperature & HeatLesson · Thermodynamics↵",
+        "Thermal ExpansionLesson · Thermodynamics↵",
+        "Lasers & Stimulated EmissionLesson · Modern Physics↵",
+        "Semiconductors & DiodesLesson · Modern Physics↵"
+      ],
+      "workspaceGeometry": {
+        "top": 330.375,
+        "height": 760
+      },
+      "documentOverflow": false
+    },
+    {
+      "width": 390,
+      "errors": [],
+      "checks": [
+        "Cold guest opens blocking four-question CBSE entry; skip visible.",
+        "Guest orbit control changes displayed state after skipping questionnaire.",
+        "Lab mode bar opens using primary navigation.",
+        "Reality Lab host opens; runtime/model interactions not established by screenshot."
+      ],
+      "coldLoadMs": 631,
+      "firstOrbitInteractionMs": 1218,
+      "labModeCount": 9,
+      "searchResults": [
+        "Simple Harmonic MotionLesson · Mechanics↵",
+        "Standing Waves & ResonanceLesson · Waves & Sound↵",
+        "Temperature & HeatLesson · Thermodynamics↵",
+        "Thermal ExpansionLesson · Thermodynamics↵",
+        "Lasers & Stimulated EmissionLesson · Modern Physics↵",
+        "Semiconductors & DiodesLesson · Modern Physics↵"
+      ],
+      "workspaceGeometry": {
+        "top": 346.5625,
+        "height": 641.4375
+      },
+      "documentOverflow": false
+    }
+  ]
+}

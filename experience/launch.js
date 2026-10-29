@@ -34,7 +34,8 @@ var Landing=(function(){
     try{localStorage.setItem('peq_entered','1');}catch(e){}
     el.remove();el=null;document.body.classList.remove('pe-landing-open');
     ['.app','.mtab','#tutor-fab','#audio-btn','#eq-pres'].forEach(function(s){var n=document.querySelector(s);if(n){n.inert=false;n.removeAttribute('aria-hidden');}});
-    if(dest==='catcradle'){window.__peqNextPreset='catcradle';go('sandbox');}
+    if(dest==='science-featured'&&window.PhysicsExcellence&&PhysicsExcellence.enabled){PhysicsExcellence.openById('physics:sim:refraction');}
+    else if(dest==='catcradle'){window.__peqNextPreset='catcradle';go('sandbox');}
     else if(dest==='waves')go('lesson','wave-basics');
     else if(dest==='tutor'){go('home');Tutor.open();}
     else if(dest==='search'){go('home');Cmdk.open();}

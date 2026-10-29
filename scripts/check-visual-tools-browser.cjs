@@ -47,7 +47,7 @@ const server = http.createServer((req, res) => {
     return child;
   }
   async function open(panel) {
-    await page.goto(base + '/#learning:' + panel, {waitUntil:'domcontentloaded'});
+    await page.goto(base + '/?excellence=0#learning:' + panel, {waitUntil:'domcontentloaded'});
     return currentFrame(panel);
   }
   async function exportScene(frame) {
@@ -160,7 +160,7 @@ const server = http.createServer((req, res) => {
     checks.push('Keyboard return removes the playing media document, returns to Learn and restores focus');
 
     await page.route('**/assets/learning-tools/animations/index.html*', route => route.fulfill({status:404,contentType:'text/html',body:'<!doctype html><title>Missing lesson</title>'}));
-    await page.goto(base + '/#learning:animations', {waitUntil:'domcontentloaded'});
+    await page.goto(base + '/?excellence=0#learning:animations', {waitUntil:'domcontentloaded'});
     await page.waitForFunction(() => document.querySelector('#learning-status')?.dataset.error === 'true');
     assert.equal(await page.locator('#learning-reload').isVisible(), true);
     checks.push('Missing visual assets report a recoverable error with Reload and Back controls');

@@ -31,6 +31,8 @@ jobs:
           npm test --prefix visualization-source
           node visualization-source/build.mjs --check
           node --test .github/test-cbse-preservation.js
+      - name: Check product search, persistence, classroom and privacy contracts
+        run: node --test .github/test-product-excellence.js
       - name: Verify generated experience is current
         run: node .github/build-experience.js --check
       - name: Verify scientific module sources and published assets
@@ -84,3 +86,5 @@ jobs:
           node qa/learning-host-quality.cjs
           node qa/physics-visualization.cjs
           node qa/interface-quality.cjs
+          node qa/product-excellence.cjs
+          node qa/camera-lifecycle.cjs

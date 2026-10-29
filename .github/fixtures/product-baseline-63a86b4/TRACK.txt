@@ -1,0 +1,28 @@
+var Track=(function(){
+  var loaded=false;
+  function pid(){ var v=''; try{ v=(localStorage.getItem('peq_clarity_id')||'').trim(); }catch(e){} return v||CLARITY_PROJECT_ID||''; }
+  function enabled(){ return !!pid(); }
+  function anonId(){ var a=''; try{ a=localStorage.getItem('peq_anon')||''; if(!a){ a='pe-'+Math.random().toString(36).slice(2,10)+Date.now().toString(36); localStorage.setItem('peq_anon',a); } }catch(e){} return a||'pe-anon'; }
+  function load(){ if(loaded||!enabled())return; loaded=true;
+    (function(c,l,a,r,i,t,y){ c[a]=c[a]||function(){ (c[a].q=c[a].q||[]).push(arguments); };
+      t=l.createElement(r); t.async=1; t.src='https://www.clarity.ms/tag/'+i;
+      y=l.getElementsByTagName(r)[0]; y.parentNode.insertBefore(t,y);
+    })(window,document,'clarity','script',pid());
+    ident(); tags(); }
+  function ident(pageId){ if(!loaded)return; var c=window.clarity; if(!c)return;
+    try{ var u=(typeof GAuth!=='undefined')?GAuth.user():null;
+      if(u&&u.e) c('identify',u.e,undefined,pageId||undefined,(u.n||'').split(' ')[0]);
+      else c('identify',anonId(),undefined,pageId||undefined); }catch(e){} }
+  function tags(){ if(!loaded)return; var c=window.clarity; if(!c)return;
+    try{ if(typeof Style!=='undefined'&&Style.get()) c('set','learning_style',Style.get());
+      var pr=null; try{ pr=JSON.parse(localStorage.getItem('peq_profile')||'null'); }catch(e2){}
+      if(pr&&pr.level) c('set','level',pr.level);
+      if(pr&&pr.goal) c('set','goal',pr.goal);
+      var th='dark'; try{ th=localStorage.getItem('peq_theme')||'dark'; }catch(e3){}
+      c('set','theme',th); }catch(e){} }
+  function view(v){ if(!loaded)return; try{ var c=window.clarity; if(c){ c('set','view',v); ident(v); } }catch(e){} }
+  function ev(name){ if(!loaded)return; try{ var c=window.clarity; if(c)c('event',name); }catch(e){} }
+  function upgrade(r){ if(!loaded)return; try{ var c=window.clarity; if(c)c('upgrade',r); }catch(e){} }
+  try{ window.PEQ_track={enabled:enabled,loaded:function(){ return loaded; },ev:ev,view:view}; }catch(e){}
+  return { load:load,view:view,ev:ev,tags:tags,ident:ident,upgrade:upgrade,enabled:enabled };
+})();

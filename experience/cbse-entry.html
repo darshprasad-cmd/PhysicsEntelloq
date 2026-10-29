@@ -21,6 +21,11 @@
   try{saved=JSON.parse(localStorage.getItem(key)||'null');}catch(e){}
   var valid=saved&&saved.v===1&&(saved.status==='skipped'||saved.status==='ready'&&typeof saved.class==='string'&&Object.prototype.hasOwnProperty.call(focus,saved.class)&&focus[saved.class].indexOf(saved.focus)>=0&&['foundations','revision','practice'].indexOf(saved.goal)>=0&&['10','20','30'].indexOf(saved.minutes)>=0);
   if(valid){gate.remove();return;}
+  // Staging experiment-first entry keeps personalisation available on demand.
+  var excellence=new URLSearchParams(location.search).get('excellence');
+  if(excellence==='1'||excellence!=='0'&&/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)){
+    window.__peqCbseEntry={skipped:true,temporary:true};gate.remove();return;
+  }
   window.__peqCbseEntry={};
   gate.showModal();document.getElementById('cbse-entry-title').focus({preventScroll:true});
   function skip(){window.__peqCbseEntry={skipped:true};try{localStorage.setItem(key,JSON.stringify({v:1,status:'skipped'}));}catch(e){}gate.close();gate.remove();}

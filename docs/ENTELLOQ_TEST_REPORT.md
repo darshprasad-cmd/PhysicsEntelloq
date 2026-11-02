@@ -48,6 +48,8 @@ The optional classroom UI was actually used to create a refraction assignment, e
 
 ## Independent browser review
 
+Final tutor accessibility refinement: the closed tutor was visually offscreen but still exposed one `AI tutor` dialog and one `Close` button in the accessibility tree. A product-flag-scoped CSS rule now hides the inactive panel from accessibility and pointer interaction. `node qa/product-tutor-accessibility.cjs` passes at 1440 and 390 pixels: the closed dialog is absent, the notebook has one unambiguous Close action, keyboard opening/Shift-Tab closing/reopening works, the unsent draft survives, and subsequent Tab navigation excludes hidden controls. No AI requests or page errors occurred. Evidence: `product-excellence/tutor-accessibility.json`. The source build, generated parity, inline parse, explicit baseline-byte preservation and all 24 focused product/shared tests passed again; unrelated engine suites were not rerun for this CSS-only refinement.
+
 The coordinating agent separately used the visible app browser to launch the actual guest refraction lab and change Angle with ArrowRight. It then searched `why do cells swell`, followed the result into the staged packaged Biology Osmosis app, searched `refraction` there and returned by Enter to the staged Physics experiment deep link. Both artifacts were served locally using the validated peer-origin mapping; this was not a text-only catalog check or navigation to old production code. This is manual integration evidence, not a real-student session.
 
 ## Failures resolved and open gates

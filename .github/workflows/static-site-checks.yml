@@ -87,4 +87,5 @@ jobs:
           node qa/physics-visualization.cjs
           node qa/interface-quality.cjs
           node qa/product-excellence.cjs
+          node qa/product-tutor-accessibility.cjs
           node qa/camera-lifecycle.cjs

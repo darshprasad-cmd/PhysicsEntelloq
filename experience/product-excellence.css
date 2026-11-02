@@ -1,4 +1,5 @@
 /* Product additions share the existing subject palette. Scientific renderers are untouched. */
+.science-excellence #tutor:not(.on){visibility:hidden;pointer-events:none}
 .science-excellence .side-scroll>.nav-i[data-go]:not([data-science-primary]),.science-excellence .side-scroll>.side-sep{display:none}
 .science-excellence .side-scroll [data-science-primary]{display:flex}
 .science-excellence .science-notebook-trigger{border:1px solid var(--line);border-radius:7px;background:var(--bg-panel);color:var(--ink);padding:9px 12px;font:inherit;font-size:12px;white-space:nowrap;min-height:40px}

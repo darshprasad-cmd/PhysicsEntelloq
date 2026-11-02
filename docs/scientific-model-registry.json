@@ -54,7 +54,8 @@
         "Independent full parameter-domain reference fixtures",
         "Any other legacy projectile adapters must be checked separately"
       ],
-      "status": "source-reviewed-existing-checks-pass"
+      "status": "source-reviewed-existing-checks-pass",
+      "sourceSha256": "04a07188cce58b85b86d565d8fc3ed6943ca312ceb0a832844ebcf1658f5c701"
     },
     {
       "id": "physics-rk4-kernel",
@@ -93,7 +94,8 @@
       "remaining": [
         "Per-engine appropriate stability, conservation and step-domain checks"
       ],
-      "status": "source-reviewed-existing-checks-pass"
+      "status": "source-reviewed-existing-checks-pass",
+      "sourceSha256": "22ea7e7fb00dd58ce1da8733d2b0d63fc783d7745887bfff5bb7f9a44283b844"
     },
     {
       "id": "physics-field-streamlines",
@@ -134,7 +136,8 @@
         "Units/labels on each production adapter",
         "Near-singularity behavior for each supplied field"
       ],
-      "status": "source-reviewed-existing-checks-pass"
+      "status": "source-reviewed-existing-checks-pass",
+      "sourceSha256": "22ea7e7fb00dd58ce1da8733d2b0d63fc783d7745887bfff5bb7f9a44283b844"
     },
     {
       "id": "biology-osmosis",
@@ -188,7 +191,8 @@
         "Numerical time-update convergence if relied on quantitatively",
         "No empirical coefficient calibration"
       ],
-      "status": "source-reviewed-existing-checks-pass"
+      "status": "source-reviewed-existing-checks-pass",
+      "sourceSha256": "81fce6c53d9a41e78f2051d75cc66b6b0a24b75080fd9a2b488dfc65e1fbd2ac"
     },
     {
       "id": "biology-photosynthesis",
@@ -232,7 +236,8 @@
       "remaining": [
         "No empirical prediction/fit validation"
       ],
-      "status": "source-reviewed-existing-checks-pass"
+      "status": "source-reviewed-existing-checks-pass",
+      "sourceSha256": "81fce6c53d9a41e78f2051d75cc66b6b0a24b75080fd9a2b488dfc65e1fbd2ac"
     },
     {
       "id": "biology-respiration",
@@ -276,7 +281,8 @@
       "remaining": [
         "No organism-specific kinetic calibration"
       ],
-      "status": "source-reviewed-existing-checks-pass"
+      "status": "source-reviewed-existing-checks-pass",
+      "sourceSha256": "81fce6c53d9a41e78f2051d75cc66b6b0a24b75080fd9a2b488dfc65e1fbd2ac"
     },
     {
       "id": "biology-cardiac-output",
@@ -328,7 +334,8 @@
       "remaining": [
         "Pressure coefficient calibration absent; output must stay illustrative"
       ],
-      "status": "source-reviewed-existing-checks-pass"
+      "status": "source-reviewed-existing-checks-pass",
+      "sourceSha256": "81fce6c53d9a41e78f2051d75cc66b6b0a24b75080fd9a2b488dfc65e1fbd2ac"
     },
     {
       "id": "biology-gas-exchange",
@@ -382,7 +389,8 @@
       "remaining": [
         "No validated absolute uptake predictions"
       ],
-      "status": "source-reviewed-existing-checks-pass"
+      "status": "source-reviewed-existing-checks-pass",
+      "sourceSha256": "81fce6c53d9a41e78f2051d75cc66b6b0a24b75080fd9a2b488dfc65e1fbd2ac"
     },
     {
       "id": "biology-mitosis",
@@ -420,7 +428,8 @@
       "remaining": [
         "Educator review of every displayed stage/label"
       ],
-      "status": "source-reviewed-existing-checks-pass"
+      "status": "source-reviewed-existing-checks-pass",
+      "sourceSha256": "81fce6c53d9a41e78f2051d75cc66b6b0a24b75080fd9a2b488dfc65e1fbd2ac"
     },
     {
       "id": "biology-mendelian-inheritance",
@@ -471,7 +480,8 @@
       "remaining": [
         "Sampling distribution/conservation tests distinct from exact-probability tests"
       ],
-      "status": "source-reviewed-existing-checks-pass"
+      "status": "source-reviewed-existing-checks-pass",
+      "sourceSha256": "81fce6c53d9a41e78f2051d75cc66b6b0a24b75080fd9a2b488dfc65e1fbd2ac"
     },
     {
       "id": "biology-dna-protein",
@@ -511,7 +521,8 @@
       "remaining": [
         "Independent all-64-codon comparison; count alone is not exhaustive correctness"
       ],
-      "status": "source-reviewed-existing-checks-pass"
+      "status": "source-reviewed-existing-checks-pass",
+      "sourceSha256": "81fce6c53d9a41e78f2051d75cc66b6b0a24b75080fd9a2b488dfc65e1fbd2ac"
     },
     {
       "id": "biology-onion-cheek-microscopy",
@@ -566,7 +577,8 @@
       "remaining": [
         "Physical microscope comparison and educator/supervised-practical review"
       ],
-      "status": "source-reviewed-existing-checks-pass"
+      "status": "source-reviewed-existing-checks-pass",
+      "sourceSha256": "ba63e967a265f8a84edf61fc9196a4d3e4612149c4c8c23b6774db744fb6cfa6"
     }
   ],
   "excludedFromCoverage": [
@@ -577,5 +589,7 @@
     "Clinical imaging/pathology claims",
     "Every CBSE practical and curriculum mapping"
   ],
+  "evidenceRefreshedOn": "2026-11-03",
+  "sourceHashesVerifiedAt": "2026-11-02T19:21:46.063Z",
   "sourceRootNote": "Source paths are relative to the two-repository staging workspace; each subject checkout alone does not contain its sibling."
 }

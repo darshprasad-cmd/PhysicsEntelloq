@@ -83,3 +83,27 @@ Paths below are relative to the two-repository `entelloq-product-excellence` sta
 | `biology/labs.html` | `122b53dc1c2b68d992cc23681b8c40e1050a21b9a9bbf1470ee7229d7f4a6ead` |
 
 The final notebook graph-selection refinement is included in the recorded Biology hashes. Any subsequent executable change requires a relevant check. Real-student usability, production approval and the remaining native gates are separate outstanding evidence boundaries.
+
+
+## Final refinement note — 3 November 2026
+
+The original focused browser review and its source table above remain dated **29 October 2026**. The changes below occurred afterward. This reviewer independently reran only the selected 43 scientific checks for this refresh; **43 passed, zero failed/skipped**. The reviewer inspected the following source and owner evidence but did not independently repeat all UI/browser checks.
+
+- **Physics closed tutor:** feature-scoped CSS now hides the closed tutor and excludes pointer interaction. The source owner's `physics/docs/product-excellence/tutor-accessibility.json` records 1440px and 390px checks for removal from the accessible/Tab sequence, keyboard opening/closing/reopening and retained draft, with no errors or AI requests. This is owner-supplied local Chromium evidence; it is not new independent screen-reader/device verification.
+- **Biology mobile flow:** secondary saved-work/tools actions use an accessible disclosure, while Record, Save and status remain visible. The adapter adjusts actual DOM order with the viewport so the experiment precedes the prediction form on narrow screens. The owner's `biology/docs/ENTELLOQ_TEST_REPORT.md` describes the final layout/hit-test evidence.
+- **Graph readability:** model and notebook SVG text uses rendered 14px labels on narrow screens, with horizontally scrollable graphs. The owner reports keyboard ArrowRight checks at 320px and 390px. This review does not independently certify the complete final layout matrix.
+- **Paused theme repaint:** the common Biology builder calls its existing renderer on data-theme changes and disconnects the new observer during disposal. `biology/docs/product-excellence/model-resume.txt` records six owner-run model round trips, 36 corrupt-state rejections, and six theme checks comparing actual canvas bytes while serialized state/snapshot stay equal and disposal prevents repaint. An independent inverse byte check confirmed the theme declaration/disconnect are the only additions since the audited scientific source; the selected43 checks passed on the current bytes.
+
+Current file hashes recorded at 2026-11-02T19:21:46.063Z follow. These are a final source snapshot, not a claim that the earlier independent browser test exercised every later UI change. The root/source owners retain responsibility for the final generated parity and UI validation in the release manifest. Native/device, student-study and deployment limits stated above are unchanged.
+
+| Current source | SHA-256 |
+| --- | --- |
+| `physics/experience/product-excellence.js` | `c145423afc4052f207471d0c7dfa193308ca0c6a1d9af0a497c37f8bd01d5703` |
+| `physics/experience/product-excellence.css` | `298b6a0fe186b64b2432f1033dfb13d1e75a447bdfc75c8cdef582e043bb7ab5` |
+| `physics/index.html` | `0c48a0a23451f999caf728d972aae518aae4363ca41e54a93d94f84d2e17f181` |
+| `biology/src/product-excellence/biology.js` | `5ffab4e79f39ce3217a91a11d5db130a5b502b0d5d540c268d8deb3cc2494d93` |
+| `biology/src/product-excellence/biology.css` | `1c8e367a3f0bdcb8b1acb345dfc13ebe4da5ec833eb055474870b4c4de7d00cf` |
+| `biology/src/library/notebook.js` | `0595e1247cc9e9f29fa5cba834a72ca76d3a3ea1b1ed0306c86fa8c332349c73` |
+| `biology/src/library/labs.js` | `98aa58f610990ae27343bb030c1e3ec4f79ed18b61aeba95bb40f5a3f96244f3` |
+| `biology/src/library/experiments.js` | `81fce6c53d9a41e78f2051d75cc66b6b0a24b75080fd9a2b488dfc65e1fbd2ac` |
+| `biology/labs.html` | `d8bb3eba880578e1e188859fe718d538c910e5472924a3585d471b253c53be21` |

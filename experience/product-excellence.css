@@ -29,4 +29,5 @@
 @media(prefers-reduced-motion:reduce){.science-excellence .science-discover *,.science-dialog *{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 
 .science-excellence body:is(.science-lab-open,.science-workspace-open) :is(#eqx-fab,#eqx-panel,#tutor-fab){display:none!important}
+.science-excellence:has(.lever-workspace) :is(#eqx-fab,#eqx-panel,#tutor-fab){display:none!important}
 @media(max-width:500px){.science-excellence .lf-top{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:8px;padding:12px 14px}.science-excellence .lf-top>div[style]{display:none}.science-excellence .lf-id{grid-column:1/3;grid-row:1;min-width:0}.science-excellence .lf-id .lf-ey{white-space:nowrap;font-size:8px}.science-excellence .lf-id .lf-ti{font-size:18px;line-height:1.25;margin-top:5px}.science-excellence #lf-close{grid-column:3;grid-row:1}.science-excellence #lf-back{grid-column:1;grid-row:2}.science-excellence #science-save-observation{grid-column:2;grid-row:2;min-height:44px}.science-excellence #lf-focus{grid-column:3;grid-row:2}.science-excellence #lf-ask{display:none}}

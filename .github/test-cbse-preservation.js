@@ -14,7 +14,13 @@ function withoutLamina(text){
   const css='\n'+normalize(fs.readFileSync(path.join(root,'experience/lamina-lab.css'),'utf8'));
   assert.equal(text.split(css).length,2,'One exact lamina stylesheet');return text.replace(css,'');
 }
-function beforePulse(){return require('./pulse-preservation.cjs')(require('./precision-preservation.cjs')(require('./product-preservation.cjs')(normalize(fs.readFileSync(path.join(root,'index.html'),'utf8')))));}
+function beforeLever(){return require('./lever-preservation.cjs')(require('./product-preservation.cjs')(normalize(fs.readFileSync(path.join(root,'index.html'),'utf8'))));}
+function beforePulse(){return require('./pulse-preservation.cjs')(require('./precision-preservation.cjs')(beforeLever()));}
+test('Lever preserves every byte of the released application (63a86b4)',()=>{
+  assert.equal(createHash('sha256').update(beforeLever()).digest('hex'),'3e5795faa1012571abcd9ce073d55990de4d7cb19630fcf29f7ea14dcba77ded');
+});
+require('./test-lever-model.js');
+require('./test-lever-ui.js');
 require('./test-product-excellence.js');
 require('./test-precision-ui.js');
 function existingArtifact(){return withoutLamina(require('./visualization-preservation.cjs')(beforePulse()));}

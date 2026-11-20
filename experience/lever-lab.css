@@ -1,0 +1,99 @@
+/* An additive apparatus surface using the existing Physics bench palette. */
+.lever-workspace{--lever-bg:#101f2d;--lever-line:#526f80;--lever-text:#e4eff6;--lever-muted:#bad1df;--lever-accent:#a6eed4;color:var(--lever-text);max-width:1380px;padding-bottom:80px!important;font-variant-numeric:tabular-nums}
+.lever-workspace *{box-sizing:border-box}
+.lever-top{display:flex;align-items:center;justify-content:space-between;gap:18px;margin:22px 0 30px;font-size:12px}
+.lever-top a,.lever-sources a{display:inline-flex;align-items:center;min-height:44px}
+.lever-top span,.lever-eyebrow,.lever-section-head>span{font-size:10px!important;letter-spacing:.14em;color:var(--lever-muted)!important;line-height:1.8}
+.lever-heading{max-width:790px}
+.lever-workspace h1{font-size:clamp(34px,5vw,60px);line-height:1.04;letter-spacing:-.04em;margin:14px 0 22px}
+.lever-workspace h2{font-size:21px;line-height:1.35;margin:0 0 16px}
+.lever-workspace h3{font-size:16px;line-height:1.5;margin:22px 0 10px}
+.lever-workspace p,.lever-workspace li{font-size:14px;line-height:1.75;color:var(--lever-muted)}
+.lever-workspace a{color:#b5ddfa;text-underline-offset:4px;overflow-wrap:anywhere}
+.lever-limit{border-left:2px solid var(--lever-accent);padding:8px 14px}
+.lever-layout{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(300px,1fr);gap:20px;align-items:start;margin:28px 0}
+.lever-card{padding:24px;background:var(--lever-bg);border:1px solid var(--lever-line);border-radius:18px;min-width:0}
+.lever-section-head{display:flex;align-items:start;justify-content:space-between;gap:16px}
+.lever-section-head>span{max-width:120px;text-align:right;flex-shrink:0}
+.lever-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 16px}
+.lever-workspace label{display:block;color:var(--lever-text);font-size:13px;font-weight:600;line-height:1.5;margin:12px 0 6px}
+.lever-workspace input,.lever-workspace select{width:100%;min-width:0;min-height:44px;padding:10px;background:#081927;border:1px solid #7894a4;border-radius:8px;color:var(--lever-text);font:inherit;font-size:16px}
+.lever-workspace label input,.lever-workspace select{margin-top:6px}
+.lever-workspace input[type=range]{padding:0;accent-color:var(--lever-accent);cursor:ew-resize}
+.lever-workspace input[aria-invalid=true]{border-color:#ffc2aa;outline:1px solid #ffc2aa}
+.lever-workspace button,.lever-workspace summary{min-height:44px;font:inherit;font-size:13px;line-height:1.5;cursor:pointer}
+.lever-workspace button{padding:10px 14px;background:#244359;color:var(--lever-text);border:1px solid #809dad;border-radius:8px}
+.lever-workspace button:active:not(:focus-visible){transform:scale(.98)}
+.lever-workspace button:disabled,.lever-workspace input:disabled{cursor:not-allowed;opacity:.65}
+.lever-workspace :focus-visible,.lever-discovery :focus-visible{outline:3px solid var(--lever-accent,#a6eed4);outline-offset:3px}
+.lever-workspace :is(button,input,select,summary,a,[tabindex]){scroll-margin-block:100px}
+.lever-actions{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}
+.lever-actions button{flex:1;min-width:125px}
+#lever-reading button{grid-column:1/-1;background:#24564a;border-color:#78b39f;color:#e9fff5;margin-top:8px}
+#lever-tare{background:#24564a;border-color:#78b39f;color:#e9fff5}
+#lever-force-number{max-width:220px}
+.lever-art{margin-top:24px;max-width:100%;overflow-x:auto;border:1px solid var(--lever-line);border-radius:12px;background:#081927;overscroll-behavior-x:contain}
+.lever-art svg{display:block;width:100%;height:auto;min-width:620px}
+.lever-art svg text{font-family:inherit;font-size:13px;letter-spacing:normal;fill:#d4e5ed}
+.lever-board{fill:#081927}
+.lever-grid{fill:none;stroke:#234052;stroke-width:1;stroke-dasharray:3 7}
+.lever-support{fill:#3b5666;stroke:#8ea8b8;stroke-width:2}
+.lever-base{fill:none;stroke:#8ea8b8;stroke-width:7;stroke-linecap:round}
+.lever-pivot{fill:#081927;stroke:#d5e7ef;stroke-width:2}
+.lever-art #lever-ruler path{stroke:#173040;stroke-width:1.2}
+.lever-art #lever-ruler text{font-size:11px;fill:#c4d9e5}
+.lever-connector{fill:none;stroke:#bbd2dc;stroke-width:2}
+.lever-load-dot{fill:#f1dba6;stroke:#081927;stroke-width:2}
+.lever-effort-dot{fill:#a6eed4;stroke:#081927;stroke-width:2}
+#lever-load-weight rect{fill:#514936;stroke:#e2cea0;stroke-width:2}
+.lever-art #lever-weight-label{fill:#fff0cd;font-size:16px;font-weight:600}
+.lever-meter-body{fill:#173a3b;stroke:#a6eed4;stroke-width:2}
+.lever-meter-rail{fill:none;stroke:#6c9a93;stroke-width:4}
+#lever-meter-fill{fill:#a6eed4}
+#lever-meter-needle{fill:none;stroke:#fff1c8;stroke-width:2}
+.lever-art #lever-meter-drawing text{fill:#e0fff1;font-size:11px}
+#lever-force-arrow,#lever-arrow-tip{fill:none;stroke:#a6eed4;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.lever-dimension{fill:none;stroke:#86a5b6;stroke-width:1.5}
+.lever-readouts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:18px 0}
+.lever-readouts>div{padding:14px;background:#081927;border:1px solid #486675;border-radius:10px;min-width:0}
+.lever-readouts span{display:block;font-size:11px;line-height:1.5;color:var(--lever-muted)}
+.lever-readouts strong{display:block;font-size:clamp(18px,1.8vw,24px);margin-top:8px;font-weight:500;overflow-wrap:anywhere;line-height:1.35}
+.lever-workspace .lever-caption{font-size:12px;line-height:1.7}
+.lever-workspace details{border-block:1px solid #486675;margin:16px 0;padding:4px 0}
+.lever-workspace summary{padding:12px 0;color:var(--lever-text)}
+.lever-workspace [role=status]{min-height:24px;font-size:13px;line-height:1.7;color:#c4f1df}
+.lever-equation{font-family:monospace;line-height:1.8;border-left:2px solid var(--lever-accent);padding:12px;background:#081927;color:var(--lever-text);font-size:13px;overflow-wrap:anywhere;margin:20px 0}
+.lever-card ol{padding-left:22px}
+.lever-card li{padding-left:4px;margin:10px 0}
+.lever-notebook{margin:22px 0}
+.lever-notebook .lever-actions{margin-top:0;max-width:440px}
+.lever-table{max-width:100%;overflow-x:auto;margin:18px 0;border:1px solid #486675;border-radius:10px;overscroll-behavior-x:contain}
+.lever-table table{width:100%;min-width:690px;border-collapse:collapse;font-size:13px}
+.lever-table caption{text-align:left;color:var(--lever-muted);padding:12px}
+.lever-table th,.lever-table td{text-align:left;white-space:nowrap;padding:12px;border-bottom:1px solid var(--lever-line);line-height:1.6}
+.lever-table thead{background:#1b303e}
+.lever-table tbody tr:last-child :is(th,td){border-bottom:0}
+.lever-summary{padding:14px 18px;background:#122d30;border:1px solid #4c7c71;border-radius:10px}
+.lever-explain{max-width:110ch;margin-top:38px}
+.lever-explain-grid{display:grid;grid-template-columns:1fr 1fr;gap:32px}
+.lever-sources{display:grid;gap:8px;margin-top:28px}
+#lever-reasoning{max-width:650px;padding-top:6px}
+#lever-reasoning button{margin-top:12px}
+.lever-discovery{padding:22px;margin:24px 0;border:1px solid var(--border,#526f80);border-radius:14px;display:flex;align-items:center;justify-content:space-between;gap:20px}
+.lever-discovery h2{font-size:20px;margin:0 0 8px}
+.lever-discovery p{font-size:13px;line-height:1.6;margin:0}
+.lever-discovery a{display:inline-flex;align-items:center;justify-content:center;min-height:44px;flex-shrink:0;text-underline-offset:4px;padding:10px 14px;border:1px solid currentColor;border-radius:8px}
+/* Keep the apparatus dark while allowing the surrounding reading surface to
+   follow the app's light theme. No shared tokens or shell rules are changed. */
+html.pe-refined[data-theme=light] .lever-workspace{color:#19384b}
+html.pe-refined[data-theme=light] .lever-workspace>.lever-top,html.pe-refined[data-theme=light] .lever-workspace>.lever-top span,html.pe-refined[data-theme=light] .lever-heading :is(h1,p),html.pe-refined[data-theme=light] .lever-explain :is(h2,h3,p,li,summary,label){color:#234659!important}
+html.pe-refined[data-theme=light] .lever-workspace :is(.lever-top,.lever-explain) a{color:#16516b!important}
+html.pe-refined[data-theme=light] .lever-card :is(h2,h3,label,summary,th,td,strong,input,select,button){color:var(--lever-text)!important}
+html.pe-refined[data-theme=light] .lever-card p{color:var(--lever-muted)!important}
+html.pe-refined[data-theme=light] .lever-card [role=status]{color:#c4f1df!important}
+html.pe-refined[data-theme=light] .lever-explain :focus-visible,html.pe-refined[data-theme=light] .lever-heading :focus-visible,html.pe-refined[data-theme=light] .lever-top :focus-visible{outline-color:#14604e}
+@media(hover:hover) and (pointer:fine){.lever-workspace button:not(:disabled):hover{background:#31566d}.lever-workspace :is(a,summary):hover{text-decoration:underline;text-underline-offset:4px}}
+@media(max-width:1100px){.lever-layout{grid-template-columns:1fr}.lever-heading{max-width:700px}.lever-section-head>span{max-width:none}.lever-readouts strong{font-size:24px}}
+@media(max-width:600px){.lever-workspace{padding-left:12px!important;padding-right:12px!important}.lever-top,.lever-section-head,.lever-discovery{flex-direction:column;align-items:stretch}.lever-top{gap:8px;margin-bottom:22px}.lever-card{padding:18px}.lever-explain-grid{grid-template-columns:1fr;gap:0}.lever-section-head>span{text-align:left}.lever-discovery a{width:100%}.lever-notebook .lever-actions{width:100%;max-width:none}.lever-workspace h2{font-size:19px}.lever-layout{gap:16px}}
+@media(max-width:420px){.lever-fields{grid-template-columns:1fr;gap:4px}.lever-card{padding:14px}.lever-readouts{grid-template-columns:1fr}.lever-readouts>div{display:flex;align-items:center;justify-content:space-between;gap:12px}.lever-readouts strong{margin:0;font-size:20px}.lever-readouts span{max-width:110px}.lever-actions button{flex-basis:100%}#lever-force-number{max-width:none}.lever-summary{padding:12px}.lever-workspace h1{font-size:36px}}
+@media(prefers-reduced-motion:reduce){.lever-workspace *{scroll-behavior:auto!important;transition:none!important;animation:none!important}.lever-workspace button:active{transform:none}}

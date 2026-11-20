@@ -17,6 +17,7 @@ var PhysicsExcellence=(function(){
       refraction:{classification:'analytical',assumptions:['Snell’s law at a planar boundary from an adjustable refractive index into air (n = 1).','Homogeneous, isotropic media; ray-optics approximation.'],limitations:['Ray lengths are illustrative. Diffraction, wavelength dispersion and Fresnel reflection intensity are omitted.']},
       spring:{classification:'analytical',assumptions:['Linear spring, ideal mass, harmonic motion.'],limitations:['No physical apparatus measurement; displayed motion is a model.']},
       pendulum:{classification:'numerical',assumptions:['Coupled planar double pendulum with stated idealized parameters.'],limitations:['Chaotic trajectories are sensitive to initial conditions and numerical error.']},
+      lever:{classification:'analytical',assumptions:['Held-horizontal, weightless first-class lever with a frictionless fulcrum and perpendicular downward forces.','Balance follows effort × effort arm = load × load arm; moment calculations use metres and newtons.'],limitations:['Ideal apparatus rehearsal, not a calibrated instrument or a dynamics simulation.','Effort is rounded to 0.01 N; the residual moment is disclosed. Simulated observations do not replace supervised school measurements.']},
       orbit:{classification:'illustrative',assumptions:['An ellipse is drawn with adjustable eccentricity.'],limitations:['This legacy preview advances its angle uniformly; it does not establish Kepler timing or orbital energy conservation. Use the numerical Sandbox for dynamics.']}
     };
     return models[id]||{classification:'illustrative',assumptions:['Educational model; consult the experiment-specific equations and assumptions.'],limitations:['Not a physical measurement. This catalog classification is conservative until a per-model numerical review is complete.']};
@@ -35,6 +36,7 @@ var PhysicsExcellence=(function(){
     ['equations','graphs','circuits','sketches','animations','review','notebook','search'].forEach(function(id){var t=LearningTools.get(id);if(t)add('learning',id,t.title,'Learning tool',t.copy+' '+t.note,[id,t.label]);});
     if(window.PeqPracticalGuides)PeqPracticalGuides.entries.forEach(function(t){add('practical-guide',t.id,t.title,'Preparation guide','Class '+t.year+' · '+t.kind+'. '+t.principle,['CBSE',String(t.year),'practical',t.apparatus||'']);});
     [['vernier-calipers','Vernier calipers','measurement'],['screw-gauge','Screw gauge','measurement'],['spherometer','Spherometer','spherometer'],['lamina','Irregular lamina','lamina'],['pulse','Pulse speed on a string','pulse']].forEach(function(t){add('bench',t[0],t[1],'Interactive practical','Simulated apparatus, checked observations and the existing dedicated measurement notebook.',['CBSE','measurement',t[0],t[2]]);});
+    add('bench','lever','Lever measurement bench','Interactive practical','Ideal first-class lever: vary load and effort about a fulcrum, compare moments (torque), and measure mechanical advantage with zero-corrected simulated force readings.',['CBSE','Class 9','lever','first class','fulcrum','mechanical advantage','moment','torque','load','effort'],modelFor('lever'));
     [['home','Explore'],['learn','Learn'],['lab','Labs'],['sandbox','Sandbox'],['adv','Advanced Studio'],['universe','Concept universe'],['solve','Solve'],['practice','Practice'],['research','Research'],['progress','Your Physics Map'],['settings','Settings'],['cbse','CBSE sections']].forEach(function(v){add('view',v[0],v[1],'Workspace','Open '+v[1]+'.',[v[0]]);});
     items=out;return out;
   }
@@ -55,7 +57,7 @@ var PhysicsExcellence=(function(){
       else if(type==='learning')LearningTools.open(id);
       else if(type==='theory'){labMode='theory';window.__thJump=id;go('lab');}
       else if(type==='research'||type==='investigate'){labMode=type;go('lab');var section=type==='research'?Research:Investigate,entry=section.list().find(function(e){return e.id===id;});var pick=main.querySelector(type==='research'?'#rs-pick':'#nb-pick'),host=main.querySelector(type==='research'?'#rs-work':'#nb-work');if(entry&&host){if(pick)pick.hidden=true;section.open(host,entry);}}
-      else if(type==='bench'){var routes={'vernier-calipers':['measurement','vernier-calipers'],'screw-gauge':['measurement','screw-gauge'],spherometer:['spherometer'],lamina:['lamina'],pulse:['pulse']};if(routes[id])go(routes[id][0],routes[id][1]);}
+      else if(type==='bench'){var routes={'vernier-calipers':['measurement','vernier-calipers'],'screw-gauge':['measurement','screw-gauge'],spherometer:['spherometer'],lamina:['lamina'],pulse:['pulse'],lever:['lever']};if(routes[id])go(routes[id][0],routes[id][1]);}
       else go(type==='view'?id:type,type==='view'?undefined:id);
       current=item;navigateHash(type,id);if(!restoring)pendingRestore=null;
     }finally{routing=false;}

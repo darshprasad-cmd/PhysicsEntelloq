@@ -33,6 +33,7 @@
       "sourcePage": 19,
       "source": "https://cbseacademic.nic.in/web_material/CurriculumMain27/SecPart1/ScienceSt_SecP1_2026-27.pdf",
       "releaseEvidence": "LEVER-RELEASE.md",
+      "productionEvidence": "https://github.com/darshprasad-cmd/PhysicsEntelloq/pull/49",
       "releaseStatusAuthority": "The release PR conversation records subsequent required checks, merge, deployment and live verification. This source checkpoint is local evidence only.",
       "limits": "Held-horizontal frictionless first-class lever, selected additive zero error, nearest 0.01 N balance and residual moment. Not calibrated real apparatus, dynamics or independent repeated measurements.",
       "schoolPracticalCompleted": false,

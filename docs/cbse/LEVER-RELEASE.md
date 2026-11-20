@@ -50,4 +50,4 @@ Required PR CI, review, merge, Pages deployment, public HTTPS artifact parity an
 - Unchanged legacy browser suites in the isolated snapshot: questionnaire 10, catalogue 8, measurement instruments 9, spherometer 12, lamina 13 and pulse 9 report entries, all passed; each includes copied-file/offline checks. No old QA output was overwritten.
 - Final desktop apparatus, all effort positions, phone controls and notebook renders were visually reviewed. Local final LF-normalized artifact: 3,812,059 bytes, SHA256 `1276a4b8ebd9418f72eb4c44981446178ba1dd3338158683052d9ce5861cc7ce`.
 
-This evidence does not replace required hosted checks or a fresh public HTTPS comparison after deployment.
+This evidence does not replace required hosted checks or a fresh public HTTPS comparison after deployment. [PR #49](https://github.com/darshprasad-cmd/PhysicsEntelloq/pull/49) records the subsequent release gates and production evidence.

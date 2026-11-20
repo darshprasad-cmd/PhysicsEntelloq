@@ -24,9 +24,11 @@ Resume restores compatible named range/number/select controls and starts a fresh
 
 ## Preservation proof
 
-`.github/product-preservation.cjs` reverses only explicit source-verified integration slots. It removes the newly embedded core/classroom/product modules and added CSS, then restores immutable baseline SEARCH, LAUNCH, CBSE-ENTRY and TRACK fixtures. Each fixture has a frozen SHA-256. The entire restored LF-normalized artifact must equal baseline hash `3e5795faa1012571abcd9ce073d55990de4d7cb19630fcf29f7ea14dcba77ded`.
+`.github/product-preservation.cjs` reverses only explicit source-verified integration slots. It removes the newly embedded core/classroom/product modules and added CSS, then restores immutable baseline SEARCH, LAUNCH, CBSE-ENTRY and TRACK fixtures. Each fixture has a frozen SHA-256. After the 20 November upstream merge, stripping product changes must recover released lever commit `c8e50cdb` exactly (LF-normalized SHA-256 `1276a4b8ebd9418f72eb4c44981446178ba1dd3338158683052d9ce5861cc7ce`). Stripping only the separately verified additive lever slots then recovers original `63a86b4` hash `3e5795faa1012571abcd9ce073d55990de4d7cb19630fcf29f7ea14dcba77ded`.
 
 This proves all other baseline artifact bytes, including original simulation factories/camera engines, are preserved. It is not a claim that all source is unchanged: search routing, guest entry, landing handoff, analytics and generated build composition intentionally changed. Additive wrappers call existing navigation, lab open/close, host decoration and lifecycle functions. Existing historical preservation hashes remain unchanged and still pass.
+
+Lever model, UI, stylesheet and model/UI test files remain byte-identical to released `c8e50cdb`. The builder embeds lever modules before the product adapter, which routes `#science:bench:lever` into the existing `go('lever')` path. Only product metadata and flag-scoped floating-control visibility adapt that workspace. Current artifact and catalog pins are in `product-excellence/lever-integration-20261120/README.md`.
 
 ## Local preview and rollback
 

@@ -1,6 +1,8 @@
-# Physics product validation — 29 October 2026
+# Physics product validation — updated 20 November 2026
 
-Local review candidate on `codex/product-excellence-20261029`, based on `63a86b4`. All evidence below is local unless explicitly stated. No hosted CI or production deployment occurred.
+Review candidate on `codex/product-excellence-20261029`. The original audit used `63a86b4`; runtime commit `176b1c35a3b6a48852867777642c607ddd81d339` merges released lever commit `c8e50cdb45728f96c42385afb8e5b4235f9d987a`. All evidence below is local unless explicitly stated. Earlier draft PR #48 checks passed at `3587eea`; required hosted checks for the refreshed merge remain pending. This workstream has not merged to production or deployed it.
+
+The [20 November integration record](product-excellence/lever-integration-20261120/README.md) contains refreshed product/lever reports, screenshots, artifact hashes, exact preservation evidence and the resolved test sequencing issue. The original baseline and after captures below remain unchanged.
 
 ## Before and after
 
@@ -24,7 +26,7 @@ Screens: `first-run`, `home`, `labs`, `search`, `workspace` at 1440 and 390 in b
 
 | Command | Result / coverage |
 |---|---|
-| `node --test .github/test-*.js` | 351 passed, 0 failed. Includes immutable historical preservation, explicit product-slot reversal, current search/model/lifecycle tests and 21 shared search/notebook/classroom/resolver tests. Log: `product-excellence/node-tests.txt`. |
+| `node --test .github/test-*.js` | 398 passed, 0 failed on the refreshed merge. Includes immutable historical and released-lever preservation, explicit product-slot reversal, search/model/lifecycle tests and shared search/notebook/classroom/resolver tests. Log: `product-excellence/lever-integration-20261120/static-tests.txt`. |
 | `node .github/build-experience.js --check` | Generated artifact matches authored sources. |
 | `node .github/validate-inline-scripts.js` | Five inline scripts parse. |
 | `node .github/build-scientific-lab-assets.mjs --check` | Scientific source/published asset parity passes. |
@@ -34,7 +36,9 @@ Screens: `first-run`, `home`, `labs`, `search`, `workspace` at 1440 and 390 in b
 | `npm test --prefix learning-tools-source/learning` | 14 learning/review/concurrency tests pass. |
 | `python -m unittest discover -s scientific-labs/robotics/tests -p 'test_*.py'` | Eight geometry/robot tests pass. |
 | `python -m unittest discover -s scientific-labs/tests -p 'test_*.py'` | 15 companion HTTP-boundary tests pass. |
-| `node qa/product-excellence.cjs` | Desktop/mobile complete guest-control-save-reload-resume-export journey; 342 unique runtime catalog entries; all empty-query filters return matching resources and a natural-language discovery query finds Biology Osmosis Lab; Biology metadata available; denied storage; explicit flag-off baseline; no uncaught errors or Clarity requests. 320/768 action/slider hit tests pass. Repeated open/resume leaves exactly one save action/context section. |
+| `node qa/product-excellence.cjs` | Desktop/mobile complete guest-control-save-reload-resume-export journey; 343 unique runtime catalog entries; all empty-query filters return matching resources and a natural-language discovery query finds Biology Osmosis Lab. Lever terminology finds the released bench; its checked balanced observation survives reload in its separate notebook. Biology metadata, denied storage, explicit flag-off, zero uncaught errors/Clarity requests, 320/768 action/slider hit tests and idempotent save/context controls pass. |
+| `node qa/lever-lab.cjs` | Released engine flow at 1440/768/390/320; all 36 configurations checked against an independent moment equation; eight axe scans with zero violations; notebook reload/isolation, corrupt/injected/blocked storage, CSV, old deep link and copied-file offline pass. See integration record for exact sequencing and artifact boundary. |
+| `node qa/product-tutor-accessibility.cjs` | 1440/390 keyboard opening/closing/reopening, notebook close-event focus restoration, hidden tutor accessibility exclusion and unsent draft preservation pass; no AI request or page error. |
 | `node qa/camera-lifecycle.cjs` | 12 browser scenarios: six each with excellence 0 and 1. Denied access, late permission, model failure, hand stop, hand→build and late hand permission preserve stopped tracks and usable controls. Fake camera streams/model stubs, not hardware validation. |
 | `node scripts/check-learning-tools-browser.cjs` | Actual MathLive draft handoff, graph controls, review persistence, Yjs notes, same-document navigation, mobile fit and missing-tool recovery; no runtime errors. |
 | `node scripts/check-visual-tools-browser.cjs` | Legacy flag-off editable Excalidraw drawing/reload, authored Manim decode, keyboard return and missing-asset recovery pass. |
@@ -66,5 +70,7 @@ Unresolved external gates:
 - **Full snapshot/cloud classroom support:** current engines lack a universal snapshot API and this repository has no authenticated cloud classroom backend. Resume named settings/local exchange is delivered and explicitly labelled; hidden engine time, uploads, cloud sync, rosters and inbox remain unavailable.
 - **All-model scientific certification:** existing numerical/units/boundary suites pass; conservative catalog labels do not constitute a new full scientific review of every model. See `SCIENTIFIC_VALIDATION.md` and the model registry.
 - **Production and hosted staging:** local staging is functioning. No hosted preview credential/provisioning or production approval was supplied. Required remote CI, review and explicit production approval remain release gates.
+
+On 20 November, all listed legacy browser checks and all 12 camera lifecycle scenarios passed again after the upstream merge. The first tutor run failed because the test moved focus before the native notebook close event restored it. Waiting for the actual close event, asserting the restored notebook trigger and then asserting tutor-launcher focus corrected the test sequence; no runtime change or assertion relaxation was needed. A temporary lever catalog guard also failed the product repeat because the legacy module is closure-scoped; the adapter now uses the same unconditional catalog registration as existing benches, and the complete product suite passes. A separately observed host suspension is recorded in the integration log; it is not the explanation for either defect.
 
 The application remains working with either shell flag. These external gates prevent declaring every requested product-quality criterion independently validated.

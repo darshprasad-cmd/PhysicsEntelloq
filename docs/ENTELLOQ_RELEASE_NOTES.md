@@ -1,8 +1,10 @@
-# Physics product excellence — local review candidate
+# Physics product excellence — draft PR review candidate
 
-Date: 29 October 2026. Baseline: `63a86b4`. Branch: `codex/product-excellence-20261029`. Status: implemented and locally validated; not committed, merged or deployed by this workstream.
+Updated: 20 November 2026. Original audit baseline: `63a86b4`. Branch: `codex/product-excellence-20261029`, draft PR #48. Runtime `176b1c35` merges released lever `c8e50cdb`; refreshed local validation passes. Required hosted validation of the refreshed branch and explicit production approval remain pending. No production merge or deployment was performed by this workstream.
 
 Visitors can launch Refraction & TIR immediately without registering or completing personalization. Explore, Learn, Labs, Sandbox and Advanced now use the same main navigation conventions on desktop and mobile; More retains secondary workspaces. Search includes actual experiments and tools from both subject catalogs, plus local saved observations. Existing deep links remain available.
+
+The newly released lever measurement bench is preserved and included in the 343-item Physics catalog. Search for mechanical advantage, fulcrum, first-class lever, torque, or load and effort opens its existing scientific engine. Its analytical assumptions are explicit; its dedicated readings notebook and exports remain separate from the common observation notebook.
 
 Scientific workspaces use a compact header with source details behind About. Live experiments have contextual guidance, model limitations and Save observation. The local notebook stores named controls, observations, optional measurements and readable canvas captures; it supports reload/resume, CSV, JSON and print/PDF. Save failures are visible and provide a recoverable unsaved export. Cloud sync is not connected.
 

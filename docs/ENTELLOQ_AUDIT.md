@@ -21,7 +21,7 @@ Audited fetched main `63a86b4` before major application changes. Work is isolate
 
 ## Inventory and protected boundaries
 
-The generated [Physics catalog](../assets/entelloq-physics-catalog.json) contains 342 actual items: 25 experiments, 89 lessons, 10 concept collections, 21 numerical workspaces, eight measurement benches, eight investigations, 22 courses, six advanced treatments, five learning journeys, 20 Sandbox scenes, five scientific tools, eight learning tools, 98 practical preparation guides, five interactive practicals and 12 destinations. Preparation guides are not presented as 98 new working practical engines.
+The generated [Physics catalog](../assets/entelloq-physics-catalog.json) now contains 343 actual items after the 20 November integration of the released lever bench: 25 experiments, 89 lessons, 10 concept collections, 21 numerical workspaces, eight measurement benches, eight investigations, 22 courses, six advanced treatments, five learning journeys, 20 Sandbox scenes, five scientific tools, eight learning tools, 98 practical preparation guides, six interactive practicals and 12 destinations. Preparation guides are not presented as 98 new working practical engines. The original baseline audit above remains dated 29 October.
 
 The live modal invokes existing `SIMS` factories. Scientific/learning hosts retain iframe lifecycles. Sandbox, hand interaction, camera physics, scientific numerical models and existing notebook namespaces remain owned by their original engines. No engine, camera model or virtual-dissection code was rewritten. Biology dissection validation is recorded separately in the Biology repository.
 

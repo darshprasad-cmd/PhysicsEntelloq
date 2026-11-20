@@ -1,0 +1,45 @@
+{
+  "parentCommit": "090d4e97e39dfb636ea194896a0cb509b1a576df",
+  "localArtifact": {
+    "path": "index.html",
+    "bytes": 3888371,
+    "sha256": "8fc818045eafe835fe454d76f3068fcbc635444e4e1d9b309acaea7d091fab32"
+  },
+  "lfNormalizedArtifact": {
+    "bytes": 3887085,
+    "sha256": "c49ba908830ca45d048d1faceef93a4d7f538671591bb31e55cac847d312e1a4"
+  },
+  "runtimeChanges": [
+    "experience/product-excellence.js",
+    "index.html existing generated product slot"
+  ],
+  "authoredEngineDiffAgainstReleasedLever": "",
+  "catalogs": {
+    "assets/entelloq-physics-catalog.json": {
+      "sha256": "bb7f7f89342441e65de2fdfd6a8ea0bd691d7103db74db27274368c566d39bb9",
+      "entries": 343
+    },
+    "assets/entelloq-biology-catalog.json": {
+      "sha256": "ec4b29416152058f5ce9191a725c0b9a5c61b60e9bb3c83943b9c675c99bcd5d",
+      "entries": 221
+    }
+  },
+  "localValidation": "passed; see required-checks.json and full-product-report.json",
+  "hostedValidation": "pending for the commit containing this repair; previous parent CI is recorded separately",
+  "scope": "Local Chromium, not native device or production validation",
+  "unchangedAuthoredFiles": {
+    "experience/lever-model.js": "cd4907ca53c09569bfb66c1bd0a7256cf205bff2af7d52c62044cc5ba16d5d44",
+    "experience/pulse-model.js": "f00c7e5f686680c8bc10cb6821f3750a74b86718b20d9152b5d0e0d9e788c966",
+    "experience/measurement-model.js": "4b1396dacba26a29351ea8ed5f6ec904d17dede0ab8e3f913d794310caec04ac",
+    "experience/lever-lab.js": "a3cbde5f9850f48b48b9ddc7ec91535cadfaac6e59bc72f79db49dcd9c4f94dc",
+    "experience/lever-lab.css": "a84db752c44a30910594335ec15e22e6691600abec7db22b405af612d242f6bf",
+    "experience/pulse-lab.js": "a8250a4539d572103d420d6751f09b54e82cff7efe13a146860b2b3733c50f11",
+    "experience/pulse-lab.css": "ab6ff82baacd3ab1c41e4aebec1125c4d05d7c2f104947fe7246c49ed9182991",
+    "experience/measurement-lab.js": "0f0fd8e80b36904e070ac9293dff6666cbd0e38073f75de9a4c3fa9f770c20e2",
+    "experience/measurement-lab.css": "62b2e1b8faf87849675323d5ad0ab168cd12b42736799c63ed84e652c3ee56fe",
+    "experience/scientific-labs.js": "ec131708d1893b2cd19d2bef51f008bc46ebcd8523bdb0a585ec3a00cd4382f6",
+    "experience/scientific-labs.css": "0aa3d191d14a88a8efd51e34ec99cf639f97d4d3d2ff30a53c1cbedd380b5034",
+    "experience/learning-tools.js": "e0c6467536ca14535a3594f4914ca513ac944d35905d41e5b8ba2c8d2c3fb215",
+    "experience/learning-tools.css": "594e2e3cc3c5264803cbe18031c4a2729cbb9217a7d9bd14dec9d860b4769894"
+  }
+}

@@ -1,0 +1,314 @@
+{
+  "scope": "Chromium desktop/tablet/mobile history; not WKWebView or physical-device evidence",
+  "cases": [
+    {
+      "width": 1440,
+      "resource": "bench:lever",
+      "emptyHome": false,
+      "backForwardPassed": true,
+      "entriesAdded": 2,
+      "notebookPreserved": true
+    },
+    {
+      "width": 1440,
+      "resource": "bench:lever",
+      "emptyHome": true,
+      "backForwardPassed": true,
+      "entriesAdded": 2,
+      "notebookPreserved": true
+    },
+    {
+      "width": 1440,
+      "resource": "bench:vernier-calipers",
+      "emptyHome": false,
+      "backForwardPassed": true,
+      "entriesAdded": 2,
+      "notebookPreserved": true
+    },
+    {
+      "width": 1440,
+      "resource": "bench:vernier-calipers",
+      "emptyHome": true,
+      "backForwardPassed": true,
+      "entriesAdded": 2,
+      "notebookPreserved": true
+    },
+    {
+      "width": 1440,
+      "resource": "bench:pulse",
+      "emptyHome": false,
+      "backForwardPassed": true,
+      "entriesAdded": 2,
+      "notebookPreserved": true,
+      "pulseStepAfterBackAndForward": true
+    },
+    {
+      "width": 1440,
+      "resource": "bench:pulse",
+      "emptyHome": true,
+      "backForwardPassed": true,
+      "entriesAdded": 2,
+      "notebookPreserved": true,
+      "pulseStepAfterBackAndForward": true
+    },
+    {
+      "width": 1440,
+      "resource": "scientific:reality",
+      "emptyHome": false,
+      "backForwardPassed": true,
+      "entriesAdded": 2,
+      "notebookPreserved": true
+    },
+    {
+      "width": 1440,
+      "resource": "scientific:reality",
+      "emptyHome": true,
+      "backForwardPassed": true,
+      "entriesAdded": 2,
+      "notebookPreserved": true
+    },
+    {
+      "width": 1440,
+      "resource": "learning:graphs",
+      "emptyHome": false,
+      "backForwardPassed": true,
+      "entriesAdded": 2,
+      "notebookPreserved": true
+    },
+    {
+      "width": 1440,
+      "resource": "learning:graphs",
+      "emptyHome": true,
+      "backForwardPassed": true,
+      "entriesAdded": 2,
+      "notebookPreserved": true
+    },
+    {
+      "width": 1440,
+      "resource": "labs-to-lever",
+      "blankLabsRestored": true,
+      "backForwardPassed": true,
+      "notebookPreserved": true
+    },
+    {
+      "width": 1440,
+      "resource": "saved:refraction",
+      "backForwardPassed": true,
+      "savedControlsRestored": true,
+      "notebookPreserved": true
+    },
+    {
+      "width": 1440,
+      "resource": "forced-render-error",
+      "historyMethodsRestored": true,
+      "nextOpenRecovered": true,
+      "notebookPreserved": true
+    },
+    {
+      "width": 768,
+      "resource": "bench:lever",
+      "emptyHome": false,
+      "backForwardPassed": true,
+      "entriesAdded": 2,
+      "notebookPreserved": true
+    },
+    {
+      "width": 768,
+      "resource": "bench:lever",
+      "emptyHome": true,
+      "backForwardPassed": true,
+      "entriesAdded": 2,
+      "notebookPreserved": true
+    },
+    {
+      "width": 768,
+      "resource": "bench:vernier-calipers",
+      "emptyHome": false,
+      "backForwardPassed": true,
+      "entriesAdded": 2,
+      "notebookPreserved": true
+    },
+    {
+      "width": 768,
+      "resource": "bench:vernier-calipers",
+      "emptyHome": true,
+      "backForwardPassed": true,
+      "entriesAdded": 2,
+      "notebookPreserved": true
+    },
+    {
+      "width": 768,
+      "resource": "bench:pulse",
+      "emptyHome": false,
+      "backForwardPassed": true,
+      "entriesAdded": 2,
+      "notebookPreserved": true,
+      "pulseStepAfterBackAndForward": true
+    },
+    {
+      "width": 768,
+      "resource": "bench:pulse",
+      "emptyHome": true,
+      "backForwardPassed": true,
+      "entriesAdded": 2,
+      "notebookPreserved": true,
+      "pulseStepAfterBackAndForward": true
+    },
+    {
+      "width": 768,
+      "resource": "scientific:reality",
+      "emptyHome": false,
+      "backForwardPassed": true,
+      "entriesAdded": 2,
+      "notebookPreserved": true
+    },
+    {
+      "width": 768,
+      "resource": "scientific:reality",
+      "emptyHome": true,
+      "backForwardPassed": true,
+      "entriesAdded": 2,
+      "notebookPreserved": true
+    },
+    {
+      "width": 768,
+      "resource": "learning:graphs",
+      "emptyHome": false,
+      "backForwardPassed": true,
+      "entriesAdded": 2,
+      "notebookPreserved": true
+    },
+    {
+      "width": 768,
+      "resource": "learning:graphs",
+      "emptyHome": true,
+      "backForwardPassed": true,
+      "entriesAdded": 2,
+      "notebookPreserved": true
+    },
+    {
+      "width": 768,
+      "resource": "labs-to-lever",
+      "blankLabsRestored": true,
+      "backForwardPassed": true,
+      "notebookPreserved": true
+    },
+    {
+      "width": 768,
+      "resource": "saved:refraction",
+      "backForwardPassed": true,
+      "savedControlsRestored": true,
+      "notebookPreserved": true
+    },
+    {
+      "width": 768,
+      "resource": "forced-render-error",
+      "historyMethodsRestored": true,
+      "nextOpenRecovered": true,
+      "notebookPreserved": true
+    },
+    {
+      "width": 390,
+      "resource": "bench:lever",
+      "emptyHome": false,
+      "backForwardPassed": true,
+      "entriesAdded": 2,
+      "notebookPreserved": true
+    },
+    {
+      "width": 390,
+      "resource": "bench:lever",
+      "emptyHome": true,
+      "backForwardPassed": true,
+      "entriesAdded": 2,
+      "notebookPreserved": true
+    },
+    {
+      "width": 390,
+      "resource": "bench:vernier-calipers",
+      "emptyHome": false,
+      "backForwardPassed": true,
+      "entriesAdded": 2,
+      "notebookPreserved": true
+    },
+    {
+      "width": 390,
+      "resource": "bench:vernier-calipers",
+      "emptyHome": true,
+      "backForwardPassed": true,
+      "entriesAdded": 2,
+      "notebookPreserved": true
+    },
+    {
+      "width": 390,
+      "resource": "bench:pulse",
+      "emptyHome": false,
+      "backForwardPassed": true,
+      "entriesAdded": 2,
+      "notebookPreserved": true,
+      "pulseStepAfterBackAndForward": true
+    },
+    {
+      "width": 390,
+      "resource": "bench:pulse",
+      "emptyHome": true,
+      "backForwardPassed": true,
+      "entriesAdded": 2,
+      "notebookPreserved": true,
+      "pulseStepAfterBackAndForward": true
+    },
+    {
+      "width": 390,
+      "resource": "scientific:reality",
+      "emptyHome": false,
+      "backForwardPassed": true,
+      "entriesAdded": 2,
+      "notebookPreserved": true
+    },
+    {
+      "width": 390,
+      "resource": "scientific:reality",
+      "emptyHome": true,
+      "backForwardPassed": true,
+      "entriesAdded": 2,
+      "notebookPreserved": true
+    },
+    {
+      "width": 390,
+      "resource": "learning:graphs",
+      "emptyHome": false,
+      "backForwardPassed": true,
+      "entriesAdded": 2,
+      "notebookPreserved": true
+    },
+    {
+      "width": 390,
+      "resource": "learning:graphs",
+      "emptyHome": true,
+      "backForwardPassed": true,
+      "entriesAdded": 2,
+      "notebookPreserved": true
+    },
+    {
+      "width": 390,
+      "resource": "labs-to-lever",
+      "blankLabsRestored": true,
+      "backForwardPassed": true,
+      "notebookPreserved": true
+    },
+    {
+      "width": 390,
+      "resource": "saved:refraction",
+      "backForwardPassed": true,
+      "savedControlsRestored": true,
+      "notebookPreserved": true
+    },
+    {
+      "width": 390,
+      "resource": "forced-render-error",
+      "historyMethodsRestored": true,
+      "nextOpenRecovered": true,
+      "notebookPreserved": true
+    }
+  ]
+}

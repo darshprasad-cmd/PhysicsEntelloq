@@ -17886,7 +17886,7 @@ var LeverLab = (function () {
 /* Additive product shell. Existing experiment factories own all scientific state. */
 var PhysicsExcellence=(function(){
   'use strict';
-  var core=window.EntelloqScience,active=!!(core&&core.enabled()),items=[],foreign=[],book=null,current=null,returnTrigger=null,dialog=null,pendingRestore=null,routing=false,booting=true;
+  var core=window.EntelloqScience,active=!!(core&&core.enabled()),items=[],foreign=[],book=null,current=null,returnTrigger=null,dialog=null,pendingRestore=null,routing=false,booting=true,lastProductURL=null,emptyReturnView=null;
   if(!active)return (window.PhysicsExcellence={enabled:false});
   document.documentElement.classList.add('science-excellence');
   function safeStorage(){try{return localStorage;}catch(e){return null;}}
@@ -17930,12 +17930,18 @@ var PhysicsExcellence=(function(){
   function find(id){return catalog().find(function(e){return e.id===id;});}
   function navigateHash(type,id){var route=href(type,id);if(location.hash!==route)history.pushState(null,'',route);}
   function openById(id){var item=find(id);if(item)open(item);}
-  function open(item,restoring){
+  function open(item,restoring,replaying){
     if(!item)return;if(item.subject==='biology'){var target=peerURL(item.url);if(target)location.assign(target);return;}
-    if(item.type==='saved'){var entry=book.list().find(function(e){return e.id===item.target;});if(entry)resume(entry);return;}
+    if(item.type==='saved'){var entry=book.list().find(function(e){return e.id===item.target;});if(entry)resume(entry,replaying);return;}
     if(dialog&&dialog.open)dialog.close();if($('#lab-full.on'))closeLabFull();
-    current=item;var type=item.type,id=item.target;routing=true;
+    if(!replaying&&!location.hash)emptyReturnView=find('physics:view:'+curView)||find('physics:view:home');
+    current=item;var type=item.type,id=item.target,push=history.pushState,replace=history.replaceState;routing=true;
     try{
+      // Attach newly created child frames to the destination history entry.
+      if(!replaying)navigateHash(type,id);
+      // These synchronous legacy renderers also own legacy URL aliases. The product
+      // adapter owns science-route history, so rendering must not rewrite its entries.
+      history.pushState=history.replaceState=function(){};
       if(type==='sim'){go('lab');openLabFull(id);}
       else if(type==='scene'){window.__peqNextPreset=id;go('sandbox');}
       else if(type==='scientific')ScientificLabs.open(id);
@@ -17944,12 +17950,13 @@ var PhysicsExcellence=(function(){
       else if(type==='research'||type==='investigate'){labMode=type;go('lab');var section=type==='research'?Research:Investigate,entry=section.list().find(function(e){return e.id===id;});var pick=main.querySelector(type==='research'?'#rs-pick':'#nb-pick'),host=main.querySelector(type==='research'?'#rs-work':'#nb-work');if(entry&&host){if(pick)pick.hidden=true;section.open(host,entry);}}
       else if(type==='bench'){var routes={'vernier-calipers':['measurement','vernier-calipers'],'screw-gauge':['measurement','screw-gauge'],spherometer:['spherometer'],lamina:['lamina'],pulse:['pulse'],lever:['lever']};if(routes[id])go(routes[id][0],routes[id][1]);}
       else go(type==='view'?id:type,type==='view'?undefined:id);
-      current=item;navigateHash(type,id);if(!restoring)pendingRestore=null;
-    }finally{routing=false;}
+      current=item;if(!restoring)pendingRestore=null;
+    }finally{history.pushState=push;history.replaceState=replace;routing=false;}
+    lastProductURL=location.href;
     if(curView==='home')renderExplore();decorateWorkspace();
   }
   function parseRoute(){var m=/^#science:([a-z-]+):([^#]+)$/.exec(location.hash);if(!m)return null;try{return {type:m[1],target:decodeURIComponent(m[2])};}catch(e){return null;}}
-  function route(){var r=parseRoute();if(!r)return;if(r.type==='notebook'){showNotebook();return;}var item=r.type==='saved'?{type:'saved',target:r.target,subject:'physics'}:catalog().find(function(e){return e.type===r.type&&e.target===r.target;});if(item)open(item);}
+  function route(){if(location.href===lastProductURL)return;var r=parseRoute();if(!r){if(!location.hash&&lastProductURL)open(emptyReturnView||find('physics:view:home'),false,true);else lastProductURL=null;return;}if(r.type==='notebook'){showNotebook();lastProductURL=location.href;return;}var item=r.type==='saved'?{type:'saved',target:r.target,subject:'physics'}:catalog().find(function(e){return e.type===r.type&&e.target===r.target;});if(item)open(item,false,true);}
   function card(item){var b=node('button','science-card');b.type='button';b.dataset.scienceId=item.id;b.append(node('small','',(item.subject==='biology'?'Biology · ':'')+item.kind),node('strong','',item.title),node('span','',item.description.slice(0,155)));b.addEventListener('click',function(){open(item);});return b;}
   function discovery(host,full){
     var section=node('section','science-discover');section.setAttribute('aria-label','Find an experiment');
@@ -17967,7 +17974,7 @@ var PhysicsExcellence=(function(){
   function controlScope(){var lab=$('#lab-full.on');if(lab)return {root:$('#lf-ctl'),source:'legacy-controls'};var frame=main.querySelector('.sci-frame,.lt-frame');if(frame){try{return {root:frame.contentDocument,source:'embedded-controls'};}catch(e){return null;}}return {root:main,source:'page-controls'};}
   function capture(){var scope=controlScope(),controls=[];if(scope&&scope.root)Array.from(scope.root.querySelectorAll('input[type=range],input[type=number],select')).filter(function(e){return !e.disabled&&!e.closest('.science-save-dialog,.science-discover');}).slice(0,60).forEach(function(el,index){controls.push({index:index,label:selectionLabel(el),type:el.type||el.tagName.toLowerCase(),value:el.value});});return {schema:'entelloq-visible-controls-v1',scope:scope?scope.source:'none',controls:controls,restoration:'Named controls only. Does not restore elapsed time, uploaded media, hidden engine state or camera input.'};}
   function applyControls(entry){var cfg=entry.config;if(!cfg||cfg.schema!=='entelloq-visible-controls-v1')return;var scope=controlScope();if(!scope||!scope.root)return;var nodes=Array.from(scope.root.querySelectorAll('input[type=range],input[type=number],select')).filter(function(e){return !e.disabled&&!e.closest('.science-save-dialog,.science-discover');});var restored=0;(cfg.controls||[]).forEach(function(c){var el=nodes[c.index];if(!el||selectionLabel(el)!==c.label||(el.type||el.tagName.toLowerCase())!==c.type)return;if(el.tagName==='SELECT'&&!Array.from(el.options).some(function(o){return o.value===c.value;}))return;if(el.type==='range'||el.type==='number'){var number=Number(c.value);if(!Number.isFinite(number)||el.min!==''&&number<Number(el.min)||el.max!==''&&number>Number(el.max))return;}el.value=c.value;el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));restored++;});var msg=restored+' named control'+(restored===1?'':'s')+' restored. The experiment starts a new run; saved observations remain in your notebook.';announce(msg);pendingRestore=null;}
-  function resume(entry){var item=find(entry.experimentId);if(!item){announce('This experiment is unavailable in this build. Your saved observation remains in the notebook.');return;}pendingRestore=entry;open(item,true);var frame=main.querySelector('.sci-frame,.lt-frame');if(frame){var tries=0;function retry(){if(pendingRestore!==entry||!frame.isConnected)return;var scope=controlScope(),ready=scope&&scope.root&&scope.root.querySelector('input[type=range],input[type=number],select');if(ready){applyControls(entry);return;}if(++tries<40)setTimeout(retry,250);else{pendingRestore=null;announce('The tool opened, but its saved controls are not available yet. Your observation remains in the notebook.');}}frame.addEventListener('load',retry,{once:true});}else applyControls(entry);}
+  function resume(entry,replaying){var item=find(entry.experimentId);if(!item){announce('This experiment is unavailable in this build. Your saved observation remains in the notebook.');return;}pendingRestore=entry;open(item,true,replaying);var frame=main.querySelector('.sci-frame,.lt-frame');if(frame){var tries=0;function retry(){if(pendingRestore!==entry||!frame.isConnected)return;var scope=controlScope(),ready=scope&&scope.root&&scope.root.querySelector('input[type=range],input[type=number],select');if(ready){applyControls(entry);return;}if(++tries<40)setTimeout(retry,250);else{pendingRestore=null;announce('The tool opened, but its saved controls are not available yet. Your observation remains in the notebook.');}}frame.addEventListener('load',retry,{once:true});}else applyControls(entry);}
   function captureGraph(){var scope=controlScope(),canvas=scope&&scope.root&&scope.root.querySelector('canvas');if($('#lab-full.on'))canvas=$('#lf-stage canvas');if(!canvas||!canvas.width||!canvas.height)return {kind:'not-captured',note:'No readable canvas was exposed. Use the tool’s own graph or data export.'};try{var image=document.createElement('canvas'),ratio=Math.min(1,640/canvas.width);image.width=Math.round(canvas.width*ratio);image.height=Math.round(canvas.height*ratio);image.getContext('2d').drawImage(canvas,0,0,image.width,image.height);return {kind:'canvas-observation',image:image.toDataURL('image/png'),note:'Raster capture of the actual displayed canvas, not raw numerical data. WebGL canvases may not retain their last frame.'};}catch(e){return {kind:'not-captured',note:'Canvas capture unavailable. Use the tool’s own graph or data export.'};}}
   function announce(message){var el=document.getElementById('science-status'),host=document.querySelector('#lab-full.on .science-context')||main.querySelector('.sci-workspace')||main;if(!el){el=node('div','science-inline-status');el.id='science-status';el.setAttribute('role','status');}host.prepend(el);el.textContent=message;clearTimeout(announce.timer);announce.timer=setTimeout(function(){el.textContent='';},8000);}
   function download(name,body,mime){var url=URL.createObjectURL(new Blob([body],{type:mime})),a=node('a');a.href=url;a.download=name;a.click();setTimeout(function(){URL.revokeObjectURL(url);},1000);}
@@ -17997,9 +18004,11 @@ var PhysicsExcellence=(function(){
   var originalOpen=openLabFull;openLabFull=function(sim){originalOpen(sim);document.body.classList.add('science-lab-open');decorateExperiment(sim);};
   var originalClose=closeLabFull;closeLabFull=function(){originalClose();document.body.classList.remove('science-lab-open');};
   var originalLanding=Landing.show;Landing.show=function(callback){originalLanding(callback);var launch=$('#lnd');if(launch){var button=launch.querySelector('.obs-primary');if(button){button.textContent='Try an experiment →';button.dataset.enter='science-featured';}var note=launch.querySelector('.obs-copy>p');if(note)note.textContent='Try an experiment without an account. Change one control, follow the science, and keep your observations.';}};
-  var originalGo=go;go=function(v,id){if(!booting&&!routing&&parseRoute()){history.replaceState(null,'',location.pathname+location.search);current=null;}originalGo(v,id);};
+  var originalGo=go;go=function(v,id){if(!booting&&!routing){if(location.href===lastProductURL)lastProductURL=null;if(parseRoute()){history.replaceState(null,'',location.pathname+location.search);current=null;}}originalGo(v,id);};
   var originalPending=Landing.pending;Landing.pending=function(){return parseRoute()?false:originalPending();};
-  window.addEventListener('hashchange',function(){if(!routing)route();});window.addEventListener('popstate',function(){if(!routing)route();});
+  // Every product destination changes the hash. Replay once, after legacy cleanup;
+  // popstate plus hashchange would render twice and can reset freshly opened tools.
+  window.addEventListener('hashchange',function(){if(!routing)route();});
   setTimeout(function(){build();if(parseRoute())route();booting=false;},0);
   return (window.PhysicsExcellence={enabled:true,catalog:catalog,localCatalog:function(){return items.slice();},open:open,openById:openById,notebook:book,showNotebook:showNotebook,saveObservation:saveObservation,capture:capture,modelFor:modelFor,peerURL:peerURL});
 })();

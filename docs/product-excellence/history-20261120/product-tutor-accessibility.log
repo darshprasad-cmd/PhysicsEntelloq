@@ -1,0 +1,25 @@
+{
+  "scope": "Local Chromium accessibility and keyboard behavior; no AI request or physical device claim.",
+  "devices": [
+    {
+      "width": 1440,
+      "closedTutorAccessible": false,
+      "notebookCloseCount": 1,
+      "keyboardOpenCloseReopen": true,
+      "closedControlsExcludedFromTab": true,
+      "draftPreserved": true,
+      "errors": [],
+      "aiRequests": []
+    },
+    {
+      "width": 390,
+      "closedTutorAccessible": false,
+      "notebookCloseCount": 1,
+      "keyboardOpenCloseReopen": true,
+      "closedControlsExcludedFromTab": true,
+      "draftPreserved": true,
+      "errors": [],
+      "aiRequests": []
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 # Physics product validation — updated 20 November 2026
 
-Review candidate on `codex/product-excellence-20261029`. The original audit used `63a86b4`; runtime commit `176b1c35a3b6a48852867777642c607ddd81d339` merges released lever commit `c8e50cdb45728f96c42385afb8e5b4235f9d987a`. All evidence below is local unless explicitly stated. Earlier draft PR #48 checks passed at `3587eea`; required hosted checks for the refreshed merge remain pending. This workstream has not merged to production or deployed it.
+Review candidate on `codex/product-excellence-20261029`. The original audit used `63a86b4`; runtime commit `176b1c35a3b6a48852867777642c607ddd81d339` merges released lever commit `c8e50cdb45728f96c42385afb8e5b4235f9d987a`. Hosted CI passed for review head `090d4e97` in run `44714470785`. The subsequent [history repair](product-excellence/history-20261120/README.md) fixes a reproduced native-review Back/Forward defect without altering scientific engines; its new evidence and later hosted run must be assessed separately. All other evidence below is local unless explicitly stated. This workstream has not merged to production or deployed it.
 
 The [20 November integration record](product-excellence/lever-integration-20261120/README.md) contains refreshed product/lever reports, screenshots, artifact hashes, exact preservation evidence and the resolved test sequencing issue. The original baseline and after captures below remain unchanged.
 

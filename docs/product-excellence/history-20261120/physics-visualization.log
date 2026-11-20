@@ -1,0 +1,85 @@
+{
+  "checks": [
+    "Lab graphs recover from a failed module download; 2D stays usable while loading; leaving during import cannot resurrect the old canvas",
+    "Lab > Graphs opens inline 3D by default; analytical surfaces/curves, retained 2D/3D edits, keyboard tabs, both themes, 320–1440px and disposal",
+    {
+      "name": "Actual Lorenz state renders through WebGL",
+      "stats": {
+        "webgl": true,
+        "mode": "3d",
+        "quality": 48,
+        "samples": 2601,
+        "objects": 2,
+        "calls": 6,
+        "memory": {
+          "geometries": 6,
+          "textures": 0
+        }
+      }
+    },
+    "Original parameter changes reach the graph",
+    "Playback pause stops model time",
+    "320/390/768/1440px fit in both themes",
+    {
+      "name": "phase-space",
+      "stats": {
+        "webgl": true,
+        "mode": "3d",
+        "quality": 48,
+        "samples": 10484,
+        "objects": 13,
+        "calls": 18,
+        "memory": {
+          "geometries": 17,
+          "textures": 1
+        }
+      }
+    },
+    {
+      "name": "vector-calculus",
+      "stats": {
+        "webgl": true,
+        "mode": "3d",
+        "quality": 48,
+        "samples": 239,
+        "objects": 6,
+        "calls": 10,
+        "memory": {
+          "geometries": 10,
+          "textures": 0
+        }
+      }
+    },
+    "wave original model renders with analytical agreement",
+    "fields original model renders with analytical agreement",
+    "bloch original model renders with analytical agreement",
+    "Actual staggered Yee-grid samples and delegated material parameter",
+    "Sandbox snapshot stays planar and returns to original builder",
+    "Embedded projectile analytical agreement, expression validation, surface and curve modes",
+    "React Reality Lab uses existing numerical samples and unmounts",
+    "Webcam is opt-in; denied access returns to usable non-gesture controls",
+    {
+      "name": "Bounded renderer timing sample (not a hardware FPS claim)",
+      "medianMs": 0.7000000476837158,
+      "p95Ms": 1.5,
+      "renderer": "headless Chromium SwiftShader",
+      "stats": {
+        "webgl": true,
+        "mode": "3d",
+        "quality": 48,
+        "samples": 2601,
+        "objects": 2,
+        "calls": 6,
+        "memory": {
+          "geometries": 6,
+          "textures": 0
+        }
+      }
+    },
+    "Context loss, 2D fallback, restore and GPU resource disposal",
+    "Repeated graph mount/unmount",
+    "WebGL unavailable: field/streamline fallback and numerical inspection",
+    "Lab > Graphs remains usable without WebGL; original 2D tools remain available"
+  ],
+  "errors": []
+}

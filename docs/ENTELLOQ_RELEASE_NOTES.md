@@ -1,0 +1,19 @@
+# Physics product excellence — draft PR review candidate
+
+Updated: 20 November 2026. Original audit baseline: `63a86b4`. Branch: `codex/product-excellence-20261029`, draft PR #48. Runtime `176b1c35` merges released lever `c8e50cdb`; hosted CI passed for review head `090d4e97`. The subsequent history repair requires its own refreshed validation. Explicit production approval remains pending. No production merge or deployment was performed by this workstream.
+
+Visitors can launch Refraction & TIR immediately without registering or completing personalization. Explore, Learn, Labs, Sandbox and Advanced now use the same main navigation conventions on desktop and mobile; More retains secondary workspaces. Search includes actual experiments and tools from both subject catalogs, plus local saved observations. Existing deep links remain available.
+
+The newly released lever measurement bench is preserved and included in the 343-item Physics catalog. Search for mechanical advantage, fulcrum, first-class lever, torque, or load and effort opens its existing scientific engine. Its analytical assumptions are explicit; its dedicated readings notebook and exports remain separate from the common observation notebook.
+
+Back and Forward now traverse product experiments without inserting legacy alias entries. The adapter preserves the preceding main view, attaches new embedded workspaces to the correct history entry, and restores saved settings without adding another destination during replay. Lever and other practical interfaces/scientific code remain unchanged. See the [focused regression evidence](product-excellence/history-20261120/README.md).
+
+Scientific workspaces use a compact header with source details behind About. Live experiments have contextual guidance, model limitations and Save observation. The local notebook stores named controls, observations, optional measurements and readable canvas captures; it supports reload/resume, CSV, JSON and print/PDF. Save failures are visible and provide a recoverable unsaved export. Cloud sync is not connected.
+
+Mobile actions have a deliberate two-row header, 44px targets, and no floating app/tutor button over scientific controls. Feedback occupies inline space. Keyboard launch/control/save flows, focus restoration, reduced motion and 320–1440px layouts are checked.
+
+An optional `classroom=1` pilot creates assignments and structured worksheets, exports/imports local submissions and saves teacher review notes. It does not provide school accounts, a roster, uploads, automatic grading or a private online inbox. Student codes are optional and should be anonymous.
+
+External Clarity tracking and identity calls are disabled. This privacy correction applies even when the redesign is off. Numerical engines, existing camera interaction systems and dedicated tool notebooks were not rewritten. Legacy screen/frame previews are labelled illustrative instead of implying validated SI output.
+
+See [the test report](ENTELLOQ_TEST_REPORT.md) for before/after evidence, failures resolved during development, and outstanding real-student, hardware, native and release gates. See [engineering notes](PHYSICS_ENGINEERING.md) for flags, preview commands and rollback. Production deployment requires explicit approval after final review and required hosted checks.

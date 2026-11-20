@@ -1,0 +1,100 @@
+{
+  "cases": [
+    {
+      "width": 1440,
+      "firstQuestionnaire": true,
+      "explicitDeepLink": true,
+      "detachedUntaredAndUnbalancedRejected": true,
+      "keyboardDecimalAndRange": true,
+      "wrongRatioRejected": true,
+      "threeDifferentArmsNoAverage": true,
+      "dedupe": true,
+      "CSVIndependent": true,
+      "reload": true,
+      "resetClearIsolation": true,
+      "reducedMotion": true,
+      "axeScans": 2,
+      "axeViolations": 0
+    },
+    {
+      "width": 768,
+      "firstQuestionnaire": true,
+      "explicitDeepLink": true,
+      "detachedUntaredAndUnbalancedRejected": true,
+      "keyboardDecimalAndRange": true,
+      "wrongRatioRejected": true,
+      "threeDifferentArmsNoAverage": true,
+      "dedupe": true,
+      "CSVIndependent": true,
+      "reload": true,
+      "resetClearIsolation": true,
+      "reducedMotion": true,
+      "axeScans": 2,
+      "axeViolations": 0
+    },
+    {
+      "width": 390,
+      "firstQuestionnaire": true,
+      "explicitDeepLink": true,
+      "detachedUntaredAndUnbalancedRejected": true,
+      "keyboardDecimalAndRange": true,
+      "wrongRatioRejected": true,
+      "threeDifferentArmsNoAverage": true,
+      "dedupe": true,
+      "CSVIndependent": true,
+      "reload": true,
+      "resetClearIsolation": true,
+      "reducedMotion": true,
+      "axeScans": 2,
+      "axeViolations": 0
+    },
+    {
+      "width": 320,
+      "firstQuestionnaire": true,
+      "explicitDeepLink": true,
+      "detachedUntaredAndUnbalancedRejected": true,
+      "keyboardDecimalAndRange": true,
+      "wrongRatioRejected": true,
+      "threeDifferentArmsNoAverage": true,
+      "dedupe": true,
+      "CSVIndependent": true,
+      "reload": true,
+      "resetClearIsolation": true,
+      "reducedMotion": true,
+      "axeScans": 2,
+      "axeViolations": 0
+    },
+    {
+      "all36Configurations": true,
+      "independentMomentEquation": true,
+      "belowEqualAboveOne": true,
+      "positiveNegativeZeroOffset": true,
+      "zeroChangesDoNotCreateNewIndependentRows": true
+    },
+    {
+      "storage": "corrupt",
+      "passed": true
+    },
+    {
+      "storage": "injected",
+      "passed": true
+    },
+    {
+      "storage": "blocked",
+      "passed": true
+    },
+    {
+      "catalogueAndGuideEntry": true,
+      "returnPreservesNotebook": true,
+      "reducedMotionChange": true
+    },
+    {
+      "copiedSingleFileOffline": true
+    }
+  ],
+  "target": "exact local index.html and copied offline file",
+  "started": "2026-11-20T08:59:57.944Z",
+  "limits": "Chromium viewport emulation, not physical phone, screen-reader certification, real apparatus calibration, educator review or supervised practical completion.",
+  "status": "passed",
+  "finished": "2026-11-20T09:00:33.779Z"
+}

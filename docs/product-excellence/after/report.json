@@ -1,0 +1,85 @@
+{
+  "baseline": "63a86b4",
+  "scope": "Local Chromium, external services blocked. No real student, physical webcam or native iOS claims.",
+  "devices": [
+    {
+      "width": 1440,
+      "errors": [],
+      "checks": [
+        "Cold guest launches featured experiment without questionnaire/account; keyboard changes a real model control.",
+        "Each discovery filter returns matching resources without a query; default experiment search includes the Biology Osmosis Lab for a natural-language question.",
+        "Observation persists over reload, resumes named controls, and labels model/limitations and local-only status.",
+        "Search includes exported Biology metadata; CSV/JSON downloads contain the observation; scientific host viewport is compact.",
+        "Classroom pilot creates and exports an assignment/worksheet, imports assignment and submission, saves a local teacher review and restores visible focus."
+      ],
+      "analyticsRequests": [],
+      "firstMeaningfulInteractionMs": 1434,
+      "searchResults": [
+        "Double PendulumPhysics · Experiment↵",
+        "The Chaotic Double PendulumPhysics · Numerical workspace↵",
+        "Measure g with a PendulumPhysics · Measurement bench↵",
+        "Pendulum: period vs amplitudePhysics · Investigation↵",
+        "Pendulum: period vs massPhysics · Investigation↵",
+        "Double pendulumPhysics · Sandbox scene↵",
+        "Energy changes in a simple pendulumPhysics · Preparation guide↵",
+        "Seconds pendulum from length–period graphsPhysics · Preparation guide↵",
+        "Pendulum period and bob massPhysics · Preparation guide↵",
+        "Damping of a pendulumPhysics · Preparation guide↵",
+        "Accessible: seconds-pendulum lengthPhysics · Preparation guide↵",
+        "Discovery NotebookPhysics · Scientific tool↵"
+      ],
+      "workspaceGeometry": {
+        "top": 188.390625,
+        "height": 805
+      },
+      "documentOverflow": false,
+      "catalogCount": 342
+    },
+    {
+      "width": 390,
+      "errors": [],
+      "checks": [
+        "Cold guest launches featured experiment without questionnaire/account; keyboard changes a real model control.",
+        "Each discovery filter returns matching resources without a query; default experiment search includes the Biology Osmosis Lab for a natural-language question.",
+        "Observation persists over reload, resumes named controls, and labels model/limitations and local-only status.",
+        "Search includes exported Biology metadata; CSV/JSON downloads contain the observation; scientific host viewport is compact."
+      ],
+      "analyticsRequests": [],
+      "firstMeaningfulInteractionMs": 1032,
+      "searchResults": [
+        "Double PendulumPhysics · Experiment↵",
+        "The Chaotic Double PendulumPhysics · Numerical workspace↵",
+        "Measure g with a PendulumPhysics · Measurement bench↵",
+        "Pendulum: period vs amplitudePhysics · Investigation↵",
+        "Pendulum: period vs massPhysics · Investigation↵",
+        "Double pendulumPhysics · Sandbox scene↵",
+        "Energy changes in a simple pendulumPhysics · Preparation guide↵",
+        "Seconds pendulum from length–period graphsPhysics · Preparation guide↵",
+        "Pendulum period and bob massPhysics · Preparation guide↵",
+        "Damping of a pendulumPhysics · Preparation guide↵",
+        "Accessible: seconds-pendulum lengthPhysics · Preparation guide↵",
+        "Discovery NotebookPhysics · Scientific tool↵"
+      ],
+      "workspaceGeometry": {
+        "top": 170,
+        "height": 620
+      },
+      "documentOverflow": false,
+      "catalogCount": 342
+    }
+  ],
+  "layoutChecks": [
+    {
+      "width": 320,
+      "passed": true,
+      "checks": "44px experiment actions, unobstructed slider/actions, launcher hidden while full screen, no page overflow"
+    },
+    {
+      "width": 768,
+      "passed": true,
+      "checks": "44px experiment actions, unobstructed slider/actions, launcher hidden while full screen, no page overflow"
+    }
+  ],
+  "storageFailure": "Blocked storage never shows success; recoverable unsaved JSON export is offered.",
+  "flagRollback": "excellence=0 preserves the prior questionnaire and navigation."
+}

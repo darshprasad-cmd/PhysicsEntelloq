@@ -1,0 +1,292 @@
+{
+  "started": "2026-11-20T10:22:31.346Z",
+  "head": "090d4e97e39dfb636ea194896a0cb509b1a576df",
+  "artifactBefore": "8fc818045eafe835fe454d76f3068fcbc635444e4e1d9b309acaea7d091fab32",
+  "productSourceBefore": "5dfe9ef6b3045b64870c7a1520a05e80351e42aabb583c962dac8d9cfde07330",
+  "environment": {
+    "node": "v24.15.0",
+    "platform": "win32"
+  },
+  "checks": [
+    {
+      "name": "static-all",
+      "command": [
+        "node",
+        "--test",
+        ".github/test-advanced.js",
+        ".github/test-ai.js",
+        ".github/test-answer-format.js",
+        ".github/test-app-design.js",
+        ".github/test-camera-lifecycle.js",
+        ".github/test-camera-physics.js",
+        ".github/test-cbse-preservation.js",
+        ".github/test-cbse-study.js",
+        ".github/test-cradle.js",
+        ".github/test-hand-builder.js",
+        ".github/test-lamina-model.js",
+        ".github/test-lamina-ui.js",
+        ".github/test-lever-model.js",
+        ".github/test-lever-ui.js",
+        ".github/test-light-mode.js",
+        ".github/test-measurement.js",
+        ".github/test-observatory-theme.js",
+        ".github/test-observatory.js",
+        ".github/test-practical-library.js",
+        ".github/test-precision-ui.js",
+        ".github/test-product-excellence.js",
+        ".github/test-pulse-model.js",
+        ".github/test-pulse-ui.js",
+        ".github/test-quality.js",
+        ".github/test-scientific-labs.js",
+        ".github/test-spherometer-model.js",
+        ".github/test-visual-learn.js",
+        ".github/test-welcome.js"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "durationMs": 2673,
+      "log": "C:\\Users\\darsh\\AppData\\Local\\Temp\\entelloq-physics-history-validation-20261120-155146\\static-all.log"
+    },
+    {
+      "name": "inline-parse",
+      "command": [
+        "node",
+        ".github/validate-inline-scripts.js"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "durationMs": 86,
+      "log": "C:\\Users\\darsh\\AppData\\Local\\Temp\\entelloq-physics-history-validation-20261120-155146\\inline-parse.log"
+    },
+    {
+      "name": "experience-parity",
+      "command": [
+        "node",
+        ".github/build-experience.js",
+        "--check"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "durationMs": 269,
+      "log": "C:\\Users\\darsh\\AppData\\Local\\Temp\\entelloq-physics-history-validation-20261120-155146\\experience-parity.log"
+    },
+    {
+      "name": "scientific-parity",
+      "command": [
+        "node",
+        ".github/build-scientific-lab-assets.mjs",
+        "--check"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "durationMs": 73,
+      "log": "C:\\Users\\darsh\\AppData\\Local\\Temp\\entelloq-physics-history-validation-20261120-155146\\scientific-parity.log"
+    },
+    {
+      "name": "learning-parity",
+      "command": [
+        "python",
+        "scripts/sync-learning-tools.py",
+        "--check"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "durationMs": 209,
+      "log": "C:\\Users\\darsh\\AppData\\Local\\Temp\\entelloq-physics-history-validation-20261120-155146\\learning-parity.log"
+    },
+    {
+      "name": "visualization-parity",
+      "command": [
+        "node",
+        "visualization-source/build.mjs",
+        "--check"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "durationMs": 128,
+      "log": "C:\\Users\\darsh\\AppData\\Local\\Temp\\entelloq-physics-history-validation-20261120-155146\\visualization-parity.log"
+    },
+    {
+      "name": "visualization-model",
+      "command": [
+        "node",
+        "--test",
+        "visualization-source/tests/*.test.mjs"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "durationMs": 123,
+      "log": "C:\\Users\\darsh\\AppData\\Local\\Temp\\entelloq-physics-history-validation-20261120-155146\\visualization-model.log"
+    },
+    {
+      "name": "learning-model",
+      "command": [
+        "npm.cmd",
+        "test",
+        "--prefix",
+        "learning-tools-source/learning"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "durationMs": 518,
+      "log": "C:\\Users\\darsh\\AppData\\Local\\Temp\\entelloq-physics-history-validation-20261120-155146\\learning-model.log"
+    },
+    {
+      "name": "tool-core",
+      "command": [
+        "node",
+        "--test",
+        "learning-tools-source/physics/tests/core.test.mjs",
+        "learning-tools-source/sketches/tests/core.test.mjs"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "durationMs": 118,
+      "log": "C:\\Users\\darsh\\AppData\\Local\\Temp\\entelloq-physics-history-validation-20261120-155146\\tool-core.log"
+    },
+    {
+      "name": "robotics-model",
+      "command": [
+        "python",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "scientific-labs/robotics/tests",
+        "-p",
+        "test_*.py"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "durationMs": 161,
+      "log": "C:\\Users\\darsh\\AppData\\Local\\Temp\\entelloq-physics-history-validation-20261120-155146\\robotics-model.log"
+    },
+    {
+      "name": "companion-boundaries",
+      "command": [
+        "python",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "scientific-labs/tests",
+        "-p",
+        "test_*.py"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "durationMs": 3543,
+      "log": "C:\\Users\\darsh\\AppData\\Local\\Temp\\entelloq-physics-history-validation-20261120-155146\\companion-boundaries.log"
+    },
+    {
+      "name": "check-learning-tools-browser",
+      "command": [
+        "node",
+        "--require",
+        "C:\\Users\\darsh\\AppData\\Local\\Temp\\entelloq-physics-history-validation-20261120-155146\\redirect-evidence.cjs",
+        "scripts/check-learning-tools-browser.cjs"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "durationMs": 5781,
+      "log": "C:\\Users\\darsh\\AppData\\Local\\Temp\\entelloq-physics-history-validation-20261120-155146\\check-learning-tools-browser.log"
+    },
+    {
+      "name": "check-visual-tools-browser",
+      "command": [
+        "node",
+        "--require",
+        "C:\\Users\\darsh\\AppData\\Local\\Temp\\entelloq-physics-history-validation-20261120-155146\\redirect-evidence.cjs",
+        "scripts/check-visual-tools-browser.cjs"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "durationMs": 3142,
+      "log": "C:\\Users\\darsh\\AppData\\Local\\Temp\\entelloq-physics-history-validation-20261120-155146\\check-visual-tools-browser.log"
+    },
+    {
+      "name": "learning-host-quality",
+      "command": [
+        "node",
+        "--require",
+        "C:\\Users\\darsh\\AppData\\Local\\Temp\\entelloq-physics-history-validation-20261120-155146\\redirect-evidence.cjs",
+        "qa/learning-host-quality.cjs"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "durationMs": 4706,
+      "log": "C:\\Users\\darsh\\AppData\\Local\\Temp\\entelloq-physics-history-validation-20261120-155146\\learning-host-quality.log"
+    },
+    {
+      "name": "physics-visualization",
+      "command": [
+        "node",
+        "--require",
+        "C:\\Users\\darsh\\AppData\\Local\\Temp\\entelloq-physics-history-validation-20261120-155146\\redirect-evidence.cjs",
+        "qa/physics-visualization.cjs"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "durationMs": 19548,
+      "log": "C:\\Users\\darsh\\AppData\\Local\\Temp\\entelloq-physics-history-validation-20261120-155146\\physics-visualization.log"
+    },
+    {
+      "name": "interface-quality",
+      "command": [
+        "node",
+        "--require",
+        "C:\\Users\\darsh\\AppData\\Local\\Temp\\entelloq-physics-history-validation-20261120-155146\\redirect-evidence.cjs",
+        "qa/interface-quality.cjs"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "durationMs": 28783,
+      "log": "C:\\Users\\darsh\\AppData\\Local\\Temp\\entelloq-physics-history-validation-20261120-155146\\interface-quality.log"
+    },
+    {
+      "name": "product-tutor-accessibility",
+      "command": [
+        "node",
+        "--require",
+        "C:\\Users\\darsh\\AppData\\Local\\Temp\\entelloq-physics-history-validation-20261120-155146\\redirect-evidence.cjs",
+        "qa/product-tutor-accessibility.cjs"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "durationMs": 1934,
+      "log": "C:\\Users\\darsh\\AppData\\Local\\Temp\\entelloq-physics-history-validation-20261120-155146\\product-tutor-accessibility.log"
+    },
+    {
+      "name": "camera-lifecycle",
+      "command": [
+        "node",
+        "--require",
+        "C:\\Users\\darsh\\AppData\\Local\\Temp\\entelloq-physics-history-validation-20261120-155146\\redirect-evidence.cjs",
+        "qa/camera-lifecycle.cjs"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "durationMs": 19787,
+      "log": "C:\\Users\\darsh\\AppData\\Local\\Temp\\entelloq-physics-history-validation-20261120-155146\\camera-lifecycle.log"
+    }
+  ],
+  "artifactAfter": "8fc818045eafe835fe454d76f3068fcbc635444e4e1d9b309acaea7d091fab32",
+  "productSourceAfter": "5dfe9ef6b3045b64870c7a1520a05e80351e42aabb583c962dac8d9cfde07330",
+  "finished": "2026-11-20T10:24:03.004Z",
+  "status": "passed",
+  "testCounts": {
+    "learning": 14,
+    "static": 398,
+    "companion": 15,
+    "toolCore": 15,
+    "visualization": 16,
+    "robotics": 8,
+    "cameraScenarios": 12
+  },
+  "additionalChecks": [
+    "Published artifact nonempty, expected title/viewHome/viewProgress/Tutor and no gsk_ marker: passed",
+    "git diff --check: passed",
+    "QA evidence paths redirected to fresh Temp; tracked historical evidence not modified",
+    "Product-excellence and focused history suites deliberately excluded for separate owner"
+  ]
+}

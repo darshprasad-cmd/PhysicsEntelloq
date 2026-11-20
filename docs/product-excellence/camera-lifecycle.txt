@@ -1,0 +1,12 @@
+excellence=0 denied passed
+excellence=0 late-permission passed
+excellence=0 model-failure passed
+excellence=0 hand-stop passed
+excellence=0 hand-to-build passed
+excellence=0 hand-late-permission passed
+excellence=1 denied passed
+excellence=1 late-permission passed
+excellence=1 model-failure passed
+excellence=1 hand-stop passed
+excellence=1 hand-to-build passed
+excellence=1 hand-late-permission passed

@@ -33,7 +33,7 @@ const server=http.createServer((req,res)=>{const url=new URL(req.url,'http://loc
     if(width===1440&&theme==='dark'||width===390&&theme==='light')await page.screenshot({path:path.join(output,route+'-'+theme+'-'+width+'.png')});
   }
   try{
-    await page.goto('http://127.0.0.1:'+server.address().port+'/#learning:graphs',{waitUntil:'domcontentloaded'});
+    await page.goto('http://127.0.0.1:'+server.address().port+'/?excellence=0#learning:graphs',{waitUntil:'domcontentloaded'});
     for(const theme of ['dark','light']){
       await page.evaluate(t=>document.documentElement.dataset.theme=t,theme);
       for(const width of [1440,768,390,320]){
